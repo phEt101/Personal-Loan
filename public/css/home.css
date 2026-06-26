@@ -129,6 +129,10 @@ body {
 }
 
 .action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
     border: 2px solid transparent;
     border-radius: 0.95rem;
     padding: 0.8rem 1.15rem;
@@ -305,6 +309,21 @@ body {
     padding: 1rem 1.1rem;
 }
 
+.hero.compact-hero.hero-with-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
 .hero.compact-hero h2 {
     margin: 0 0 0.35rem;
     font-size: 1.25rem;
@@ -402,6 +421,80 @@ body {
 .badge-signed {
     background: linear-gradient(90deg, #bbf7d0 0%, #86efac 100%);
     color: #065f46;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+    text-transform: none;
+}
+
+.empty-cell {
+    color: #6b7280;
+    text-align: center;
+    padding: 1.25rem;
+}
+
+.alert {
+    padding: 0.85rem 1rem;
+    border-radius: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: #ecfdf5;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #065f46;
+}
+
+.form-card {
+    max-width: 560px;
+}
+
+.consent-form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    color: #1f2937;
+    background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.form-error {
+    color: #dc2626;
+    font-size: 0.85rem;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .action-link {

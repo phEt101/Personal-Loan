@@ -10,7 +10,7 @@
                 </span>
                 <span>หน้าหลัก</span>
             </a>
-            <a href="{{ route('consent.index') }}" class="nav-item {{ Request::is('consent') ? 'active' : '' }}">
+            <a href="{{ route('consent.index') }}" class="nav-item {{ Request::is('consent*') ? 'active' : '' }}">
                 <span class="nav-icon" aria-hidden="true">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M7 2h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V2z" fill="#10b981"/>
