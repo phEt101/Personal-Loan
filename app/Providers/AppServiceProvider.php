@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->loadRoutesFrom(app_path('Modules/Home/Routes/web.php'));
+        $this->loadViewsFrom(app_path('Modules/Home/Resources/views'), 'home');
+        $this->loadTranslationsFrom(app_path('Modules/Home/Resources/lang'), 'home');
+        $this->loadRoutesFrom(app_path('Modules/Consent/Routes/web.php'));
+        $this->loadViewsFrom(app_path('Modules/Consent/Resources/views'), 'consent');
     }
 }
