@@ -15,9 +15,10 @@ class ConsentController extends Controller
     {
         $customers = ConsentForm::orderBy('id', 'desc')->get()->map(function ($form) {
             return (object) array_merge($form->toArray(), [
-                'code' => 'CUST-' . str_pad($form->id, 3, '0', STR_PAD_LEFT),
+                'transaction_date' => $form->created_at?->format('d/m/Y'),
                 'signed_date' => $form->signed_at?->format('Y-m-d'),
                 'signatureData' => $form->signature_data,
+                'status' => $form->status,
                 // Map camelCase from form to snake_case from DB
                 'extraIncome' => $form->extra_income,
                 'extraIncomeSource' => $form->extra_income_source,
@@ -107,15 +108,23 @@ class ConsentController extends Controller
         });
 
         $total = $customers->count();
-        $signed = $customers->where('signed', true)->count();
-        $failed = max(0, $total - $signed);
+        $approved = $customers->where('status', 'approved')->count();
+        $rejected = $customers->where('status', 'rejected')->count();
 
-        return view('consent::index', compact('customers', 'total', 'signed', 'failed'));
+        // Generate next app_no
+        $lastAppNo = ConsentForm::whereNotNull('app_no')->orderBy('id', 'desc')->value('app_no');
+        $nextAppNo = $lastAppNo ? str_pad((int)$lastAppNo + 1, 13, '0', STR_PAD_LEFT) : '0000000000001';
+
+        return view('consent::index', compact('customers', 'total', 'approved', 'rejected', 'nextAppNo'));
     }
 
     public function create()
     {
-        return view('consent::create');
+        // Generate next app_no
+        $lastAppNo = ConsentForm::whereNotNull('app_no')->orderBy('id', 'desc')->value('app_no');
+        $nextAppNo = $lastAppNo ? str_pad((int)$lastAppNo + 1, 13, '0', STR_PAD_LEFT) : '0000000000001';
+
+        return view('consent::create', compact('nextAppNo'));
     }
 
     public function store(Request $request)
@@ -132,19 +141,19 @@ class ConsentController extends Controller
             'dob' => ['nullable', 'date'],
             'id_card' => ['nullable', 'string', 'max:20'],
             'gender' => ['nullable', 'string', 'max:10'],
-            'age' => ['nullable', 'integer'],
+            'age' => ['required', 'integer', 'min:1', 'max:120'],
             'nationality' => ['nullable', 'string', 'max:50'],
             'marital_status' => ['nullable', 'string', 'max:50'],
             'education' => ['nullable', 'string', 'max:50'],
             'occupation' => ['nullable', 'string', 'max:100'],
             'occupationOther' => ['nullable', 'string', 'max:100'],
-            'income' => ['nullable', 'numeric'],
+            'income' => ['required', 'numeric', 'min:0'],
             'extraIncome' => ['nullable', 'numeric'],
             'extraIncomeSource' => ['nullable', 'string', 'max:255'],
-            'businessIncome' => ['nullable', 'numeric'],
+            'businessIncome' => ['nullable', 'string', 'max:255'],
             'averageMonthlyIncome' => ['nullable', 'numeric'],
-            'hasOtherDebts' => ['nullable', 'string', 'max:10'],
-            'otherDebtInstallment' => ['nullable', 'numeric'],
+            'hasOtherDebts' => ['required', 'string', 'max:10'],
+            'otherDebtInstallment' => ['nullable', 'numeric', 'min:0'],
             'hasExistingLoan' => ['nullable', 'string', 'max:10'],
             'existingLoanInstallment' => ['nullable', 'numeric'],
             // Spouse fields
@@ -273,6 +282,32 @@ class ConsentController extends Controller
             $validated['spouse_occupation'] = $request->spouseOccupationOther;
         }
 
+        // If no other debts, set installment to 0
+        if ($validated['hasOtherDebts'] === 'ไม่มี') {
+            $validated['otherDebtInstallment'] = 0;
+        }
+
+        // Calculate status based on criteria
+        $status = 'approved';
+        $age = $validated['age'] ?? 0;
+        $income = $validated['income'] ?? 0;
+        $otherDebtInstallment = $validated['otherDebtInstallment'] ?? 0;
+
+        // Check age: <20 or >50 → not approved
+        if ($age < 20 || $age > 50) {
+            $status = 'rejected';
+        }
+
+        // Check income: <15000 → not approved
+        if ($income < 15000) {
+            $status = 'rejected';
+        }
+
+        // Check debt ratio: debt > half of income → not approved
+        if ($income > 0 && $otherDebtInstallment > ($income / 2)) {
+            $status = 'rejected';
+        }
+
         // Map camelCase to snake_case for DB
         $data = [
             'app_date' => $validated['app_date'] ?? null,
@@ -379,12 +414,13 @@ class ConsentController extends Controller
             'signed' => true,
             'signed_at' => now(),
             'signature_data' => $request->signatureData ?? null,
+            'status' => $status
         ];
 
         ConsentForm::create($data);
 
         return redirect()
             ->route('consent.index')
-            ->with('success', 'สร้างใบยินยอมสำหรับ ' . $validated['name'] . ' เรียบร้อยแล้ว');
+            ->with('success', 'สร้างใบยินยอมสำหรับ ' . $validated['name'] . ' เรียบร้อยแล้ว (สถานะ: ' . ($status === 'approved' ? 'ผ่าน' : 'ไม่ผ่าน') . ')');
     }
 }

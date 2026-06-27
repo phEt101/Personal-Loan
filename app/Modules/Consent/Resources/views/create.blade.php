@@ -8,8 +8,21 @@
         </div>
 
         <div class="card form-card">
-            <form method="POST" action="{{ route('consent.store') }}" class="consent-form">
+            <form method="POST" action="{{ route('consent.store') }}" class="consent-form" autocomplete="off">
                 @csrf
+
+                <div class="form-group">
+                    <label for="app_no">App No. (เลขที่ใบคำขอ 13 หลัก)</label>
+                    <input
+                        type="text"
+                        id="app_no"
+                        name="app_no"
+                        value="{{ $nextAppNo }}"
+                        maxlength="13"
+                        readonly
+                        style="background: #f3f4f6; cursor: not-allowed;"
+                    >
+                </div>
 
                 <div class="form-group">
                     <label for="name">ชื่อลูกค้า</label>

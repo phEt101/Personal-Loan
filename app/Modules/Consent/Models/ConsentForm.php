@@ -39,7 +39,9 @@ class ConsentForm extends Model
         'loan_term', 'loan_amount_type', 'custom_loan_amount', 'loan_purpose', 'bank_name',
         'bank_branch', 'account_name', 'account_type', 'account_number',
         // Consent & Signature
-        'signed', 'signed_at', 'signature_data'
+        'signed', 'signed_at', 'signature_data',
+        // Status
+        'status'
     ];
 
     protected $casts = [

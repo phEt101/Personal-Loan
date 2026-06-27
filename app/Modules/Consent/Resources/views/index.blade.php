@@ -22,12 +22,12 @@
                 <div class="summary-value">{{ $total }}</div>
             </div>
             <div class="summary-card">
-                <div class="summary-label">ผ่านใบยินยอม</div>
-                <div class="summary-value">{{ $signed }}</div>
+                <div class="summary-label">ผ่านเกณฑ์</div>
+                <div class="summary-value">{{ $approved }}</div>
             </div>
             <div class="summary-card">
-                <div class="summary-label">ยังไม่ผ่าน</div>
-                <div class="summary-value">{{ $failed }}</div>
+                <div class="summary-label">ไม่ผ่านเกณฑ์</div>
+                <div class="summary-value">{{ $rejected }}</div>
             </div>
         </section>
 
@@ -38,7 +38,7 @@
                         <tr>
                             <th>รหัส</th>
                             <th>ชื่อ</th>
-                            <th>วันที่เซ็น</th>
+                            <th>วันที่ทำรายการ</th>
                             <th>สถานะ</th>
                             <th>การกระทำ</th>
                         </tr>
@@ -46,14 +46,16 @@
                     <tbody>
                         @forelse($customers as $customer)
                             <tr>
-                                <td>{{ $customer->code ?? $customer->id }}</td>
+                                <td>{{ $customer->app_no ?? '-' }}</td>
                                 <td>{{ $customer->name }}</td>
-                                <td>{{ $customer->signed_at ?? '-' }}</td>
+                                <td>{{ $customer->transaction_date ?? '-' }}</td>
                                 <td>
-                                    @if($customer->signed)
-                                        <span class="badge badge-signed">Signed</span>
+                                    @if($customer->status === 'approved')
+                                        <span class="badge badge-signed">ผ่าน</span>
+                                    @elseif($customer->status === 'rejected')
+                                        <span class="badge badge-pending">ไม่ผ่าน</span>
                                     @else
-                                        <span class="badge badge-pending">ยังไม่เซ็น</span>
+                                        <span class="badge">รอดำเนินการ</span>
                                     @endif
                                 </td>
                                 <td><a href="#" class="action-link" onclick="viewDocument({{ json_encode($customer) }})">ดูเอกสาร</a></td>
@@ -77,9 +79,11 @@
                 <button type="button" class="close-btn" id="closeConsentModal" aria-label="Close modal">&times;</button>
             </div>
             <div class="modal-body scrollable">
-                <form method="POST" action="{{ route('consent.store') }}" class="consent-form">
+                <form method="POST" action="{{ route('consent.store') }}" class="consent-form" autocomplete="off">
                     @csrf
-                    
+                    <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+                        <input type="text" name="prevent_autofill" tabindex="-1" autocomplete="off">
+                    </div>
                     <div class="form-grid">
                         <!-- Application Header -->
                         <div class="form-section-title form-section-title--no-top-margin">
@@ -93,7 +97,7 @@
 
                         <div class="form-group col-6">
                             <label for="app_no">App No. (เลขที่ใบคำขอ 13 หลัก)</label>
-                            <input type="text" id="app_no" name="app_no" placeholder="เช่น 1002003004005" maxlength="13">
+                            <input type="text" id="app_no" name="app_no" value="{{ $nextAppNo }}" maxlength="13" readonly style="background: #f3f4f6; cursor: not-allowed;">
                         </div>
 
                         <!-- Section 1: สำหรับเจ้าหน้าที่ -->
@@ -161,8 +165,8 @@
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="age">อายุ (ปี)</label>
-                            <input type="number" id="age" name="age" min="0" placeholder="อายุ">
+                            <label for="age">อายุ (ปี) <span class="required-asterisk">*</span></label>
+                            <input type="number" id="age" name="age" min="0" placeholder="อายุ" required>
                         </div>
 
                         <div class="form-group col-3">
@@ -214,8 +218,8 @@
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="income">รายได้รวมต่อเดือน (บาท)</label>
-                            <input type="number" id="income" name="income" min="0" placeholder="รายได้ต่อเดือน">
+                            <label for="income">รายได้รวมต่อเดือน (บาท) <span class="required-asterisk">*</span></label>
+                            <input type="number" id="income" name="income" min="0" placeholder="รายได้ต่อเดือน" required>
                         </div>
 
                         <div class="form-group col-6">
@@ -229,18 +233,18 @@
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="businessIncome">รายได้จากกิจการ (บาท)</label>
-                            <input type="number" id="businessIncome" name="businessIncome" min="0" placeholder="รายได้จากกิจการ">
+                            <label for="businessIncome">ชื่อกิจการ</label>
+                            <input type="text" id="businessIncome" name="businessIncome" placeholder="ระบุชื่อกิจการ">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="averageMonthlyIncome">เฉลี่ยต่อเดือน (บาท)</label>
-                            <input type="number" id="averageMonthlyIncome" name="averageMonthlyIncome" min="0" placeholder="เฉลี่ยต่อเดือน">
+                            <label for="averageMonthlyIncome">รายได้จากกิจการ เฉลี่ยต่อเดือน (บาท)</label>
+                            <input type="number" id="averageMonthlyIncome" name="averageMonthlyIncome" min="0" placeholder="รายได้จากกิจการเฉลี่ยต่อเดือน">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="hasOtherDebts">ภาระหนี้อื่นๆ ในปัจจุบัน</label>
-                            <select id="hasOtherDebts" name="hasOtherDebts">
+                            <label for="hasOtherDebts">ภาระหนี้อื่นๆ ในปัจจุบัน <span class="required-asterisk">*</span></label>
+                            <select id="hasOtherDebts" name="hasOtherDebts" required>
                                 <option value="">เลือก</option>
                                 <option value="ไม่มี">ไม่มี</option>
                                 <option value="มี">มี</option>
@@ -865,7 +869,6 @@
             </div>
             <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb; background: #ffffff; display: flex; justify-content: flex-end; gap: 0.75rem;">
                 <button type="button" class="action-btn outline" id="closeViewConsentFooter">ปิดหน้าต่าง</button>
-                <button type="button" class="action-btn" onclick="window.print()" style="background: #059669;">พิมพ์เอกสาร</button>
             </div>
         </div>
     </div>
@@ -896,7 +899,7 @@
             const income = customer.income ? parseInt(customer.income).toLocaleString('th-TH') + ' บาท' : '-';
             const extraIncome = customer.extraIncome ? parseInt(customer.extraIncome).toLocaleString('th-TH') + ' บาท' : '-';
             const extraIncomeSource = customer.extraIncomeSource || '-';
-            const businessIncome = customer.businessIncome ? parseInt(customer.businessIncome).toLocaleString('th-TH') + ' บาท' : '-';
+            const businessIncome = customer.businessIncome || '-';
             const averageMonthlyIncome = customer.averageMonthlyIncome ? parseInt(customer.averageMonthlyIncome).toLocaleString('th-TH') + ' บาท' : '-';
             const hasOtherDebts = customer.hasOtherDebts || '-';
             const otherDebtInstallment = customer.otherDebtInstallment ? parseInt(customer.otherDebtInstallment).toLocaleString('th-TH') + ' บาท' : '-';
@@ -1011,7 +1014,7 @@
                     <div>
                         <div style="font-size: 1.4rem; font-weight: 700; color: #065f46;">บริษัท บิ๊ก มันนี่ พลัส จำกัด</div>
                         <div style="font-size: 0.95rem; font-weight: 600; color: #4b5563; margin-top: 0.25rem;">ใบคำขอให้บริการสินเชื่อส่วนบุคคล (Personal Loan)</div>
-                        <div style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.25rem;">รหัสลูกค้า: ${customer.code || 'CUST-NEW'}</div>
+                        <div style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.25rem;">App No.: ${customer.app_no || '-'}</div>
                     </div>
                     <div style="text-align: right; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
                         <div style="font-size: 0.9rem; font-weight: 600;">วันที่: <span style="border-bottom: 1px dashed #9ca3af; padding: 0 0.5rem;">${appDateFormatted}</span></div>
@@ -1085,11 +1088,11 @@
                         </tr>
                         ` : ''}
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">รายได้จากกิจการ:</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">ชื่อกิจการ:</td>
                             <td style="padding: 0.5rem;">${businessIncome}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">เฉลี่ยต่อเดือน:</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">รายได้จากกิจการ เฉลี่ยต่อเดือน:</td>
                             <td style="padding: 0.5rem;">${averageMonthlyIncome}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
@@ -1471,6 +1474,32 @@
             const openBtn = document.getElementById('openConsentModal');
             const closeBtn = document.getElementById('closeConsentModal');
             const cancelBtn = document.getElementById('cancelConsentModal');
+
+            function disableFormAutofill(form) {
+                if (!form) return;
+
+                form.setAttribute('autocomplete', 'off');
+                form.querySelectorAll('input, select, textarea').forEach(function(el) {
+                    el.setAttribute('autocomplete', 'off');
+
+                    if (el.type === 'hidden' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+                        return;
+                    }
+
+                    if (el.hasAttribute('readonly') || el.readOnly) {
+                        return;
+                    }
+
+                    if (['text', 'number', 'email', 'tel', 'search'].includes(el.type)) {
+                        el.setAttribute('readonly', 'readonly');
+                        el.addEventListener('focus', function() {
+                            this.removeAttribute('readonly');
+                        }, { once: true });
+                    }
+                });
+            }
+
+            disableFormAutofill(modal?.querySelector('.consent-form'));
 
             // View Modal Elements
             const viewModal = document.getElementById('viewConsentModal');

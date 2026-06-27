@@ -30,7 +30,7 @@ return new class extends Migration
             $table->decimal('income', 12, 2)->nullable();
             $table->decimal('extra_income', 12, 2)->nullable();
             $table->string('extra_income_source', 100)->nullable();
-            $table->decimal('business_income', 12, 2)->nullable();
+            $table->string('business_income', 255)->nullable();
             $table->decimal('average_monthly_income', 12, 2)->nullable();
             $table->string('has_other_debts', 10)->nullable();
             $table->decimal('other_debt_installment', 12, 2)->nullable();
