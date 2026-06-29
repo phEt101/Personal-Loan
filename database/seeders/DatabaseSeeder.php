@@ -19,12 +19,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if (!User::where('email', 'test@example.com')->exists()) {
-            User::factory()->create([
+        User::query()->firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
                 'name' => 'Test User',
-                'email' => 'test@example.com',
-            ]);
-        }
+                'password' => 'password',
+            ]
+        );
 
         if (Schema::hasTable('consent_forms')) {
             Schema::disableForeignKeyConstraints();
