@@ -392,8 +392,8 @@
                     </div>
 
                     <div class="form-group col-6">
-                        <label for="phone_mobile">หมายเลขโทรศัพท์มือถือ <span class="required-asterisk">*</span></label>
-                        <input type="text" id="phone_mobile" name="phone_mobile" placeholder="0XXXXXXXXX" required>
+                        <label for="phone_mobile">หมายเลขโทรศัพท์มือถือ</label>
+                        <input type="text" id="phone_mobile" name="phone_mobile" placeholder="0XXXXXXXXX">
                     </div>
 
                     <div class="form-group col-6">

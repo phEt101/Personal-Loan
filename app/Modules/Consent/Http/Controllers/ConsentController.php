@@ -509,7 +509,7 @@ class ConsentController extends Controller
             'address_province' => ['nullable', 'string', 'max:255'],
             'address_postal' => ['nullable', 'string', 'max:255'],
             'phone_home' => ['nullable', 'string', 'max:255'],
-            'phone_mobile' => ['required', 'string', 'max:20', 'regex:/^\\d{9,10}$/'],
+            'phone_mobile' => ['nullable', 'string', 'max:20', 'regex:/^\\d{9,10}$/'],
             'email' => ['nullable', 'email', 'max:255'],
             'line_id' => ['nullable', 'string', 'max:255'],
             'useHomeAddress' => ['nullable', 'boolean'],
