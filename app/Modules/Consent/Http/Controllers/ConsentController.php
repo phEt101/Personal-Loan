@@ -7,10 +7,221 @@ use App\Modules\Consent\Models\ConsentForm;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class ConsentController extends Controller
 {
+    public function modalConsentForm()
+    {
+        $lastAppNo = ConsentForm::whereNotNull('app_no')->orderBy('id', 'desc')->value('app_no');
+        $nextAppNo = $lastAppNo ? str_pad((int) $lastAppNo + 1, 13, '0', STR_PAD_LEFT) : '0000000000001';
+
+        return view('consent::consent_form_modal', compact('nextAppNo'));
+    }
+
+    public function modalConsentView()
+    {
+        return view('consent::consent_view_modal');
+    }
+
+    public function postCodeOptions(Request $request)
+    {
+        if (!Schema::hasTable('post_codes')) {
+            return response()->json([
+                'provinces' => [],
+                'cities' => [],
+                'districts' => [],
+                'post_codes' => [],
+            ]);
+        }
+
+        $country = (string) ($request->query('country_code') ?: 'TH');
+
+        $selectedProvince = (string) ($request->query('province') ?: '');
+        $selectedCity = (string) ($request->query('city') ?: '');
+        $selectedDistrict = (string) ($request->query('district') ?: '');
+        $selectedPostCode = (string) ($request->query('post_code') ?: '');
+
+        $qProvince = (string) ($request->query('q_province') ?: '');
+        $qCity = (string) ($request->query('q_city') ?: '');
+        $qDistrict = (string) ($request->query('q_district') ?: '');
+        $qPostCode = (string) ($request->query('q_post_code') ?: '');
+
+        $limit = 200;
+
+        $provincesQuery = DB::table('post_codes')
+            ->where('country_code', $country)
+            ->whereNotNull('province')
+            ->where('province', '!=', '')
+            ->where('province', '!=', 'N/A')
+            ->where('province', '!=', '#N/A')
+            ->when($selectedCity !== '', fn($q) => $q->where('city', $selectedCity))
+            ->when($selectedDistrict !== '', fn($q) => $q->where('district', $selectedDistrict))
+            ->when($selectedPostCode !== '', fn($q) => $q->where('post_code', $selectedPostCode))
+            ->when($qProvince !== '', fn($q) => $q->where('province', 'like', '%' . $qProvince . '%'))
+            ->select('province')
+            ->distinct()
+            ->orderBy('province')
+            ->limit($limit);
+
+        $citiesQuery = DB::table('post_codes')
+            ->where('country_code', $country)
+            ->whereNotNull('province')
+            ->where('province', '!=', '')
+            ->where('province', '!=', 'N/A')
+            ->where('province', '!=', '#N/A')
+            ->when($selectedProvince !== '', fn($q) => $q->where('province', $selectedProvince))
+            ->when($selectedDistrict !== '', fn($q) => $q->where('district', $selectedDistrict))
+            ->when($selectedPostCode !== '', fn($q) => $q->where('post_code', $selectedPostCode))
+            ->when($qCity !== '', fn($q) => $q->where('city', 'like', '%' . $qCity . '%'))
+            ->select('city')
+            ->distinct()
+            ->orderBy('city')
+            ->limit($limit);
+
+        $districtsQuery = DB::table('post_codes')
+            ->where('country_code', $country)
+            ->whereNotNull('province')
+            ->where('province', '!=', '')
+            ->where('province', '!=', 'N/A')
+            ->where('province', '!=', '#N/A')
+            ->when($selectedProvince !== '', fn($q) => $q->where('province', $selectedProvince))
+            ->when($selectedCity !== '', fn($q) => $q->where('city', $selectedCity))
+            ->when($selectedPostCode !== '', fn($q) => $q->where('post_code', $selectedPostCode))
+            ->when($qDistrict !== '', fn($q) => $q->where('district', 'like', '%' . $qDistrict . '%'))
+            ->select('district')
+            ->distinct()
+            ->orderBy('district')
+            ->limit($limit);
+
+        $postCodesQuery = DB::table('post_codes')
+            ->where('country_code', $country)
+            ->whereNotNull('province')
+            ->where('province', '!=', '')
+            ->where('province', '!=', 'N/A')
+            ->where('province', '!=', '#N/A')
+            ->when($selectedProvince !== '', fn($q) => $q->where('province', $selectedProvince))
+            ->when($selectedCity !== '', fn($q) => $q->where('city', $selectedCity))
+            ->when($selectedDistrict !== '', fn($q) => $q->where('district', $selectedDistrict))
+            ->when($qPostCode !== '', fn($q) => $q->where('post_code', 'like', '%' . $qPostCode . '%'))
+            ->select('post_code')
+            ->distinct()
+            ->orderBy('post_code')
+            ->limit($limit);
+
+        return response()->json([
+            'provinces' => $provincesQuery->pluck('province')->values(),
+            'cities' => $citiesQuery->pluck('city')->values(),
+            'districts' => $districtsQuery->pluck('district')->values(),
+            'post_codes' => $postCodesQuery->pluck('post_code')->values(),
+        ]);
+    }
+
+    public function postCodeProvinces(Request $request)
+    {
+        if (!Schema::hasTable('post_codes')) {
+            return response()->json([]);
+        }
+
+        $country = (string) ($request->query('country_code') ?: 'TH');
+
+        $items = DB::table('post_codes')
+            ->where('country_code', $country)
+            ->whereNotNull('province')
+            ->where('province', '!=', '')
+            ->where('province', '!=', 'N/A')
+            ->where('province', '!=', '#N/A')
+            ->select('province')
+            ->distinct()
+            ->orderBy('province')
+            ->pluck('province')
+            ->values();
+
+        return response()->json($items);
+    }
+
+    public function postCodeCities(Request $request)
+    {
+        if (!Schema::hasTable('post_codes')) {
+            return response()->json([]);
+        }
+
+        $country = (string) ($request->query('country_code') ?: 'TH');
+        $province = (string) ($request->query('province') ?: '');
+
+        if ($province === '') {
+            return response()->json([]);
+        }
+
+        $items = DB::table('post_codes')
+            ->where('country_code', $country)
+            ->where('province', $province)
+            ->select('city')
+            ->distinct()
+            ->orderBy('city')
+            ->pluck('city')
+            ->values();
+
+        return response()->json($items);
+    }
+
+    public function postCodeDistricts(Request $request)
+    {
+        if (!Schema::hasTable('post_codes')) {
+            return response()->json([]);
+        }
+
+        $country = (string) ($request->query('country_code') ?: 'TH');
+        $province = (string) ($request->query('province') ?: '');
+        $city = (string) ($request->query('city') ?: '');
+
+        if ($province === '' || $city === '') {
+            return response()->json([]);
+        }
+
+        $items = DB::table('post_codes')
+            ->where('country_code', $country)
+            ->where('province', $province)
+            ->where('city', $city)
+            ->select('district')
+            ->distinct()
+            ->orderBy('district')
+            ->pluck('district')
+            ->values();
+
+        return response()->json($items);
+    }
+
+    public function postCodePostCodes(Request $request)
+    {
+        if (!Schema::hasTable('post_codes')) {
+            return response()->json([]);
+        }
+
+        $country = (string) ($request->query('country_code') ?: 'TH');
+        $province = (string) ($request->query('province') ?: '');
+        $city = (string) ($request->query('city') ?: '');
+        $district = (string) ($request->query('district') ?: '');
+
+        if ($province === '' || $city === '' || $district === '') {
+            return response()->json([]);
+        }
+
+        $items = DB::table('post_codes')
+            ->where('country_code', $country)
+            ->where('province', $province)
+            ->where('city', $city)
+            ->where('district', $district)
+            ->select('post_code')
+            ->distinct()
+            ->orderBy('post_code')
+            ->pluck('post_code')
+            ->values();
+
+        return response()->json($items);
+    }
+
     public function index()
     {
         $customers = ConsentForm::orderBy('id', 'desc')->get()->map(function ($form) {
@@ -118,16 +329,131 @@ class ConsentController extends Controller
         return view('consent::index', compact('customers', 'total', 'approved', 'rejected', 'nextAppNo'));
     }
 
-    public function create()
+    public function store(Request $request)
     {
-        // Generate next app_no
-        $lastAppNo = ConsentForm::whereNotNull('app_no')->orderBy('id', 'desc')->value('app_no');
-        $nextAppNo = $lastAppNo ? str_pad((int)$lastAppNo + 1, 13, '0', STR_PAD_LEFT) : '0000000000001';
+        $consent = $this->saveConsent($request);
 
-        return view('consent::create', compact('nextAppNo'));
+        return redirect()
+            ->route('consent.index')
+            ->with('success', 'สร้างใบยินยอมสำหรับ ' . $consent->name . ' เรียบร้อยแล้ว (สถานะ: ' . ($consent->status === 'approved' ? 'ผ่าน' : 'ไม่ผ่าน') . ')');
     }
 
-    public function store(Request $request)
+    public function update(Request $request, ConsentForm $consent)
+    {
+        $consent = $this->saveConsent($request, $consent);
+
+        return redirect()
+            ->route('consent.index')
+            ->with('success', 'แก้ไขใบยินยอมของ ' . $consent->name . ' เรียบร้อยแล้ว (สถานะ: ' . ($consent->status === 'approved' ? 'ผ่าน' : 'ไม่ผ่าน') . ')');
+    }
+
+    public function data(ConsentForm $consent)
+    {
+        return response()->json((object) array_merge($consent->toArray(), [
+            'transaction_date' => $consent->created_at?->format('d/m/Y'),
+            'signed_date' => $consent->signed_at?->format('Y-m-d'),
+            'signatureData' => $consent->signature_data,
+            'status' => $consent->status,
+            'extraIncome' => $consent->extra_income,
+            'extraIncomeSource' => $consent->extra_income_source,
+            'businessIncome' => $consent->business_income,
+            'averageMonthlyIncome' => $consent->average_monthly_income,
+            'hasOtherDebts' => $consent->has_other_debts,
+            'otherDebtInstallment' => $consent->other_debt_installment,
+            'hasExistingLoan' => $consent->has_existing_loan,
+            'spouseTitle' => $consent->spouse_title,
+            'spouseName' => $consent->spouse_name,
+            'spousePhone' => $consent->spouse_phone,
+            'spouseMobile' => $consent->spouse_mobile,
+            'spouseEducation' => $consent->spouse_education,
+            'spouseOccupation' => $consent->spouse_occupation,
+            'spouseCompany' => $consent->spouse_company,
+            'spouseIncome' => $consent->spouse_income,
+            'dwellingType' => $consent->dwelling_type,
+            'residenceStatus' => $consent->residence_status,
+            'residenceRentAmount' => $consent->residence_rent_amount,
+            'residenceYears' => $consent->residence_years,
+            'addressNo' => $consent->address_no,
+            'addressFloor' => $consent->address_floor,
+            'addressVillage' => $consent->address_village,
+            'addressBuilding' => $consent->address_building,
+            'addressSoi' => $consent->address_soi,
+            'addressRoad' => $consent->address_road,
+            'addressSubdistrict' => $consent->address_subdistrict,
+            'addressDistrict' => $consent->address_district,
+            'addressProvince' => $consent->address_province,
+            'addressPostal' => $consent->address_postal,
+            'phoneHome' => $consent->phone_home,
+            'phoneMobile' => $consent->phone_mobile,
+            'lineId' => $consent->line_id,
+            'useHomeAddress' => $consent->use_home_address,
+            'companyType' => $consent->company_type,
+            'companyName' => $consent->company_name,
+            'businessType' => $consent->business_type,
+            'workOccupation' => $consent->work_occupation,
+            'workPosition' => $consent->work_position,
+            'workYears' => $consent->work_years,
+            'workMonths' => $consent->work_months,
+            'workAddressNo' => $consent->work_address_no,
+            'workAddressFloor' => $consent->work_address_floor,
+            'workAddressVillage' => $consent->work_address_village,
+            'workAddressBuilding' => $consent->work_address_building,
+            'workAddressSoi' => $consent->work_address_soi,
+            'workAddressRoad' => $consent->work_address_road,
+            'workAddressSubdistrict' => $consent->work_address_subdistrict,
+            'workAddressDistrict' => $consent->work_address_district,
+            'workAddressProvince' => $consent->work_address_province,
+            'workAddressPostal' => $consent->work_address_postal,
+            'workPhone' => $consent->work_phone,
+            'previousCompanyName' => $consent->previous_company_name,
+            'previousBusinessType' => $consent->previous_business_type,
+            'previousPosition' => $consent->previous_position,
+            'previousIncome' => $consent->previous_income,
+            'previousWorkYears' => $consent->previous_work_years,
+            'previousPhone' => $consent->previous_phone,
+            'documentDelivery' => $consent->document_delivery,
+            'documentEmail' => $consent->document_email,
+            'refName' => $consent->ref_name,
+            'refRelation' => $consent->ref_relation,
+            'refAddressNo' => $consent->ref_address_no,
+            'refAddressFloor' => $consent->ref_address_floor,
+            'refAddressVillage' => $consent->ref_address_village,
+            'refAddressBuilding' => $consent->ref_address_building,
+            'refAddressSoi' => $consent->ref_address_soi,
+            'refAddressRoad' => $consent->ref_address_road,
+            'refAddressSubdistrict' => $consent->ref_address_subdistrict,
+            'refAddressDistrict' => $consent->ref_address_district,
+            'refAddressProvince' => $consent->ref_address_province,
+            'refAddressPostal' => $consent->ref_address_postal,
+            'refPhoneHome' => $consent->ref_phone_home,
+            'refPhoneMobile' => $consent->ref_phone_mobile,
+            'refEmail' => $consent->ref_email,
+            'refLineId' => $consent->ref_line_id,
+            'loanTerm' => $consent->loan_term,
+            'loanAmountType' => $consent->loan_amount_type,
+            'customLoanAmount' => $consent->custom_loan_amount,
+            'loanPurpose' => $consent->loan_purpose,
+            'bankName' => $consent->bank_name,
+            'bankBranch' => $consent->bank_branch,
+            'accountName' => $consent->account_name,
+            'accountType' => $consent->account_type,
+            'accountNumber' => $consent->account_number,
+        ]));
+    }
+
+    public function destroy(ConsentForm $consent)
+    {
+        $name = $consent->name;
+        $appNo = $consent->app_no;
+
+        $consent->delete();
+
+        return redirect()
+            ->route('consent.index')
+            ->with('success', 'ลบใบยินยอมเลขที่ ' . ($appNo ?: '-') . ' ของ ' . $name . ' เรียบร้อยแล้ว');
+    }
+
+    private function saveConsent(Request $request, ?ConsentForm $consent = null): ConsentForm
     {
         $validated = $request->validate([
             'app_date' => ['nullable', 'date'],
@@ -139,7 +465,7 @@ class ConsentController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'name_en' => ['nullable', 'string', 'max:255'],
             'dob' => ['nullable', 'date'],
-            'id_card' => ['nullable', 'string', 'max:20'],
+            'id_card' => ['required', 'string', 'size:13', 'regex:/^\\d{13}$/'],
             'gender' => ['nullable', 'string', 'max:10'],
             'age' => ['required', 'integer', 'min:1', 'max:120'],
             'nationality' => ['nullable', 'string', 'max:50'],
@@ -153,10 +479,9 @@ class ConsentController extends Controller
             'businessIncome' => ['nullable', 'string', 'max:255'],
             'averageMonthlyIncome' => ['nullable', 'numeric'],
             'hasOtherDebts' => ['required', 'string', 'max:10'],
-            'otherDebtInstallment' => ['nullable', 'numeric', 'min:0'],
+            'otherDebtInstallment' => ['nullable', 'required_if:hasOtherDebts,มี', 'numeric', 'min:0'],
             'hasExistingLoan' => ['nullable', 'string', 'max:10'],
             'existingLoanInstallment' => ['nullable', 'numeric'],
-            // Spouse fields
             'spouse_title' => ['nullable', 'string', 'max:50'],
             'spouse_title_other' => ['nullable', 'string', 'max:50'],
             'spouse_name' => ['nullable', 'string', 'max:255'],
@@ -167,7 +492,6 @@ class ConsentController extends Controller
             'spouseOccupationOther' => ['nullable', 'string', 'max:100'],
             'spouse_company' => ['nullable', 'string', 'max:255'],
             'spouse_income' => ['nullable', 'numeric'],
-            // Address fields
             'dwelling_type' => ['nullable', 'string', 'max:255'],
             'dwelling_type_other' => ['nullable', 'string', 'max:255'],
             'residence_status' => ['nullable', 'string', 'max:255'],
@@ -185,10 +509,9 @@ class ConsentController extends Controller
             'address_province' => ['nullable', 'string', 'max:255'],
             'address_postal' => ['nullable', 'string', 'max:255'],
             'phone_home' => ['nullable', 'string', 'max:255'],
-            'phone_mobile' => ['nullable', 'string', 'max:255'],
+            'phone_mobile' => ['required', 'string', 'max:20', 'regex:/^\\d{9,10}$/'],
             'email' => ['nullable', 'email', 'max:255'],
             'line_id' => ['nullable', 'string', 'max:255'],
-            // Work address fields
             'useHomeAddress' => ['nullable', 'boolean'],
             'companyType' => ['nullable', 'string', 'max:255'],
             'companyTypeOther' => ['nullable', 'string', 'max:255'],
@@ -209,17 +532,14 @@ class ConsentController extends Controller
             'workAddressProvince' => ['nullable', 'string', 'max:255'],
             'workAddressPostal' => ['nullable', 'string', 'max:255'],
             'workPhone' => ['nullable', 'string', 'max:255'],
-            // Previous work fields
             'previousCompanyName' => ['nullable', 'string', 'max:255'],
             'previousBusinessType' => ['nullable', 'string', 'max:255'],
             'previousPosition' => ['nullable', 'string', 'max:255'],
             'previousIncome' => ['nullable', 'numeric'],
             'previousWorkYears' => ['nullable', 'integer', 'min:0'],
             'previousPhone' => ['nullable', 'string', 'max:255'],
-            // Document delivery fields
             'documentDelivery' => ['nullable', 'string', 'max:255'],
             'documentEmail' => ['nullable', 'email', 'max:255'],
-            // Reference person fields
             'refName' => ['nullable', 'string', 'max:255'],
             'refRelation' => ['nullable', 'string', 'max:255'],
             'refAddressNo' => ['nullable', 'string', 'max:255'],
@@ -236,7 +556,6 @@ class ConsentController extends Controller
             'refPhoneMobile' => ['nullable', 'string', 'max:255'],
             'refEmail' => ['nullable', 'email', 'max:255'],
             'refLineId' => ['nullable', 'string', 'max:255'],
-            // Loan request fields
             'loanTerm' => ['nullable', 'integer', 'in:12,24,36,48,50'],
             'loanAmountType' => ['nullable', 'string', 'in:full,custom'],
             'customLoanAmount' => ['nullable', 'numeric', 'min:0'],
@@ -246,72 +565,72 @@ class ConsentController extends Controller
             'accountName' => ['nullable', 'string', 'max:255'],
             'accountType' => ['nullable', 'string', 'max:255'],
             'accountNumber' => ['nullable', 'string', 'max:255'],
+            'signatureData' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $decoded = json_decode($value, true);
+                    if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded) || count($decoded) === 0) {
+                        $fail('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนบันทึก');
+                    }
+                },
+            ],
+        ], [
+            'signatureData.required' => 'กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนบันทึก',
         ]);
 
-        // Handle dwelling type other
-        if (isset($validated['dwelling_type']) && $validated['dwelling_type'] === 'อาศัยอยู่กับผู้อื่น' && !empty($request->dwelling_type_other)) {
+        if (($validated['dwelling_type'] ?? null) === 'อาศัยอยู่กับผู้อื่น' && $request->filled('dwelling_type_other')) {
             $validated['dwelling_type'] = 'อาศัยอยู่กับผู้อื่น: ' . $request->dwelling_type_other;
         }
 
-        // Handle residence status other
-        if (isset($validated['residence_status']) && $validated['residence_status'] === 'อื่นๆ' && !empty($request->residence_status_other)) {
+        if (($validated['residence_status'] ?? null) === 'อื่นๆ' && $request->filled('residence_status_other')) {
             $validated['residence_status'] = $request->residence_status_other;
         }
 
-        // Handle company type other
-        if (isset($validated['companyType']) && $validated['companyType'] === 'อื่นๆ' && !empty($request->companyTypeOther)) {
+        if (($validated['companyType'] ?? null) === 'อื่นๆ' && $request->filled('companyTypeOther')) {
             $validated['companyType'] = $request->companyTypeOther;
         }
 
-        if (isset($validated['title']) && $validated['title'] === 'อื่นๆ' && !empty($request->title_other)) {
+        if (($validated['title'] ?? null) === 'อื่นๆ' && $request->filled('title_other')) {
             $validated['title'] = $request->title_other;
         }
 
-        // Handle applicant's other occupation
-        if (isset($validated['occupation']) && $validated['occupation'] === 'อื่นๆ' && !empty($request->occupationOther)) {
+        if (($validated['occupation'] ?? null) === 'อื่นๆ' && $request->filled('occupationOther')) {
             $validated['occupation'] = $request->occupationOther;
         }
 
-        // Handle spouse's other title
-        if (isset($validated['spouse_title']) && $validated['spouse_title'] === 'อื่นๆ' && !empty($request->spouse_title_other)) {
+        if (($validated['spouse_title'] ?? null) === 'อื่นๆ' && $request->filled('spouse_title_other')) {
             $validated['spouse_title'] = $request->spouse_title_other;
         }
 
-        // Handle spouse's other occupation
-        if (isset($validated['spouse_occupation']) && $validated['spouse_occupation'] === 'อื่นๆ' && !empty($request->spouseOccupationOther)) {
+        if (($validated['spouse_occupation'] ?? null) === 'อื่นๆ' && $request->filled('spouseOccupationOther')) {
             $validated['spouse_occupation'] = $request->spouseOccupationOther;
         }
 
-        // If no other debts, set installment to 0
-        if ($validated['hasOtherDebts'] === 'ไม่มี') {
+        if (($validated['hasOtherDebts'] ?? null) === 'ไม่มี') {
             $validated['otherDebtInstallment'] = 0;
         }
 
-        // Calculate status based on criteria
         $status = 'approved';
-        $age = $validated['age'] ?? 0;
-        $income = $validated['income'] ?? 0;
-        $otherDebtInstallment = $validated['otherDebtInstallment'] ?? 0;
+        $age = (int) ($validated['age'] ?? 0);
+        $income = (float) ($validated['income'] ?? 0);
+        $otherDebtInstallment = (float) ($validated['otherDebtInstallment'] ?? 0);
 
-        // Check age: <20 or >50 → not approved
         if ($age < 20 || $age > 50) {
             $status = 'rejected';
         }
 
-        // Check income: <15000 → not approved
         if ($income < 15000) {
             $status = 'rejected';
         }
 
-        // Check debt ratio: debt > half of income → not approved
         if ($income > 0 && $otherDebtInstallment > ($income / 2)) {
             $status = 'rejected';
         }
 
-        // Map camelCase to snake_case for DB
         $data = [
             'app_date' => $validated['app_date'] ?? null,
-            'app_no' => $validated['app_no'] ?? null,
+            'app_no' => $validated['app_no'] ?? $consent?->app_no,
             'officer_name' => $validated['officer_name'] ?? null,
             'officer_phone' => $validated['officer_phone'] ?? null,
             'title' => $validated['title'] ?? null,
@@ -412,15 +731,16 @@ class ConsentController extends Controller
             'account_type' => $validated['accountType'] ?? null,
             'account_number' => $validated['accountNumber'] ?? null,
             'signed' => true,
-            'signed_at' => now(),
-            'signature_data' => $request->signatureData ?? null,
-            'status' => $status
+            'signed_at' => $consent?->signed_at ?? now(),
+            'signature_data' => $request->input('signatureData'),
+            'status' => $status,
         ];
 
-        ConsentForm::create($data);
+        if ($consent) {
+            $consent->update($data);
+            return $consent->fresh();
+        }
 
-        return redirect()
-            ->route('consent.index')
-            ->with('success', 'สร้างใบยินยอมสำหรับ ' . $validated['name'] . ' เรียบร้อยแล้ว (สถานะ: ' . ($status === 'approved' ? 'ผ่าน' : 'ไม่ผ่าน') . ')');
+        return ConsentForm::create($data);
     }
 }

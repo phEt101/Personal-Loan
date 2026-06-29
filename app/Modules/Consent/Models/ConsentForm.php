@@ -3,9 +3,12 @@
 namespace App\Modules\Consent\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ConsentForm extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'app_date', 'app_no', 'officer_name', 'officer_phone',
         'title', 'name', 'name_en', 'dob', 'id_card', 'gender', 'age', 'nationality', 'marital_status',

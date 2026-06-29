@@ -16,6 +16,17 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <div style="font-weight: 700; margin-bottom: 0.5rem;">บันทึกข้อมูลไม่สำเร็จ กรุณาตรวจสอบข้อมูลอีกครั้ง</div>
+                <ul style="margin: 0; padding-left: 1.25rem;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <section class="summary-cards compact-summary">
             <div class="summary-card">
                 <div class="summary-label">ลูกค้าทั้งหมด</div>
@@ -58,7 +69,37 @@
                                         <span class="badge">รอดำเนินการ</span>
                                     @endif
                                 </td>
-                                <td><a href="#" class="action-link" onclick="viewDocument({{ json_encode($customer) }})">ดูเอกสาร</a></td>
+                                <td>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                        <button
+                                            type="button"
+                                            class="action-btn outline"
+                                            onclick="viewDocument({{ Js::from($customer) }}); return false;"
+                                            style="padding: 0.4rem 0.75rem; min-width: 88px;"
+                                        >
+                                            ดูเอกสาร
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="action-btn"
+                                            onclick="editDocument({{ Js::from($customer) }}); return false;"
+                                            style="padding: 0.4rem 0.75rem; min-width: 70px;"
+                                        >
+                                            แก้ไข
+                                        </button>
+                                        <form method="POST" action="{{ route('consent.destroy', $customer->id) }}" class="delete-consent-form" data-name="{{ $customer->name }}" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                            <button
+                                                type="submit"
+                                                class="action-btn"
+                                                style="padding: 0.4rem 0.75rem; min-width: 56px; background: #dc2626;"
+                                            >
+                                                ลบ
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
@@ -71,813 +112,66 @@
         </div>
     </section>
 
-    <!-- Modal สำหรับสร้างใบยินยอม -->
-    <div id="consentModal" class="modal">
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3>สร้างใบยินยอมแบบละเอียด</h3>
-                <button type="button" class="close-btn" id="closeConsentModal" aria-label="Close modal">&times;</button>
-            </div>
-            <div class="modal-body scrollable">
-                <form method="POST" action="{{ route('consent.store') }}" class="consent-form" autocomplete="off">
-                    @csrf
-                    <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
-                        <input type="text" name="prevent_autofill" tabindex="-1" autocomplete="off">
-                    </div>
-                    <div class="form-grid">
-                        <!-- Application Header -->
-                        <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">📅</span> ข้อมูลใบคำขอ
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="app_date">วันที่เขียนคำขอ</label>
-                            <input type="date" id="app_date" name="app_date" value="{{ date('Y-m-d') }}">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="app_no">App No. (เลขที่ใบคำขอ 13 หลัก)</label>
-                            <input type="text" id="app_no" name="app_no" value="{{ $nextAppNo }}" maxlength="13" readonly style="background: #f3f4f6; cursor: not-allowed;">
-                        </div>
-
-                        <!-- Section 1: สำหรับเจ้าหน้าที่ -->
-                        <div class="form-section-title">
-                            <span class="form-section-title-icon">💼</span> สำหรับเจ้าหน้าที่บริษัท
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="officer_name">เจ้าหน้าที่สินเชื่อ</label>
-                            <input type="text" id="officer_name" name="officer_name" placeholder="ระบุชื่อเจ้าหน้าที่สินเชื่อ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="officer_phone">เบอร์ติดต่อ</label>
-                            <input type="text" id="officer_phone" name="officer_phone" placeholder="ระบุเบอร์ติดต่อเจ้าหน้าที่">
-                        </div>
-
-                        <!-- Section 1: ข้อมูลส่วนตัว -->
-                        <div class="form-section-title">
-                            <span class="form-section-title-icon">👤</span> ข้อมูลส่วนตัวผู้ขอสินเชื่อ
-                        </div>
-
-                        <div class="form-group col-3" id="titleGroup">
-                            <label for="title">คำนำหน้านาม</label>
-                            <select id="title" name="title">
-                                <option value="นาย">นาย / Mr.</option>
-                                <option value="นาง">นาง / Mrs.</option>
-                                <option value="นางสาว">นางสาว / Ms.</option>
-                                <option value="อื่นๆ">อื่นๆ / Other</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-3 hidden" id="title_other_wrapper">
-                            <label for="title_other">ระบุคำนำหน้านามอื่นๆ</label>
-                            <input type="text" id="title_other" name="title_other" placeholder="เช่น ดร. / นพ.">
-                        </div>
-
-                        <div class="form-group col-9" id="nameGroup">
-                            <label for="name">ชื่อ - สกุล (ภาษาไทย) <span class="required-asterisk">*</span></label>
-                            <input type="text" id="name" name="name" placeholder="ชื่อ และ นามสกุลภาษาไทย" required>
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="name_en">ชื่อ - สกุล (ภาษาอังกฤษ ตัวพิมพ์ใหญ่)</label>
-                            <input type="text" id="name_en" name="name_en" placeholder="NAME - SURNAME IN ENGLISH (UPPERCASE)">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="id_card">เลขประจำตัวประชาชน / เลขทะเบียนนิติบุคคล</label>
-                            <input type="text" id="id_card" name="id_card" placeholder="เลขบัตรประชาชน 13 หลัก" maxlength="13">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="dob">วัน / เดือน / ปีเกิด</label>
-                            <input type="date" id="dob" name="dob">
-                        </div>
-
-                        <div class="form-group col-3">
-                            <label for="gender">เพศ</label>
-                            <select id="gender" name="gender">
-                                <option value="">เลือกเพศ</option>
-                                <option value="ชาย">ชาย</option>
-                                <option value="หญิง">หญิง</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-3">
-                            <label for="age">อายุ (ปี) <span class="required-asterisk">*</span></label>
-                            <input type="number" id="age" name="age" min="0" placeholder="อายุ" required>
-                        </div>
-
-                        <div class="form-group col-3">
-                            <label for="nationality">สัญชาติ</label>
-                            <input type="text" id="nationality" name="nationality" placeholder="สัญชาติ">
-                        </div>
-
-                        <div class="form-group col-3">
-                            <label for="marital_status">สถานภาพ</label>
-                            <select id="marital_status" name="marital_status">
-                                <option value="โสด">โสด</option>
-                                <option value="สมรส">สมรส</option>
-                                <option value="สมรสไม่จดทะเบียน">สมรสไม่จดทะเบียน</option>
-                                <option value="หย่า">หย่า</option>
-                                <option value="หม้าย">หม้าย</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="education">การศึกษา</label>
-                            <select id="education" name="education">
-                                <option value="">เลือกระดับการศึกษา</option>
-                                <option value="มัธยมต้น">มัธยมต้น</option>
-                                <option value="มัธยมปลาย">มัธยมปลาย</option>
-                                <option value="อุดมศึกษา">อุดมศึกษา</option>
-                                <option value="ปริญญาตรี">ปริญญาตรี</option>
-                                <option value="ปริญญาโท">ปริญญาโท</option>
-                                <option value="ปริญญาเอก">ปริญญาเอก</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="occupation">อาชีพ</label>
-                            <select id="occupation" name="occupation">
-                                <option value="">เลือกอาชีพ</option>
-                                <option value="พนักงานบริษัท">พนักงานบริษัท</option>
-                                <option value="ข้าราชการ/ทหาร/ตำรวจ">ข้าราชการ/ทหาร/ตำรวจ</option>
-                                <option value="เจ้าของกิจการ">เจ้าของกิจการ</option>
-                                <option value="อาชีพอิสระ">อาชีพอิสระ</option>
-                                <option value="รับจ้าง">รับจ้าง</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-6 hidden" id="occupationOtherWrapper">
-                            <label for="occupationOther">ระบุอาชีพ</label>
-                            <input type="text" id="occupationOther" name="occupationOther" placeholder="ระบุอาชีพของคุณ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="income">รายได้รวมต่อเดือน (บาท) <span class="required-asterisk">*</span></label>
-                            <input type="number" id="income" name="income" min="0" placeholder="รายได้ต่อเดือน" required>
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="extraIncome">รายได้พิเศษ (บาท)</label>
-                            <input type="number" id="extraIncome" name="extraIncome" min="0" placeholder="รายได้พิเศษ">
-                        </div>
-
-                        <div class="form-group col-6 hidden" id="extraIncomeSourceWrapper">
-                            <label for="extraIncomeSource">แหละที่มาของรายได้พิเศษ</label>
-                            <input type="text" id="extraIncomeSource" name="extraIncomeSource" placeholder="แหละที่มาของรายได้พิเศษ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="businessIncome">ชื่อกิจการ</label>
-                            <input type="text" id="businessIncome" name="businessIncome" placeholder="ระบุชื่อกิจการ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="averageMonthlyIncome">รายได้จากกิจการ เฉลี่ยต่อเดือน (บาท)</label>
-                            <input type="number" id="averageMonthlyIncome" name="averageMonthlyIncome" min="0" placeholder="รายได้จากกิจการเฉลี่ยต่อเดือน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="hasOtherDebts">ภาระหนี้อื่นๆ ในปัจจุบัน <span class="required-asterisk">*</span></label>
-                            <select id="hasOtherDebts" name="hasOtherDebts" required>
-                                <option value="">เลือก</option>
-                                <option value="ไม่มี">ไม่มี</option>
-                                <option value="มี">มี</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-6 hidden" id="otherDebtInstallmentWrapper">
-                            <label for="otherDebtInstallment">ยอดผ่อนต่อเดือน (บาท)</label>
-                            <input type="number" id="otherDebtInstallment" name="otherDebtInstallment" min="0" placeholder="ยอดผ่อนต่อเดือน">
-                        </div>
-
-                        <!-- Spouse Information (shown when married or common-law) -->
-                        <div class="form-section-title hidden" id="spouse_section_title">
-                            <span class="form-section-title-icon">👨‍👩‍👧</span> ข้อมูลคู่สมรส
-                        </div>
-
-                        <div id="spouse_fields" class="hidden">
-                            <div class="form-group col-3">
-                                <label for="spouse_title">คำนำหน้านาม (คู่สมรส)</label>
-                                <select id="spouse_title" name="spouse_title">
-                                    <option value="นาย">นาย / Mr.</option>
-                                    <option value="นาง">นาง / Mrs.</option>
-                                    <option value="นางสาว">นางสาว / Ms.</option>
-                                    <option value="อื่นๆ">อื่นๆ / Other</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group col-3 hidden" id="spouse_title_other_wrapper">
-                                <label for="spouse_title_other">ระบุคำนำหน้านามอื่นๆ (คู่สมรส)</label>
-                                <input type="text" id="spouse_title_other" name="spouse_title_other" placeholder="เช่น ดร. / นพ.">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="spouse_name">ชื่อ - สกุล (คู่สมรส)</label>
-                                <input type="text" id="spouse_name" name="spouse_name" placeholder="ชื่อ - นามสกุลคู่สมรส">
-                            </div>
-
-                            <div class="form-group col-4">
-                                <label for="spouse_phone">หมายเลขโทรศัพท์ (คู่สมรส)</label>
-                                <input type="text" id="spouse_phone" name="spouse_phone" placeholder="หมายเลขโทรศัพท์">
-                            </div>
-
-                            <div class="form-group col-4">
-                                <label for="spouse_mobile">หมายเลขโทรศัพท์มือถือ (คู่สมรส)</label>
-                                <input type="text" id="spouse_mobile" name="spouse_mobile" placeholder="0XXXXXXXXX">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="spouse_education">การศึกษา (คู่สมรส)</label>
-                                <select id="spouse_education" name="spouse_education">
-                                    <option value="">เลือกระดับการศึกษา</option>
-                                    <option value="มัธยมต้น">มัธยมต้น</option>
-                                    <option value="มัธยมปลาย">มัธยมปลาย</option>
-                                    <option value="อุดมศึกษา">อุดมศึกษา</option>
-                                    <option value="ปริญญาตรี">ปริญญาตรี</option>
-                                    <option value="ปริญญาโท">ปริญญาโท</option>
-                                    <option value="ปริญญาเอก">ปริญญาเอก</option>
-                                    <option value="อื่นๆ">อื่นๆ</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="spouse_occupation">อาชีพ (คู่สมรส)</label>
-                                <select id="spouse_occupation" name="spouse_occupation">
-                                    <option value="">เลือกอาชีพ</option>
-                                    <option value="พนักงานบริษัท">พนักงานบริษัท</option>
-                                    <option value="ข้าราชการ/ทหาร/ตำรวจ">ข้าราชการ/ทหาร/ตำรวจ</option>
-                                    <option value="เจ้าของกิจการ">เจ้าของกิจการ</option>
-                                    <option value="อาชีพอิสระ">อาชีพอิสระ</option>
-                                    <option value="รับจ้าง">รับจ้าง</option>
-                                    <option value="อื่นๆ">อื่นๆ</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group col-6 hidden" id="spouseOccupationOtherWrapper">
-                                <label for="spouseOccupationOther">ระบุอาชีพ (คู่สมรส)</label>
-                                <input type="text" id="spouseOccupationOther" name="spouseOccupationOther" placeholder="ระบุอาชีพของคู่สมรส">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="spouse_company">บริษัท/สถานที่ทำงาน (คู่สมรส)</label>
-                                <input type="text" id="spouse_company" name="spouse_company" placeholder="ชื่อบริษัทหรือสถานที่ทำงาน">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="spouse_income">รายได้ต่อเดือน (คู่สมรส) (บาท)</label>
-                                <input type="number" id="spouse_income" name="spouse_income" min="0" placeholder="รายได้ต่อเดือน">
-                            </div>
-                        </div>
-
-
-                        <!-- Section 4: การแจ้งการมีวงเงินสินเชื่อบุคคล -->
-                        <div id="section4_container" class="section4-container">
-                            <div class="form-group col-12">
-                                <label>การแจ้งการมีวงเงินสินเชื่อบุคคล (เฉพาะผู้มีรายได้น้อยกว่า 30,000 บาท)</label>
-                                <span class="question-text">
-                                    ในช่วง 2 เดือนที่ผ่านมาผู้กู้เคยได้รับอนุมัติสินเชื่อ หรือ ยื่นสมัครสินเชื่อบุคคล/สินเชื่อนาโนไฟแนนซ์/สินเชื่อสวัสดิการพนักงานกับสถาบันการเงินมากกว่า 2 แห่งหรือไม่
-                                </span>
-                            </div>
-
-                            <div class="form-group col-6">
-                                <select id="hasExistingLoan" name="hasExistingLoan">
-                                    <option value="">เลือก</option>
-                                    <option value="ใช่">ใช่</option>
-                                    <option value="ไม่ใช่">ไม่ใช่</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group col-12 note-box">
-                                <span>** กรณีพบว่ามีสินเชื่อบุคคล/สินเชื่อนาโน/สินเชื่อสวัสดิการพนักงานกับสถาบันการเงินตั้งแต่ 3 แห่งขึ้นไป บริษัทมีทีธิปฏิเสธการให้สินเชื่อ หรือระงับการให้สินเชื่อ หรือยกเลิกสัญญา</span>
-                            </div>
-                        </div>
-                        <!-- ที่อยู่ -->
-                        <div class="form-section-title">
-                            <span class="form-section-title-icon">🏠</span> ข้อมูลที่อยู่
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="dwelling_type">ลักษณะที่อยู่อาศัย/ประเภทบ้านพักอาศัย</label>
-                            <select id="dwelling_type" name="dwelling_type">
-                                <option value="">เลือกประเภทที่อยู่</option>
-                                <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
-                                <option value="บ้านแฝด">บ้านแฝด</option>
-                                <option value="บ้านตนเอง/คู่สมรส">บ้านตนเอง/คู่สมรส</option>
-                                <option value="ทาวน์เฮาส์">ทาวน์เฮาส์</option>
-                                <option value="อพาร์ทเม้นท์/แฟลต">อพาร์ทเม้นท์/แฟลต</option>
-                                <option value="ห้องชุด">ห้องชุด</option>
-                                <option value="อาคารพาณิช">อาคารพาณิช</option>
-                                <option value="บ้านพักสวัสดิการ">บ้านพักสวัสดิการ</option>
-                                <option value="อาศัยอยู่กับผู้อื่น">อาศัยอยู่กับผู้อื่น (ระบุ)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-12 hidden" id="dwelling_type_other_wrapper">
-                            <label for="dwelling_type_other">ระบุรายละเอียด</label>
-                            <input type="text" id="dwelling_type_other" name="dwelling_type_other" placeholder="ระบุรายละเอียดที่อยู่">
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="residence_status">สถานที่อยู่</label>
-                            <select id="residence_status" name="residence_status">
-                                <option value="">เลือกสถานที่อยู่</option>
-                                <option value="เช่า/ผ่อนชำระ">เช่า/ผ่อนชำระ</option>
-                                <option value="ปลอดภาระ">ปลอดภาระ</option>
-                                <option value="บ้านพักสวัสดิการ">บ้านพักสวัสดิการ</option>
-                                <option value="อื่นๆ">อื่นๆ/Other (ระบุ)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-12 hidden" id="residence_rent_wrapper">
-                            <label for="residence_rent_amount">ยอดเช่า/ผ่อนต่อเดือน (บาท)</label>
-                            <input type="number" id="residence_rent_amount" name="residence_rent_amount" placeholder="ระบุยอดเงิน">
-                        </div>
-
-                        <div class="form-group col-12 hidden" id="residence_status_other_wrapper">
-                            <label for="residence_status_other">ระบุสถานที่อยู่</label>
-                            <input type="text" id="residence_status_other" name="residence_status_other" placeholder="ระบุรายละเอียด">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="residence_years">ที่อยู่อาศัยในปัจจุบัน อยู่อาศัยมาเป็นเวลา (ปี)</label>
-                            <input type="number" id="residence_years" name="residence_years" placeholder="ระบุจำนวนปี" min="0">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_no">ที่อยู่ปัจจุบันเลขที่</label>
-                            <input type="text" id="address_no" name="address_no" placeholder="เลขที่">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_floor">ชั้น</label>
-                            <input type="text" id="address_floor" name="address_floor" placeholder="ชั้น">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_village">หมู่ ที่</label>
-                            <input type="text" id="address_village" name="address_village" placeholder="หมู่ ที่">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_building">อาคาร/หมู่บ้าน</label>
-                            <input type="text" id="address_building" name="address_building" placeholder="อาคาร/หมู่บ้าน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_soi">ซอย</label>
-                            <input type="text" id="address_soi" name="address_soi" placeholder="ซอย">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_road">ถนน</label>
-                            <input type="text" id="address_road" name="address_road" placeholder="ถนน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_subdistrict">แขวง/ตำบล</label>
-                            <input type="text" id="address_subdistrict" name="address_subdistrict" placeholder="แขวง/ตำบล">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_district">เขต / อำเภอ</label>
-                            <input type="text" id="address_district" name="address_district" placeholder="เขต / อำเภอ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_province">จังหวัด</label>
-                            <input type="text" id="address_province" name="address_province" placeholder="จังหวัด">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="address_postal">รหัสไปรษณีย์</label>
-                            <input type="text" id="address_postal" name="address_postal" placeholder="รหัสไปรษณีย์" maxlength="5">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="phone_home">หมายเลขโทรศัพท์บ้าน</label>
-                            <input type="text" id="phone_home" name="phone_home" placeholder="หมายเลขโทรศัพท์บ้าน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="phone_mobile">หมายเลขโทรศัพท์มือถือ</label>
-                            <input type="text" id="phone_mobile" name="phone_mobile" placeholder="หมายเลขโทรศัพท์มือถือ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="email">E-mail</label>
-                            <input type="email" id="email" name="email" placeholder="example@email.com">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="line_id">Line ID</label>
-                            <input type="text" id="line_id" name="line_id" placeholder="Line ID">
-                        </div>
-                        <!-- /ที่อยู่ -->
-
-                        <!-- สถานที่ทำงานปัจจุบัน -->
-                        <div class="form-section-title">
-                            <span class="form-section-title-icon">🏢</span> สถานที่ทำงานปัจจุบัน
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="useHomeAddress" name="useHomeAddress">
-                                <label for="useHomeAddress">ใช้งานที่อยู่เดียวกันกับ ข้อมูลที่อยู่</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="companyType">ประเภทสถานที่ทำงาน</label>
-                            <select id="companyType" name="companyType">
-                                <option value="">เลือกประเภท</option>
-                                <option value="บจก.">บจก.</option>
-                                <option value="บมจ.">บมจ.</option>
-                                <option value="หจก.">หจก.</option>
-                                <option value="ร้านค้า/ทะเบียนพาณิชย์">ร้านค้า/ทะเบียนพาณิชย์</option>
-                                <option value="อื่นๆ">อื่นๆ (ระบุ)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-12 hidden" id="companyTypeOtherWrapper">
-                            <label for="companyTypeOther">ระบุประเภทสถานที่ทำงาน</label>
-                            <input type="text" id="companyTypeOther" name="companyTypeOther" placeholder="ระบุประเภท">
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="companyName">ชื่อกิจการ/ที่ทำงาน</label>
-                            <input type="text" id="companyName" name="companyName" placeholder="ชื่อกิจการ/ที่ทำงาน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="businessType">ประเภทธุรกิจ</label>
-                            <input type="text" id="businessType" name="businessType" placeholder="ประเภทธุรกิจ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workOccupation">อาชีพ</label>
-                            <input type="text" id="workOccupation" name="workOccupation" placeholder="อาชีพ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workPosition">ตำแหน่ง</label>
-                            <input type="text" id="workPosition" name="workPosition" placeholder="ตำแหน่ง">
-                        </div>
-
-                        <div class="form-group col-3">
-                            <label for="workYears">อายุงาน (ปี)</label>
-                            <input type="number" id="workYears" name="workYears" placeholder="ปี" min="0">
-                        </div>
-
-                        <div class="form-group col-3">
-                            <label for="workMonths">อายุงาน (เดือน)</label>
-                            <input type="number" id="workMonths" name="workMonths" placeholder="เดือน" min="0" max="11">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressNo">เลขที่อยู่</label>
-                            <input type="text" id="workAddressNo" name="workAddressNo" placeholder="เลขที่อยู่">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressFloor">ชั้น</label>
-                            <input type="text" id="workAddressFloor" name="workAddressFloor" placeholder="ชั้น">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressVillage">หมู่ ที่</label>
-                            <input type="text" id="workAddressVillage" name="workAddressVillage" placeholder="หมู่ ที่">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressBuilding">อาคาร/หมู่บ้าน</label>
-                            <input type="text" id="workAddressBuilding" name="workAddressBuilding" placeholder="อาคาร/หมู่บ้าน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressSoi">ซอย</label>
-                            <input type="text" id="workAddressSoi" name="workAddressSoi" placeholder="ซอย">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressRoad">ถนน</label>
-                            <input type="text" id="workAddressRoad" name="workAddressRoad" placeholder="ถนน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressSubdistrict">แขวง/ตำบล</label>
-                            <input type="text" id="workAddressSubdistrict" name="workAddressSubdistrict" placeholder="แขวง/ตำบล">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressDistrict">เขต / อำเภอ</label>
-                            <input type="text" id="workAddressDistrict" name="workAddressDistrict" placeholder="เขต / อำเภอ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressProvince">จังหวัด</label>
-                            <input type="text" id="workAddressProvince" name="workAddressProvince" placeholder="จังหวัด">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="workAddressPostal">รหัสไปรษณีย์</label>
-                            <input type="text" id="workAddressPostal" name="workAddressPostal" placeholder="รหัสไปรษณีย์" maxlength="5">
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="workPhone">หมายเลขโทรศัพท์ (ที่ทำงาน)</label>
-                            <input type="text" id="workPhone" name="workPhone" placeholder="หมายเลขโทรศัพท์">
-                        </div>
-
-                        <!-- ที่ทำงานเดิม (ถ้าอายุงาน < 1 ปี) -->
-                        <div id="previousWorkSection" class="section4-container hidden">
-
-                            <div class="form-group col-12 note-box">
-                                <span>** หากอายุงานไม่ถึง 1 ปี โปรดระบุที่ทำงานเดิม</span>
-                            </div>
-
-                            <div class="form-group col-12">
-                                <label for="previousCompanyName">ชื่อที่ทำงานเดิม</label>
-                                <input type="text" id="previousCompanyName" name="previousCompanyName" placeholder="ชื่อที่ทำงานเดิม">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="previousBusinessType">ประเภทธุรกิจ</label>
-                                <input type="text" id="previousBusinessType" name="previousBusinessType" placeholder="ประเภทธุรกิจ">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="previousPosition">ตำแหน่ง</label>
-                                <input type="text" id="previousPosition" name="previousPosition" placeholder="ตำแหน่ง">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="previousIncome">รายได้ต่อเดือน (บาท)</label>
-                                <input type="number" id="previousIncome" name="previousIncome" placeholder="รายได้ต่อเดือน" min="0">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="previousWorkYears">อายุงาน (ปี)</label>
-                                <input type="number" id="previousWorkYears" name="previousWorkYears" placeholder="ปี" min="0">
-                            </div>
-
-                            <div class="form-group col-12">
-                                <label for="previousPhone">หมายเลขโทรศัพท์</label>
-                                <input type="text" id="previousPhone" name="previousPhone" placeholder="หมายเลขโทรศัพท์">
-                            </div>
-                        </div>
-
-                        <!-- สถานที่ส่งเอกสาร -->
-                        <div class="form-group col-12">
-                            <label for="documentDelivery">สถานที่ส่งเอกสาร</label>
-                            <select id="documentDelivery" name="documentDelivery">
-                                <option value="">เลือกสถานที่</option>
-                                <option value="ที่อยู่ปัจจุบัน">ที่อยู่ปัจจุบัน</option>
-                                <option value="ที่ทำงาน">ที่ทำงาน</option>
-                                <option value="E-mail">E-mail</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-12 hidden" id="documentEmailWrapper">
-                            <label for="documentEmail">E-mail : ระบุ</label>
-                            <input type="email" id="documentEmail" name="documentEmail" placeholder="example@email.com">
-                        </div>
-
-                        <!--  ข้อมูลบุคคลอ้างอิง -->
-                        <div class="form-section-title">
-                            <span class="form-section-title-icon">👥</span> ข้อมูลบุคคลอ้างอิง
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="refName">ชื่อ - นามสกุล</label>
-                            <input type="text" id="refName" name="refName" placeholder="ชื่อ - นามสกุล">
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="refRelation">ความสัมพันธ์กับผู้กู้</label>
-                            <input type="text" id="refRelation" name="refRelation" placeholder="ความสัมพันธ์กับผู้กู้">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressNo">ที่อยู่ปัจจุบัน เลขที่</label>
-                            <input type="text" id="refAddressNo" name="refAddressNo" placeholder="เลขที่">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressFloor">ชั้น</label>
-                            <input type="text" id="refAddressFloor" name="refAddressFloor" placeholder="ชั้น">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressVillage">หมู่ที่</label>
-                            <input type="text" id="refAddressVillage" name="refAddressVillage" placeholder="หมู่ที่">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressBuilding">อาคาร/หมู่บ้าน</label>
-                            <input type="text" id="refAddressBuilding" name="refAddressBuilding" placeholder="อาคาร/หมู่บ้าน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressSoi">ซอย</label>
-                            <input type="text" id="refAddressSoi" name="refAddressSoi" placeholder="ซอย">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressRoad">ถนน</label>
-                            <input type="text" id="refAddressRoad" name="refAddressRoad" placeholder="ถนน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressSubdistrict">แขวง/ตำบล</label>
-                            <input type="text" id="refAddressSubdistrict" name="refAddressSubdistrict" placeholder="แขวง/ตำบล">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressDistrict">เขต/อำเภอ</label>
-                            <input type="text" id="refAddressDistrict" name="refAddressDistrict" placeholder="เขต/อำเภอ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressProvince">จังหวัด</label>
-                            <input type="text" id="refAddressProvince" name="refAddressProvince" placeholder="จังหวัด">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refAddressPostal">รหัสไปรษณีย์</label>
-                            <input type="text" id="refAddressPostal" name="refAddressPostal" placeholder="รหัสไปรษณีย์" maxlength="5">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refPhoneHome">หมายเลขโทรศัพท์บ้าน</label>
-                            <input type="text" id="refPhoneHome" name="refPhoneHome" placeholder="หมายเลขโทรศัพท์บ้าน">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refPhoneMobile">หมายเลขโทรศัพท์มือถือ</label>
-                            <input type="text" id="refPhoneMobile" name="refPhoneMobile" placeholder="หมายเลขโทรศัพท์มือถือ">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refEmail">E-mail</label>
-                            <input type="email" id="refEmail" name="refEmail" placeholder="example@email.com">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="refLineId">Line ID</label>
-                            <input type="text" id="refLineId" name="refLineId" placeholder="Line ID">
-                        </div>
-                        <!--  /ข้อมูลบุคคลอ้างอิง -->
-
-                        <!-- ความประสงค์ในการสมัครใช้สินเชื่อ -->
-                        <div class="form-section-title">
-                            <span class="form-section-title-icon">💰</span> ความประสงค์ในการสมัครใช้สินเชื่อ
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="loanTerm">ระยะเวลาผ่อนชำระคืน</label>
-                            <select id="loanTerm" name="loanTerm">
-                                <option value="">เลือกระยะเวลา</option>
-                                <option value="12">12 เดือน</option>
-                                <option value="24">24 เดือน</option>
-                                <option value="36">36 เดือน</option>
-                                <option value="48">48 เดือน</option>
-                                <option value="50">50 เดือน</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="loanAmountType">วงเงินสินเชื่อที่ต้องการ</label>
-                            <select id="loanAmountType" name="loanAmountType">
-                                <option value="">เลือกวงเงิน</option>
-                                <option value="full">เต็มจำนวนตามที่บริษัทอนุมัติ</option>
-                                <option value="custom">วงเงินที่ขอกู้/จำนวนทั้งสิ้น</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-12 hidden" id="customLoanAmountWrapper">
-                            <label for="customLoanAmount">ระบุจำนวนเงินที่ขอกู้ (บาท)</label>
-                            <input type="number" id="customLoanAmount" name="customLoanAmount" placeholder="ระบุจำนวนเงิน" min="0">
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="loanPurpose">วัตถุประสงค์ในการขอสินเชื่อ</label>
-                            <input type="text" id="loanPurpose" name="loanPurpose" placeholder="วัตถุประสงค์ในการขอสินเชื่อ">
-                        </div>
-
-                        <div class="form-group col-12 note-box">
-                            <span>(กรณีที่บริษัทไม่สามารถอนุมัติเงินตามที่ท่านเลือกได้ บริษัทจะอนุมัติวงเงินให้ท่านตามความเหมาะสม)</span>
-                        </div>
-
-                        <!-- สำหรับผู้ขอสินเชื่อที่ประสงค์ขอรับวงเงินกู้โดยวิธีการโอนเข้าบัญชีเงินฝาก -->
-                        <div class="form-section-title">
-                            <span class="form-section-title-icon">🏦</span> ข้อมูลบัญชีสำหรับรับโอนเงินกู้
-                        </div>
-
-                        <div class="form-group col-12">
-                            <label for="bankName">ธนาคาร</label>
-                            <input type="text" id="bankName" name="bankName" placeholder="ชื่อธนาคาร">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="bankBranch">สาขา</label>
-                            <input type="text" id="bankBranch" name="bankBranch" placeholder="สาขา">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="accountName">ชื่อบัญชี</label>
-                            <input type="text" id="accountName" name="accountName" placeholder="ชื่อบัญชี">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="accountType">ประเภทบัญชี</label>
-                            <input type="text" id="accountType" name="accountType" placeholder="ประเภทบัญชี (เช่น ออมทรัพย์, กระแสรายวัน)">
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="accountNumber">เลขที่บัญชี</label>
-                            <input type="text" id="accountNumber" name="accountNumber" placeholder="เลขที่บัญชี">
-                        </div>
-
-                        <!-- Section 5: ข้อตกลงความยินยอม และเช็นยินยอม -->
-                        <div class="form-section-title">
-                            <span class="form-section-title-icon">📝</span> ส่วนที่ 5: ข้อความยินยอม
-                        </div>
-
-                        <div class="form-group col-12">
-                            <p style="text-align: left; line-height: 1.8; margin-bottom: 1.5rem; text-indent: 3rem;">
-                                ข้าพเจ้าขอรับรองว่าข้อมูลรายละเอียดที่ระบุไว้ข้างต้นเป็นความจริงทุกประการ และข้าพเจ้ารับทราบการมอบอำนาจให้ทางบริษัทติดต่อสอบถาม และ/หรือ ตรวจสอบข้อมูลรายละเอียดต่างๆ ของข้าพเจ้าในบัตรประชาชน และ/หรือ บุคคลที่เกี่ยวข้องได้จากบุคคล และ/หรือ นิติบุคคลอื่นใดและไม่ว่าด้วยวิธีใด นอกจากข้าพเจ้ารับทราบให้บริษัทมีสิทธิอย่างสมบูรณ์ที่จะปฏิเสธ หรืออนุมัติการขอสินเชื่อครั้งนี้ หรืออนุมัติเป็นอย่างอื่น รวมทั้งปฏิบัติตามข้อกำหนดและเงื่อนไขตามที่บริษัทเห็นสมควรทุกประการ และ/หรือ ที่บริษัทจะเปลี่ยนแปลงภายหลัง และข้าพเจ้ารับทราบที่จะเสียค่าธรรมเนียม ค่าใช้จ่ายต่างๆ ที่บริษัทกำหนดทุกประการ การดำเนินนการของบริษัทตามความประสงค์ของข้าพเจ้าในคำขอฉบับนี้ให้ถือว่าข้าพเจ้าได้รับสินเชื่อโดยชอบธรรมจากบริษัท (ผู้ได้รับผลประโยชน์ที่แท้จริงคือผู้ขอสินเชื่อ)
-                            </p>
-                        </div>
-
-                        <div class="form-group col-12">
-                            <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
-                                <h4 style="color: #856404; margin: 0 0 0.75rem 0; font-size: 1rem; font-weight: 700;">ข้อควรระวัง</h4>
-                                <ul style="margin: 0; padding-left: 1.5rem; list-style-type: disc; color: #856404;">
-                                    <li style="margin-bottom: 0.5rem;">หากท่านผิดนัดชำระหนี้ บริษัทจะคิดดอกเบี้ยสูงสุดตั้งแต่วันที่เริ่มผิดนัด และอาจจะมีค่าติดตามทวงถามหนี้ (คิดเมื่อครบกำหนดชำระ และมีการทวงถามหนี้แล้ว)</li>
-                                    <li>กรุณาอ่านข้อกำหนด และเงื่อนไขที่สำคัญก่อนลงนาม หากมีข้อสงสัยสามารถติดต่อเจ้าหน้าที่ เบอร์โทรศัพท์ 082-257-7997</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="form-group col-12">
-                            <p style="text-align: left; line-height: 1.8; margin-bottom: 1.5rem; text-indent: 3rem;">
-                                ข้าพเจ้าทราบว่าบริษัทอาจเก็บรวบรวมข้อมูลส่วนบุคคลของข้าพเจ้าและบุคคลที่ข้าพเจ้าระบุไว้ในเอกสารนี้ เช่น ผู้กู้ร่วม ผู้ค้ำประกัน เพื่อใช้ในการบริหารความเสี่ยงของบริษัท และขอรับรองว่า ข้าพเจ้าได้แจ้งให้บุคคลดังกล่าวทราบถึงการเก็บรวบรวมข้อมูลส่วนบุคคลนี้ด้วย
-                            </p>
-                            <p style="text-align: left; line-height: 1.8; margin-bottom: 1.5rem; text-indent: 3rem;">
-                                ข้าพเจ้าได้อ่านและทำความเข้าใจ รับทราบถึงเนื้อหาของประกาศความเป็นส่วนตัวของบริษัท ดังที่ปรากฏรายละเอียดหน้าเว็บไซต์ <a href="https://www.bigmoneyplus.co.th/การคุ้มครองข้อมูลส่วนบุคคล" target="_blank" style="color: #059669; text-decoration: underline;">www.bigmoneyplus.co.th/การคุ้มครองข้อมูลส่วนบุคคล</a> และรับทราบว่าบริษัทเก็บรวบรวมใช้ และ/หรือ เปิดเผยข้อมูลส่วนบุคคลภายใต้หรือเกี่ยวกับคำขอฉบับนี้เพื่อวัตถุประสงค์ตามที่ระบุไว้ในประกาศความเป็นส่วนตัวของบริษัท
-                            </p>
-                        </div>
-
-                        <div class="form-group col-12" style="margin-bottom: 0; display: flex; flex-direction: column; align-items: center;">
-                            <label>ลงชื่อผู้ขอสินเชื่อ</label>
-                            <div style="border: 2px solid #e5e7eb; border-radius: 0.5rem; background: #ffffff; position: relative; overflow: hidden; width: 400px;">
-                                <canvas id="signaturePad" style="width: 100%; height: 120px; cursor: crosshair;"></canvas>
-                                <button type="button" id="clearSignatureBtn" style="position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.25rem 0.5rem; background: #ef4444; color: white; border: none; border-radius: 0.25rem; font-size: 0.75rem; cursor: pointer;">ล้าง</button>
-                            </div>
-                            <input type="hidden" id="signatureData" name="signatureData">
-                            <p style="margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; text-align: center;">วันที่เซ็น: {{ date('d/m/Y') }}</p>
-                        </div>
-
-                        <!-- /Section 5: ข้อตกลงความยินยอม และเช็นยินยอม -->
-                    </div>
-
-                    <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
-                        <button type="button" class="action-btn outline" id="cancelConsentModal">ยกเลิก</button>
-                        <button type="submit" class="action-btn">บันทึกข้อมูลใบสมัคร</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal สำหรับดูเอกสารใบยินยอม -->
-    <div id="viewConsentModal" class="modal">
-        <div class="modal-content modal-lg">
-            <div class="modal-header" style="background: #ecfdf5; border-bottom: 2px solid #bbf7d0;">
-                <h3 style="color: #065f46; display: flex; align-items: center; gap: 0.5rem;">
-                    📄 เอกสารคำขอและใบยินยอมสินเชื่อบุคคล
-                </h3>
-                <button type="button" class="close-btn" id="closeViewConsentModal" aria-label="Close modal" style="color: #065f46;">&times;</button>
-            </div>
-            <div class="modal-body scrollable" style="background: #fafafa;">
-                <div id="viewConsentContent" style="padding: 1.5rem; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <!-- Content populated by JS -->
-                </div>
-            </div>
-            <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb; background: #ffffff; display: flex; justify-content: flex-end; gap: 0.75rem;">
-                <button type="button" class="action-btn outline" id="closeViewConsentFooter">ปิดหน้าต่าง</button>
-            </div>
-        </div>
-    </div>
+    <div id="modalMount"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
     <script>
+        const modalEndpoints = {
+            form: @json(route('consent.modals.form')),
+            view: @json(route('consent.modals.view')),
+        };
+
+        let consentModalLoadPromise = null;
+        let viewConsentModalLoadPromise = null;
+
+        function getModalMount() {
+            let mount = document.getElementById('modalMount');
+            if (!mount) {
+                mount = document.createElement('div');
+                mount.id = 'modalMount';
+                document.body.appendChild(mount);
+            }
+            return mount;
+        }
+
+        async function loadModalHtml(url) {
+            const response = await fetch(url, { headers: { 'Accept': 'text/html' } });
+            if (!response.ok) {
+                throw new Error('Failed to load modal');
+            }
+            return response.text();
+        }
+
+        async function ensureConsentModalLoaded() {
+            if (document.getElementById('consentModal')) return;
+            if (!consentModalLoadPromise) {
+                consentModalLoadPromise = loadModalHtml(modalEndpoints.form).finally(() => {
+                    consentModalLoadPromise = null;
+                });
+            }
+            const html = await consentModalLoadPromise;
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html;
+            getModalMount().append(...Array.from(wrapper.children));
+        }
+
+        async function ensureViewConsentModalLoaded() {
+            if (document.getElementById('viewConsentModal')) return;
+            if (!viewConsentModalLoadPromise) {
+                viewConsentModalLoadPromise = loadModalHtml(modalEndpoints.view).finally(() => {
+                    viewConsentModalLoadPromise = null;
+                });
+            }
+            const html = await viewConsentModalLoadPromise;
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html;
+            getModalMount().append(...Array.from(wrapper.children));
+        }
+
         // JS Function to show details modal
-        function viewDocument(customer) {
+        async function viewDocument(customer) {
+            await ensureViewConsentModalLoaded();
             const viewModal = document.getElementById('viewConsentModal');
             const contentDiv = document.getElementById('viewConsentContent');
             
@@ -1083,7 +377,7 @@
                             <td style="padding: 0.5rem;">${extraIncome}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">แหละที่มาของรายได้พิเศษ:</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">แหล่งที่มาของรายได้พิเศษ:</td>
                             <td style="padding: 0.5rem;">${extraIncomeSource}</td>
                         </tr>
                         ` : ''}
@@ -1110,7 +404,7 @@
 
                 ${(customer.income && parseInt(customer.income) < 30000) ? `
                 <div style="margin-bottom: 1.5rem; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">การแจ้งการมีวงเงินสินเชื่อบุคล (เฉพาะผู้มีรายได้น้อยกว่า 30,000 บาท)</h4>
+                    <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">การแจ้งการมีวงเงินสินเชื่อบุคคล (เฉพาะผู้มีรายได้น้อยกว่า 30,000 บาท)</h4>
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
                         <tr style="border-bottom: 1px solid #e0f2fe;">
                             <td style="padding: 0.5rem; font-weight: 600;">ในช่วง 2 เดือนที่ผ่านมาผู้กู้เคยได้รับอนุมัติสินเชื่อ หรือ ยื่นสมัครสินเชื่อบุคคล/สินเชื่อนาโนไฟแนนซ์/สินเชื่อสวัสดิการพนักงานกับสถาบันการเงินมากกว่า 2 แห่งหรือไม่:</td>
@@ -1118,7 +412,7 @@
                         </tr>
                     </table>
                     <div style="margin-top: 0.75rem; background: #fef9c3; border: 1px solid #facc15; padding: 0.6rem 0.85rem; border-radius: 0.375rem; font-size: 0.85rem; color: #854d0e;">
-                        <strong>**</strong> กรณีพบว่ามีสินเชื่อบุคคล/สินเชื่อนาโน/สินเชื่อสวัสดิการพนักงานกับสถาบันการเงินตั้งแต่ 3 แห่งขึ้นไป บริษัทมีทีธิปฏิเสธการให้สินเชื่อ หรือระงับการให้สินเชื่อ หรือยกเลิกสัญญา
+                        <strong>**</strong> กรณีพบว่ามีสินเชื่อบุคคล/สินเชื่อนาโน/สินเชื่อสวัสดิการพนักงานกับสถาบันการเงินตั้งแต่ 3 แห่งขึ้นไป บริษัทมีสิทธิ์ปฏิเสธการให้สินเชื่อ หรือระงับการให้สินเชื่อ หรือยกเลิกสัญญา
                     </div>
                 </div>
                 ` : ''}
@@ -1408,7 +702,7 @@
                 <div style="margin-bottom: 1.5rem; background: #e5f0ff; border: 1px solid #3b82f6; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
                     <h4 style="color: #1e40af; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #3b82f6; padding-bottom: 0.35rem;">ส่วนที่ 5: ข้อความยินยอม</h4>
                     <p style="text-align: left; line-height: 1.8; margin-bottom: 1.5rem; text-indent: 3rem;">
-                        ข้าพเจ้าขอรับรองว่าข้อมูลรายละเอียดที่ระบุไว้ข้างต้นเป็นความจริงทุกประการ และข้าพเจ้ารับทราบการมอบอำนาจให้ทางบริษัทติดต่อสอบถาม และ/หรือ ตรวจสอบข้อมูลรายละเอียดต่างๆ ของข้าพเจ้าในบัตรประชาชน และ/หรือ บุคคลที่เกี่ยวข้องได้จากบุคคล และ/หรือ นิติบุคคลอื่นใดและไม่ว่าด้วยวิธีใด นอกจากข้าพเจ้ารับทราบให้บริษัทมีสิทธิอย่างสมบูรณ์ที่จะปฏิเสธ หรืออนุมัติการขอสินเชื่อครั้งนี้ หรืออนุมัติเป็นอย่างอื่น รวมทั้งปฏิบัติตามข้อกำหนดและเงื่อนไขตามที่บริษัทเห็นสมควรทุกประการ และ/หรือ ที่บริษัทจะเปลี่ยนแปลงภายหลัง และข้าพเจ้ารับทราบที่จะเสียค่าธรรมเนียม ค่าใช้จ่ายต่างๆ ที่บริษัทกำหนดทุกประการ การดำเนินนการของบริษัทตามความประสงค์ของข้าพเจ้าในคำขอฉบับนี้ให้ถือว่าข้าพเจ้าได้รับสินเชื่อโดยชอบธรรมจากบริษัท (ผู้ได้รับผลประโยชน์ที่แท้จริงคือผู้ขอสินเชื่อ)
+                        ข้าพเจ้าขอรับรองว่าข้อมูลรายละเอียดที่ระบุไว้ข้างต้นเป็นความจริงทุกประการ และข้าพเจ้ารับทราบการมอบอำนาจให้ทางบริษัทติดต่อสอบถาม และ/หรือ ตรวจสอบข้อมูลรายละเอียดต่างๆ ของข้าพเจ้าในบัตรประชาชน และ/หรือ บุคคลที่เกี่ยวข้องได้จากบุคคล และ/หรือ นิติบุคคลอื่นใดและไม่ว่าด้วยวิธีใด นอกจากข้าพเจ้ารับทราบให้บริษัทมีสิทธิอย่างสมบูรณ์ที่จะปฏิเสธ หรืออนุมัติการขอสินเชื่อครั้งนี้ หรืออนุมัติเป็นอย่างอื่น รวมทั้งปฏิบัติตามข้อกำหนดและเงื่อนไขตามที่บริษัทเห็นสมควรทุกประการ และ/หรือ ที่บริษัทจะเปลี่ยนแปลงภายหลัง และข้าพเจ้ารับทราบที่จะเสียค่าธรรมเนียม ค่าใช้จ่ายต่างๆ ที่บริษัทกำหนดทุกประการ การดำเนินการของบริษัทตามความประสงค์ของข้าพเจ้าในคำขอฉบับนี้ให้ถือว่าข้าพเจ้าได้รับสินเชื่อโดยชอบธรรมจากบริษัท (ผู้ได้รับผลประโยชน์ที่แท้จริงคือผู้ขอสินเชื่อ)
                     </p>
                     <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
                         <h5 style="color: #856404; margin: 0 0 0.75rem 0; font-size: 0.95rem; font-weight: 700;">ข้อควรระวัง</h5>
@@ -1469,11 +763,38 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            document.querySelectorAll('.alert-success').forEach(function(alertEl) {
+                setTimeout(function() {
+                    alertEl.style.transition = 'opacity 0.35s ease';
+                    alertEl.style.opacity = '0';
+                    setTimeout(function() {
+                        alertEl.remove();
+                    }, 400);
+                }, 4000);
+            });
+
+            await Promise.all([
+                ensureConsentModalLoaded(),
+                ensureViewConsentModalLoaded(),
+            ]);
             const modal = document.getElementById('consentModal');
             const openBtn = document.getElementById('openConsentModal');
             const closeBtn = document.getElementById('closeConsentModal');
             const cancelBtn = document.getElementById('cancelConsentModal');
+            const consentForm = document.getElementById('consentForm');
+            const consentModalTitle = document.getElementById('consentModalTitle');
+            const consentFormMethod = document.getElementById('consentFormMethod');
+            const consentSubmitBtn = document.getElementById('consentSubmitBtn');
+            const appNoInput = document.getElementById('app_no');
+            const appDateInput = document.getElementById('app_date');
+            const signatureDataInput = document.getElementById('signatureData');
+            const modalStoreUrl = modal?.dataset.storeUrl || '';
+            const modalUpdateBaseUrl = modal?.dataset.updateBaseUrl || '';
+            const modalNextAppNo = modal?.dataset.nextAppNo || '';
+            let signaturePad;
+            let signatureInitSeq = 0;
+            let isSyncingConditionalSections = false;
 
             function disableFormAutofill(form) {
                 if (!form) return;
@@ -1490,6 +811,10 @@
                         return;
                     }
 
+                    if (el.required || el.hasAttribute('required')) {
+                        return;
+                    }
+
                     if (['text', 'number', 'email', 'tel', 'search'].includes(el.type)) {
                         el.setAttribute('readonly', 'readonly');
                         el.addEventListener('focus', function() {
@@ -1500,6 +825,365 @@
             }
 
             disableFormAutofill(modal?.querySelector('.consent-form'));
+
+            const postCodeApi = {
+                options: @json(route('consent.postcodes.options')),
+            };
+
+            const addressProvinceInput = document.getElementById('address_province');
+            const addressDistrictInput = document.getElementById('address_district');
+            const addressSubdistrictInput = document.getElementById('address_subdistrict');
+            const addressPostalInput = document.getElementById('address_postal');
+
+            const addressProvinceList = document.getElementById('address_province_list');
+            const addressDistrictList = document.getElementById('address_district_list');
+            const addressSubdistrictList = document.getElementById('address_subdistrict_list');
+            const addressPostalList = document.getElementById('address_postal_list');
+
+            const selectedAddressFilters = {
+                province: '',
+                city: '',
+                district: '',
+                post_code: '',
+            };
+
+            let postCodeRequestSeq = 0;
+
+            function fillDatalist(datalistEl, items) {
+                if (!datalistEl) return;
+                datalistEl.innerHTML = '';
+                items.forEach(function(item) {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    datalistEl.appendChild(option);
+                });
+            }
+
+            function buildPostCodeOptionsUrl(filters, queries) {
+                const url = new URL(postCodeApi.options, window.location.origin);
+                Object.entries(filters || {}).forEach(function([key, value]) {
+                    if (value) url.searchParams.set(key, value);
+                });
+                Object.entries(queries || {}).forEach(function([key, value]) {
+                    if (value) url.searchParams.set(key, value);
+                });
+                return url.toString();
+            }
+
+            async function fetchPostCodeOptions(filters, queries) {
+                const requestSeq = ++postCodeRequestSeq;
+                const url = buildPostCodeOptionsUrl(filters, queries);
+                const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (!response.ok) return null;
+                const data = await response.json();
+                if (requestSeq !== postCodeRequestSeq) return null;
+                return data && typeof data === 'object' ? data : null;
+            }
+
+            async function refreshAllPostCodeLists() {
+                const data = await fetchPostCodeOptions(selectedAddressFilters, {});
+                if (!data) return;
+                fillDatalist(addressProvinceList, Array.isArray(data.provinces) ? data.provinces : []);
+                fillDatalist(addressDistrictList, Array.isArray(data.cities) ? data.cities : []);
+                fillDatalist(addressSubdistrictList, Array.isArray(data.districts) ? data.districts : []);
+                fillDatalist(addressPostalList, Array.isArray(data.post_codes) ? data.post_codes : []);
+            }
+
+            async function refreshFocusedPostCodeList(fieldKey, queryValue) {
+                const queries = {};
+                if (fieldKey === 'province') queries.q_province = queryValue;
+                if (fieldKey === 'city') queries.q_city = queryValue;
+                if (fieldKey === 'district') queries.q_district = queryValue;
+                if (fieldKey === 'post_code') queries.q_post_code = queryValue;
+
+                const data = await fetchPostCodeOptions(selectedAddressFilters, queries);
+                if (!data) return;
+
+                if (fieldKey === 'province') fillDatalist(addressProvinceList, Array.isArray(data.provinces) ? data.provinces : []);
+                if (fieldKey === 'city') fillDatalist(addressDistrictList, Array.isArray(data.cities) ? data.cities : []);
+                if (fieldKey === 'district') fillDatalist(addressSubdistrictList, Array.isArray(data.districts) ? data.districts : []);
+                if (fieldKey === 'post_code') fillDatalist(addressPostalList, Array.isArray(data.post_codes) ? data.post_codes : []);
+            }
+
+            function bindPostCodeField(inputEl, fieldKey) {
+                if (!inputEl) return;
+
+                inputEl.addEventListener('input', function() {
+                    const value = (this.value || '').trim();
+                    if (value === '') {
+                        selectedAddressFilters[fieldKey] = '';
+                        refreshAllPostCodeLists();
+                        return;
+                    }
+
+                    refreshFocusedPostCodeList(fieldKey, value);
+                });
+
+                inputEl.addEventListener('change', function() {
+                    selectedAddressFilters[fieldKey] = (this.value || '').trim();
+                    refreshAllPostCodeLists();
+                });
+            }
+
+            bindPostCodeField(addressProvinceInput, 'province');
+            bindPostCodeField(addressDistrictInput, 'city');
+            bindPostCodeField(addressSubdistrictInput, 'district');
+            bindPostCodeField(addressPostalInput, 'post_code');
+
+            refreshAllPostCodeLists();
+
+            function setFieldValue(fieldName, value) {
+                const field = consentForm?.querySelector(`[name="${fieldName}"]`);
+                if (!field) return;
+
+                if (field.type === 'checkbox') {
+                    field.checked = Boolean(value);
+                    return;
+                }
+
+                if (field.type === 'date' && typeof value === 'string') {
+                    const normalized = value.match(/^\d{4}-\d{2}-\d{2}/) ? value.slice(0, 10) : value;
+                    field.value = normalized;
+                    return;
+                }
+
+                field.value = value ?? '';
+            }
+
+            function setSelectWithOther(selectName, otherInputName, value, allowedValues) {
+                const normalizedValue = value ?? '';
+
+                if (!normalizedValue) {
+                    setFieldValue(selectName, '');
+                } else if (allowedValues.includes(normalizedValue)) {
+                    setFieldValue(selectName, normalizedValue);
+                } else {
+                    setFieldValue(selectName, 'อื่นๆ');
+                    const selectField = consentForm?.querySelector(`[name="${selectName}"]`);
+                    selectField?.dispatchEvent(new Event('change'));
+                    setFieldValue(otherInputName, normalizedValue);
+                }
+            }
+
+            function syncConditionalSections() {
+                isSyncingConditionalSections = true;
+                try {
+                    [
+                        'title',
+                        'marital_status',
+                        'spouse_title',
+                        'occupation',
+                        'spouse_occupation',
+                        'hasOtherDebts',
+                        'dwelling_type',
+                        'residence_status',
+                        'companyType',
+                        'documentDelivery',
+                        'loanAmountType'
+                    ].forEach(function(fieldName) {
+                        const field = consentForm?.querySelector(`[name="${fieldName}"]`);
+                        field?.dispatchEvent(new Event('change'));
+                    });
+
+                    ['extraIncome', 'income', 'workYears', 'workMonths'].forEach(function(fieldName) {
+                        const field = consentForm?.querySelector(`[name="${fieldName}"]`);
+                        field?.dispatchEvent(new Event('input'));
+                    });
+
+                    const useHomeAddressField = consentForm?.querySelector('[name="useHomeAddress"]');
+                    useHomeAddressField?.dispatchEvent(new Event('change'));
+                } finally {
+                    isSyncingConditionalSections = false;
+                }
+            }
+
+            function applySignatureData(signatureData) {
+                if (!signatureData || !signaturePad) return;
+
+                try {
+                    signaturePad.fromData(JSON.parse(signatureData));
+                } catch (error) {
+                    console.error('Error loading signature into form:', error);
+                }
+            }
+
+            function prepareCreateModal() {
+                consentForm?.reset();
+                setFieldValue('consent_id', '');
+                if (consentForm) {
+                    consentForm.action = modalStoreUrl;
+                }
+                if (consentFormMethod) {
+                    consentFormMethod.value = 'POST';
+                }
+                if (consentModalTitle) {
+                    consentModalTitle.textContent = 'สร้างใบยินยอมแบบละเอียด';
+                }
+                if (consentSubmitBtn) {
+                    consentSubmitBtn.textContent = 'บันทึกข้อมูลใบสมัคร';
+                }
+                if (appNoInput) {
+                    appNoInput.value = modalNextAppNo;
+                }
+                if (appDateInput) {
+                    appDateInput.value = '{{ date('Y-m-d') }}';
+                }
+                if (signatureDataInput) {
+                    signatureDataInput.value = '';
+                }
+                if (signaturePad) {
+                    signaturePad.clear();
+                }
+
+                selectedAddressFilters.province = '';
+                selectedAddressFilters.city = '';
+                selectedAddressFilters.district = '';
+                selectedAddressFilters.post_code = '';
+                refreshAllPostCodeLists();
+                syncConditionalSections();
+            }
+
+            function prepareEditModal(customer) {
+                if (!consentForm) return;
+                const hasCustomResidenceStatus = Boolean(
+                    customer.residence_status &&
+                    !['เช่า/ผ่อนชำระ', 'ปลอดภาระ', 'บ้านพักสวัสดิการ', 'อื่นๆ'].includes(customer.residence_status)
+                );
+
+                consentForm.reset();
+                setFieldValue('consent_id', customer.id);
+                consentForm.action = `${modalUpdateBaseUrl}/${customer.id}`;
+                if (consentFormMethod) {
+                    consentFormMethod.value = 'PUT';
+                }
+                if (consentModalTitle) {
+                    consentModalTitle.textContent = 'แก้ไขใบยินยอมแบบละเอียด';
+                }
+                if (consentSubmitBtn) {
+                    consentSubmitBtn.textContent = 'บันทึกการแก้ไข';
+                }
+
+                [
+                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'title', 'name', 'name_en', 'dob', 'id_card', 'gender',
+                    'age', 'nationality', 'marital_status', 'education', 'occupation', 'spouse_title', 'spouse_name',
+                    'spouse_phone', 'spouse_mobile', 'spouse_education', 'spouse_occupation', 'spouse_company',
+                    'spouse_income', 'dwelling_type', 'residence_status', 'residence_rent_amount', 'residence_years',
+                    'address_no', 'address_floor', 'address_village', 'address_building', 'address_soi', 'address_road',
+                    'address_subdistrict', 'address_district', 'address_province', 'address_postal', 'phone_home',
+                    'phone_mobile', 'email', 'line_id'
+                ].forEach(function(fieldName) {
+                    setFieldValue(fieldName, customer[fieldName]);
+                });
+
+                setFieldValue('income', customer.income);
+                setFieldValue('extraIncome', customer.extraIncome);
+                setFieldValue('extraIncomeSource', customer.extraIncomeSource);
+                setFieldValue('businessIncome', customer.businessIncome);
+                setFieldValue('averageMonthlyIncome', customer.averageMonthlyIncome);
+                setFieldValue('hasOtherDebts', customer.hasOtherDebts);
+                setFieldValue('otherDebtInstallment', customer.otherDebtInstallment);
+                setFieldValue('hasExistingLoan', customer.hasExistingLoan);
+                setFieldValue('useHomeAddress', customer.useHomeAddress);
+                setFieldValue('companyType', customer.companyType);
+                setFieldValue('companyName', customer.companyName);
+                setFieldValue('businessType', customer.businessType);
+                setFieldValue('workOccupation', customer.workOccupation);
+                setFieldValue('workPosition', customer.workPosition);
+                setFieldValue('workYears', customer.workYears);
+                setFieldValue('workMonths', customer.workMonths);
+                setFieldValue('workAddressNo', customer.workAddressNo);
+                setFieldValue('workAddressFloor', customer.workAddressFloor);
+                setFieldValue('workAddressVillage', customer.workAddressVillage);
+                setFieldValue('workAddressBuilding', customer.workAddressBuilding);
+                setFieldValue('workAddressSoi', customer.workAddressSoi);
+                setFieldValue('workAddressRoad', customer.workAddressRoad);
+                setFieldValue('workAddressSubdistrict', customer.workAddressSubdistrict);
+                setFieldValue('workAddressDistrict', customer.workAddressDistrict);
+                setFieldValue('workAddressProvince', customer.workAddressProvince);
+                setFieldValue('workAddressPostal', customer.workAddressPostal);
+                setFieldValue('workPhone', customer.workPhone);
+                setFieldValue('previousCompanyName', customer.previousCompanyName);
+                setFieldValue('previousBusinessType', customer.previousBusinessType);
+                setFieldValue('previousPosition', customer.previousPosition);
+                setFieldValue('previousIncome', customer.previousIncome);
+                setFieldValue('previousWorkYears', customer.previousWorkYears);
+                setFieldValue('previousPhone', customer.previousPhone);
+                setFieldValue('documentDelivery', customer.documentDelivery);
+                setFieldValue('documentEmail', customer.documentEmail);
+                setFieldValue('refName', customer.refName);
+                setFieldValue('refRelation', customer.refRelation);
+                setFieldValue('refAddressNo', customer.refAddressNo);
+                setFieldValue('refAddressFloor', customer.refAddressFloor);
+                setFieldValue('refAddressVillage', customer.refAddressVillage);
+                setFieldValue('refAddressBuilding', customer.refAddressBuilding);
+                setFieldValue('refAddressSoi', customer.refAddressSoi);
+                setFieldValue('refAddressRoad', customer.refAddressRoad);
+                setFieldValue('refAddressSubdistrict', customer.refAddressSubdistrict);
+                setFieldValue('refAddressDistrict', customer.refAddressDistrict);
+                setFieldValue('refAddressProvince', customer.refAddressProvince);
+                setFieldValue('refAddressPostal', customer.refAddressPostal);
+                setFieldValue('refPhoneHome', customer.refPhoneHome);
+                setFieldValue('refPhoneMobile', customer.refPhoneMobile);
+                setFieldValue('refEmail', customer.refEmail);
+                setFieldValue('refLineId', customer.refLineId);
+                setFieldValue('loanTerm', customer.loanTerm);
+                setFieldValue('loanAmountType', customer.loanAmountType);
+                setFieldValue('customLoanAmount', customer.customLoanAmount);
+                setFieldValue('loanPurpose', customer.loanPurpose);
+                setFieldValue('bankName', customer.bankName);
+                setFieldValue('bankBranch', customer.bankBranch);
+                setFieldValue('accountName', customer.accountName);
+                setFieldValue('accountType', customer.accountType);
+                setFieldValue('accountNumber', customer.accountNumber);
+                setFieldValue('signatureData', customer.signatureData);
+
+                setSelectWithOther('title', 'title_other', customer.title, ['นาย', 'นาง', 'นางสาว']);
+                setSelectWithOther('occupation', 'occupationOther', customer.occupation, ['พนักงานบริษัท', 'ข้าราชการ/ทหาร/ตำรวจ', 'เจ้าของกิจการ', 'อาชีพอิสระ', 'รับจ้าง', 'อื่นๆ']);
+                setSelectWithOther('spouse_title', 'spouse_title_other', customer.spouse_title, ['นาย', 'นาง', 'นางสาว']);
+                setSelectWithOther('spouse_occupation', 'spouseOccupationOther', customer.spouse_occupation, ['พนักงานบริษัท', 'ข้าราชการ/ทหาร/ตำรวจ', 'เจ้าของกิจการ', 'อาชีพอิสระ', 'รับจ้าง', 'อื่นๆ']);
+                setSelectWithOther('companyType', 'companyTypeOther', customer.companyType, ['บจก.', 'บมจ.', 'หจก.', 'ร้านค้า/ทะเบียนพาณิชย์']);
+
+                selectedAddressFilters.province = (customer.address_province || '').trim();
+                selectedAddressFilters.city = (customer.address_district || '').trim();
+                selectedAddressFilters.district = (customer.address_subdistrict || '').trim();
+                selectedAddressFilters.post_code = (customer.address_postal || '').trim();
+                refreshAllPostCodeLists();
+
+                if ((customer.dwelling_type || '').startsWith('อาศัยอยู่กับผู้อื่น: ')) {
+                    setFieldValue('dwelling_type', 'อาศัยอยู่กับผู้อื่น');
+                    consentForm?.querySelector('[name="dwelling_type"]')?.dispatchEvent(new Event('change'));
+                    setFieldValue('dwelling_type_other', customer.dwelling_type.replace('อาศัยอยู่กับผู้อื่น: ', ''));
+                } else {
+                    setFieldValue('dwelling_type', customer.dwelling_type);
+                }
+
+                if (hasCustomResidenceStatus) {
+                    setFieldValue('residence_status', 'อื่นๆ');
+                    consentForm?.querySelector('[name="residence_status"]')?.dispatchEvent(new Event('change'));
+                    setFieldValue('residence_status_other', customer.residence_status);
+                } else {
+                    setFieldValue('residence_status', customer.residence_status);
+                }
+
+                syncConditionalSections();
+
+                if (hasCustomResidenceStatus) {
+                    setFieldValue('residence_status_other', customer.residence_status);
+                }
+
+                if (!customer.useHomeAddress) {
+                    setFieldValue('workAddressNo', customer.workAddressNo);
+                    setFieldValue('workAddressFloor', customer.workAddressFloor);
+                    setFieldValue('workAddressVillage', customer.workAddressVillage);
+                    setFieldValue('workAddressBuilding', customer.workAddressBuilding);
+                    setFieldValue('workAddressSoi', customer.workAddressSoi);
+                    setFieldValue('workAddressRoad', customer.workAddressRoad);
+                    setFieldValue('workAddressSubdistrict', customer.workAddressSubdistrict);
+                    setFieldValue('workAddressDistrict', customer.workAddressDistrict);
+                    setFieldValue('workAddressProvince', customer.workAddressProvince);
+                    setFieldValue('workAddressPostal', customer.workAddressPostal);
+                }
+            }
 
             // View Modal Elements
             const viewModal = document.getElementById('viewConsentModal');
@@ -1666,10 +1350,14 @@
                     // Reset all
                     residenceRentWrapper.classList.add('hidden');
                     residenceRentAmountInput.removeAttribute('required');
-                    residenceRentAmountInput.value = '';
+                    if (!isSyncingConditionalSections) {
+                        residenceRentAmountInput.value = '';
+                    }
                     residenceStatusOtherWrapper.classList.add('hidden');
                     residenceStatusOtherInput.removeAttribute('required');
-                    residenceStatusOtherInput.value = '';
+                    if (!isSyncingConditionalSections) {
+                        residenceStatusOtherInput.value = '';
+                    }
 
                     if (this.value === 'เช่า/ผ่อนชำระ') {
                         residenceRentWrapper.classList.remove('hidden');
@@ -1830,6 +1518,13 @@
                 });
             }
 
+            const phoneMobileInput = document.getElementById('phone_mobile');
+            if (phoneMobileInput) {
+                phoneMobileInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            }
+
             // Allow clicking anywhere on date inputs to open the date picker
             document.querySelectorAll('input[type="date"]').forEach(function(dateInput) {
                 dateInput.addEventListener('click', function() {
@@ -1859,23 +1554,144 @@
                 }, 300);
             }
 
-            if (openBtn) openBtn.addEventListener('click', openModal);
+            function initializeFormSignature(signatureData) {
+                const seq = ++signatureInitSeq;
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        if (seq !== signatureInitSeq) return;
+                        initSignaturePad();
+                        applySignatureData(signatureData);
+
+                        const clearBtn = document.getElementById('clearSignatureBtn');
+                        if (clearBtn && !clearBtn.dataset.bound) {
+                            clearBtn.addEventListener('click', clearSignature);
+                            clearBtn.dataset.bound = 'true';
+                        }
+                    });
+                });
+            }
+
+            function openCreateModal() {
+                prepareCreateModal();
+                openModal();
+                initializeFormSignature(signatureDataInput?.value || '');
+            }
+
+            window.editDocument = async function(customer) {
+                let fullCustomer = customer;
+                const customerId = customer?.id;
+                if (customerId) {
+                    try {
+                        const response = await fetch(`${modalUpdateBaseUrl}/${customerId}/data`, { headers: { 'Accept': 'application/json' } });
+                        if (response.ok) {
+                            fullCustomer = await response.json();
+                        }
+                    } catch (error) {
+                    }
+                }
+
+                prepareEditModal(fullCustomer);
+                openModal();
+                initializeFormSignature(signatureDataInput?.value || '');
+            };
+
+            document.querySelectorAll('.delete-consent-form').forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    const customerName = this.dataset.name || 'รายการนี้';
+                    if (!window.confirm(`ยืนยันการลบใบยินยอมของ ${customerName} ?`)) {
+                        event.preventDefault();
+                    }
+                });
+            });
+
+            if (openBtn) openBtn.addEventListener('click', openCreateModal);
             if (closeBtn) closeBtn.addEventListener('click', closeModal);
             if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
             if (closeViewBtn) closeViewBtn.addEventListener('click', closeViewModal);
             if (closeViewFooterBtn) closeViewFooterBtn.addEventListener('click', closeViewModal);
 
+            const hasServerErrors = @json($errors->any());
+            const oldConsentInput = @json(\Illuminate\Support\Arr::except(old(), ['_token', '_method']));
+
+            function populateConsentFormFromOldInput(oldData) {
+                if (!oldData || typeof oldData !== 'object') return;
+
+                Object.entries(oldData).forEach(function([key, value]) {
+                    if (key === 'prevent_autofill') return;
+                    setFieldValue(key, value);
+                });
+
+                selectedAddressFilters.province = (addressProvinceInput?.value || '').trim();
+                selectedAddressFilters.city = (addressDistrictInput?.value || '').trim();
+                selectedAddressFilters.district = (addressSubdistrictInput?.value || '').trim();
+                selectedAddressFilters.post_code = (addressPostalInput?.value || '').trim();
+
+                refreshAllPostCodeLists();
+                syncConditionalSections();
+            }
+
+            function openModalWithOldInput(oldData) {
+                const consentId = (oldData?.consent_id ?? '').toString().trim();
+                const isEdit = consentId !== '';
+
+                consentForm?.reset();
+                if (consentForm) {
+                    consentForm.action = isEdit ? `${modalUpdateBaseUrl}/${consentId}` : modalStoreUrl;
+                }
+                if (consentFormMethod) {
+                    consentFormMethod.value = isEdit ? 'PUT' : 'POST';
+                }
+                if (consentModalTitle) {
+                    consentModalTitle.textContent = isEdit ? 'แก้ไขใบยินยอมแบบละเอียด' : 'สร้างใบยินยอมแบบละเอียด';
+                }
+                if (consentSubmitBtn) {
+                    consentSubmitBtn.textContent = isEdit ? 'บันทึกการแก้ไข' : 'บันทึกข้อมูลใบสมัคร';
+                }
+                if (!isEdit && appNoInput) {
+                    appNoInput.value = modalNextAppNo;
+                }
+                if (!isEdit && appDateInput) {
+                    appDateInput.value = '{{ date('Y-m-d') }}';
+                }
+                if (signatureDataInput) {
+                    signatureDataInput.value = '';
+                }
+                if (signaturePad) {
+                    signaturePad.clear();
+                }
+
+                selectedAddressFilters.province = '';
+                selectedAddressFilters.city = '';
+                selectedAddressFilters.district = '';
+                selectedAddressFilters.post_code = '';
+                refreshAllPostCodeLists();
+                syncConditionalSections();
+
+                populateConsentFormFromOldInput(oldData);
+                openModal();
+                initializeFormSignature(signatureDataInput?.value || '');
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (hasServerErrors) {
+                openModalWithOldInput(oldConsentInput);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (urlParams.get('openCreate') === '1') {
+                openCreateModal();
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
             // Initialize Signature Pad
-            let signaturePad;
             function initSignaturePad() {
                 const canvas = document.getElementById('signaturePad');
                 if (!canvas) return;
-                
+
                 // Set canvas size correctly for high DPI
                 const rect = canvas.getBoundingClientRect();
-                canvas.width = rect.width * window.devicePixelRatio;
-                canvas.height = rect.height * window.devicePixelRatio;
+                const ratio = window.devicePixelRatio || 1;
+                canvas.width = Math.max(1, rect.width * ratio);
+                canvas.height = Math.max(1, rect.height * ratio);
                 
                 signaturePad = new SignaturePad(canvas, {
                     backgroundColor: 'rgb(255, 255, 255)',
@@ -1884,7 +1700,7 @@
                 
                 // Rescale context for high DPI
                 const ctx = canvas.getContext('2d');
-                ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                ctx.scale(ratio, ratio);
                 
                 // Save signature data to hidden input (as JSON)
                 signaturePad.addEventListener('endStroke', function() {
@@ -1895,22 +1711,27 @@
             function clearSignature() {
                 if (signaturePad) {
                     signaturePad.clear();
-                    document.getElementById('signatureData').value = '';
+                    if (signatureDataInput) {
+                        signatureDataInput.value = '';
+                    }
                 }
             }
-            
-            // Initialize signature pad when modal opens
-            openBtn?.addEventListener('click', function() {
-                setTimeout(() => {
-                    initSignaturePad();
-                    // Bind clear button after init
-                    const clearBtn = document.getElementById('clearSignatureBtn');
-                    if (clearBtn) {
-                        clearBtn.addEventListener('click', clearSignature);
+
+            if (consentForm && !consentForm.dataset.boundSubmit) {
+                consentForm.addEventListener('submit', function(event) {
+                    if (!signaturePad || signaturePad.isEmpty()) {
+                        event.preventDefault();
+                        window.alert('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนบันทึก');
+                        return;
                     }
-                }, 300); // Wait for modal to open
-            });
-            
+
+                    if (signatureDataInput) {
+                        signatureDataInput.value = JSON.stringify(signaturePad.toData());
+                    }
+                });
+                consentForm.dataset.boundSubmit = 'true';
+            }
+
             // Close modals when clicking outside
             window.addEventListener('click', function(event) {
                 if (event.target === modal) {

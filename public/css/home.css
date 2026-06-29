@@ -448,6 +448,12 @@ body {
     color: #065f46;
 }
 
+.alert-danger {
+    background: #fef2f2;
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    color: #991b1b;
+}
+
 .form-card {
     max-width: 560px;
 }
@@ -782,6 +788,10 @@ body {
     display: none !important;
 }
 
+.spouse-fields {
+    display: contents;
+}
+
 .question-text {
     font-size: 0.9rem;
     color: #1f2937;
@@ -875,5 +885,3 @@ body {
         grid-column: span 12;
     }
 }
-
-
