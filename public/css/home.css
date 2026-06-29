@@ -7,6 +7,7 @@ body {
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: #f8f9fa;
     color: #1f2937;
+    overflow-x: hidden;
 }
 
 .layout {
@@ -74,6 +75,7 @@ body {
     gap: 1.1rem;
     min-height: 100vh;
     background: #f8f9fa;
+    min-width: 0;
 }
 
 .menu-button {
@@ -141,6 +143,8 @@ body {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: #ffffff;
     transition: all 0.2s ease;
+    text-align: center;
+    white-space: normal;
 }
 
 .action-btn:hover {
@@ -317,6 +321,10 @@ body {
     flex-wrap: wrap;
 }
 
+.hero-body {
+    min-width: 0;
+}
+
 .hero-actions {
     display: flex;
     align-items: center;
@@ -393,6 +401,7 @@ body {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.95rem;
+    min-width: 720px;
 }
 
 .consent-table th,
@@ -406,6 +415,23 @@ body {
     background: rgba(220, 252, 231, 0.9);
     color: #14532d;
     font-weight: 700;
+}
+
+.consent-table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.table-actions-form {
+    display: inline;
 }
 
 .badge {
@@ -501,6 +527,13 @@ body {
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
+}
+
+.modal-form-actions {
+    justify-content: flex-end;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+    margin-top: 1rem;
 }
 
 .action-link {
@@ -666,6 +699,7 @@ body {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     width: 90%;
     max-width: 500px;
+    max-height: calc(100vh - 2rem);
     transform: translateY(-20px);
     transition: transform 0.3s ease;
     overflow: hidden;
@@ -819,6 +853,7 @@ body {
     display: flex;
     gap: 1rem;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .radio-label {
@@ -880,8 +915,260 @@ body {
     font-weight: 500;
 }
 
+.signature-group {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.signature-pad-box {
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+    width: min(100%, 400px);
+}
+
+.signature-clear-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.signature-date {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-align: center;
+}
+
+.view-modal-header {
+    background: #ecfdf5;
+    border-bottom: 2px solid #bbf7d0;
+}
+
+.view-modal-title {
+    color: #065f46;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.view-modal-close {
+    color: #065f46;
+}
+
+.view-modal-body {
+    background: #fafafa;
+}
+
+.view-consent-content {
+    padding: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+}
+
+.view-consent-content table {
+    min-width: 560px;
+}
+
+.view-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background: #ffffff;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
 @media (max-width: 768px) {
     .col-9, .col-8, .col-6, .col-4, .col-3, .col-2 {
         grid-column: span 12;
+    }
+
+    .content {
+        gap: 0.9rem;
+    }
+
+    .topbar {
+        padding: 1rem;
+    }
+
+    .topbar-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .user-name-compact {
+        display: none;
+    }
+
+    .hero {
+        padding: 1.25rem;
+    }
+
+    .hero.compact-hero.hero-with-actions {
+        align-items: stretch;
+    }
+
+    .hero-actions {
+        width: 100%;
+    }
+
+    .hero-actions .action-btn {
+        width: 100%;
+    }
+
+    .form-section-title {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .form-section-title .checkbox-group {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .modal {
+        padding: 0.75rem;
+        align-items: flex-end;
+    }
+
+    .modal-content,
+    .modal-content.modal-lg {
+        width: 100%;
+        max-width: 100%;
+        max-height: calc(100vh - 1.5rem);
+        border-radius: 1rem 1rem 0 0;
+    }
+
+    .modal-header,
+    .modal-body,
+    .view-modal-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .view-consent-content {
+        padding: 1rem;
+    }
+
+    .modal-form-actions,
+    .view-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal-form-actions .action-btn,
+    .view-modal-footer .action-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .content {
+        padding: 6.5rem 0.75rem 0.75rem;
+    }
+
+    .topbar {
+        padding: 0.9rem 0.75rem;
+    }
+
+    .hero.compact-hero h2 {
+        font-size: 1.1rem;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-card {
+        padding: 0.85rem;
+    }
+
+    .consent-table table,
+    .consent-table thead,
+    .consent-table tbody,
+    .consent-table th,
+    .consent-table td,
+    .consent-table tr {
+        display: block;
+    }
+
+    .consent-table table {
+        min-width: 0;
+    }
+
+    .consent-table thead {
+        display: none;
+    }
+
+    .consent-table tbody {
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .consent-table tr {
+        background: #ffffff;
+        border: 1px solid rgba(16, 185, 129, 0.18);
+        border-radius: 0.95rem;
+        padding: 0.35rem 0.85rem;
+    }
+
+    .consent-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #eef2f4;
+        text-align: right;
+    }
+
+    .consent-table td:last-child {
+        border-bottom: none;
+        padding-bottom: 0.35rem;
+    }
+
+    .consent-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #14532d;
+        text-align: left;
+    }
+
+    .table-actions,
+    .table-actions-form {
+        width: 100%;
+    }
+
+    .table-actions {
+        justify-content: flex-end;
+    }
+
+    .table-actions .action-btn,
+    .table-actions-form .action-btn {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .user-dropdown {
+        left: auto;
+        right: 0;
+        min-width: min(240px, calc(100vw - 1.5rem));
     }
 }

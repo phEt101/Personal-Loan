@@ -748,18 +748,18 @@
                         </p>
                     </div>
 
-                    <div class="form-group col-12" style="margin-bottom: 0; display: flex; flex-direction: column; align-items: center;">
+                    <div class="form-group col-12 signature-group">
                         <label>ลงชื่อผู้ขอสินเชื่อ</label>
-                        <div style="border: 2px solid #e5e7eb; border-radius: 0.5rem; background: #ffffff; position: relative; overflow: hidden; width: 400px;">
+                        <div class="signature-pad-box">
                             <canvas id="signaturePad" style="width: 100%; height: 120px; cursor: crosshair;"></canvas>
-                            <button type="button" id="clearSignatureBtn" style="position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.25rem 0.5rem; background: #ef4444; color: white; border: none; border-radius: 0.25rem; font-size: 0.75rem; cursor: pointer;">ล้าง</button>
+                            <button type="button" id="clearSignatureBtn" class="signature-clear-btn">ล้าง</button>
                         </div>
                         <input type="hidden" id="signatureData" name="signatureData">
-                        <p style="margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; text-align: center;">วันที่เซ็น: {{ date('d/m/Y') }}</p>
+                        <p class="signature-date">วันที่เซ็น: {{ date('d/m/Y') }}</p>
                     </div>
                 </div>
 
-                <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+                <div class="form-actions modal-form-actions">
                     <button type="button" class="action-btn outline" id="cancelConsentModal">ยกเลิก</button>
                     <button type="submit" class="action-btn" id="consentSubmitBtn">บันทึกข้อมูลใบสมัคร</button>
                 </div>

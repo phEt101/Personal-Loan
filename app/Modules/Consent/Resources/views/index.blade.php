@@ -3,7 +3,7 @@
 @section('content')
     <section class="dashboard">
         <div class="hero compact-hero hero-with-actions">
-            <div>
+            <div class="hero-body">
                 <h2>รายงานใบยินยอม</h2>
                 <p>สรุปสถานะการเซ็นใบยินยอมของลูกค้า</p>
             </div>
@@ -57,10 +57,10 @@
                     <tbody>
                         @forelse($customers as $customer)
                             <tr>
-                                <td>{{ $customer->app_no ?? '-' }}</td>
-                                <td>{{ $customer->name }}</td>
-                                <td>{{ $customer->transaction_date ?? '-' }}</td>
-                                <td>
+                                <td data-label="รหัส">{{ $customer->app_no ?? '-' }}</td>
+                                <td data-label="ชื่อ">{{ $customer->name }}</td>
+                                <td data-label="วันที่ทำรายการ">{{ $customer->transaction_date ?? '-' }}</td>
+                                <td data-label="สถานะ">
                                     @if($customer->status === 'approved')
                                         <span class="badge badge-signed">ผ่าน</span>
                                     @elseif($customer->status === 'rejected')
@@ -69,8 +69,8 @@
                                         <span class="badge">รอดำเนินการ</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                <td data-label="การกระทำ">
+                                    <div class="table-actions">
                                         <button
                                             type="button"
                                             class="action-btn outline"
@@ -87,9 +87,9 @@
                                         >
                                             แก้ไข
                                         </button>
-                                        <form method="POST" action="{{ route('consent.destroy', $customer->id) }}" class="delete-consent-form" data-name="{{ $customer->name }}" style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
+                                        <form method="POST" action="{{ route('consent.destroy', $customer->id) }}" class="delete-consent-form table-actions-form" data-name="{{ $customer->name }}">
+                                            @csrf
+                                            @method('DELETE')
                                             <button
                                                 type="submit"
                                                 class="action-btn"
