@@ -687,6 +687,7 @@ body {
     justify-content: center;
     opacity: 0;
     transition: opacity 0.3s ease;
+    overscroll-behavior: contain;
 }
 
 .modal.show {
@@ -703,6 +704,7 @@ body {
     transform: translateY(-20px);
     transition: transform 0.3s ease;
     overflow: hidden;
+    touch-action: pan-y;
 }
 
 .modal.show .modal-content {
@@ -752,6 +754,10 @@ body {
 .modal-body.scrollable {
     max-height: 80vh;
     overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 .form-grid {

@@ -114,6 +114,49 @@
 
     <div id="modalMount"></div>
 
+    <style>
+        .address-search-field {
+            position: relative;
+        }
+
+        .address-search-dropdown {
+            position: absolute;
+            top: calc(100% + 0.35rem);
+            left: 0;
+            right: 0;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+            z-index: 30;
+        }
+
+        .address-search-option,
+        .address-search-empty {
+            width: 100%;
+            padding: 0.7rem 0.85rem;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        .address-search-option {
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .address-search-option:hover,
+        .address-search-option.is-active {
+            background: #eff6ff;
+        }
+
+        .address-search-empty {
+            color: #6b7280;
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
     <script>
@@ -818,6 +861,9 @@
                     if (['text', 'number', 'email', 'tel', 'search'].includes(el.type)) {
                         el.setAttribute('readonly', 'readonly');
                         el.addEventListener('focus', function() {
+                            if (this.dataset.syncReadonly === 'true') {
+                                return;
+                            }
                             this.removeAttribute('readonly');
                         }, { once: true });
                     }
@@ -830,107 +876,340 @@
                 options: @json(route('consent.postcodes.options')),
             };
 
-            const addressProvinceInput = document.getElementById('address_province');
-            const addressDistrictInput = document.getElementById('address_district');
-            const addressSubdistrictInput = document.getElementById('address_subdistrict');
-            const addressPostalInput = document.getElementById('address_postal');
-
-            const addressProvinceList = document.getElementById('address_province_list');
-            const addressDistrictList = document.getElementById('address_district_list');
-            const addressSubdistrictList = document.getElementById('address_subdistrict_list');
-            const addressPostalList = document.getElementById('address_postal_list');
-
-            const selectedAddressFilters = {
-                province: '',
-                city: '',
-                district: '',
-                post_code: '',
+            const addressFieldResponseKeys = {
+                province: 'provinces',
+                city: 'cities',
+                district: 'districts',
+                post_code: 'post_codes',
             };
 
-            let postCodeRequestSeq = 0;
-
-            function fillDatalist(datalistEl, items) {
-                if (!datalistEl) return;
-                datalistEl.innerHTML = '';
-                items.forEach(function(item) {
-                    const option = document.createElement('option');
-                    option.value = item;
-                    datalistEl.appendChild(option);
-                });
-            }
+            const addressFieldQueryKeys = {
+                province: 'q_province',
+                city: 'q_city',
+                district: 'q_district',
+                post_code: 'q_post_code',
+            };
 
             function buildPostCodeOptionsUrl(filters, queries) {
                 const url = new URL(postCodeApi.options, window.location.origin);
+
                 Object.entries(filters || {}).forEach(function([key, value]) {
-                    if (value) url.searchParams.set(key, value);
+                    if (value) {
+                        url.searchParams.set(key, value);
+                    }
                 });
+
                 Object.entries(queries || {}).forEach(function([key, value]) {
-                    if (value) url.searchParams.set(key, value);
+                    if (value) {
+                        url.searchParams.set(key, value);
+                    }
                 });
+
                 return url.toString();
             }
 
             async function fetchPostCodeOptions(filters, queries) {
-                const requestSeq = ++postCodeRequestSeq;
-                const url = buildPostCodeOptionsUrl(filters, queries);
-                const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                const response = await fetch(buildPostCodeOptionsUrl(filters, queries), {
+                    headers: { 'Accept': 'application/json' }
+                });
                 if (!response.ok) return null;
                 const data = await response.json();
-                if (requestSeq !== postCodeRequestSeq) return null;
                 return data && typeof data === 'object' ? data : null;
             }
 
-            async function refreshAllPostCodeLists() {
-                const data = await fetchPostCodeOptions(selectedAddressFilters, {});
-                if (!data) return;
-                fillDatalist(addressProvinceList, Array.isArray(data.provinces) ? data.provinces : []);
-                fillDatalist(addressDistrictList, Array.isArray(data.cities) ? data.cities : []);
-                fillDatalist(addressSubdistrictList, Array.isArray(data.districts) ? data.districts : []);
-                fillDatalist(addressPostalList, Array.isArray(data.post_codes) ? data.post_codes : []);
-            }
+            function createAddressLookupController(config) {
+                const state = {
+                    selected: {
+                        province: '',
+                        city: '',
+                        district: '',
+                        post_code: '',
+                    },
+                    query: {
+                        province: '',
+                        city: '',
+                        district: '',
+                        post_code: '',
+                    },
+                    activeField: '',
+                };
 
-            async function refreshFocusedPostCodeList(fieldKey, queryValue) {
-                const queries = {};
-                if (fieldKey === 'province') queries.q_province = queryValue;
-                if (fieldKey === 'city') queries.q_city = queryValue;
-                if (fieldKey === 'district') queries.q_district = queryValue;
-                if (fieldKey === 'post_code') queries.q_post_code = queryValue;
+                const fields = {
+                    province: { input: config.provinceInput, dropdown: config.provinceDropdown },
+                    city: { input: config.cityInput, dropdown: config.cityDropdown },
+                    district: { input: config.districtInput, dropdown: config.districtDropdown },
+                    post_code: { input: config.postalInput, dropdown: config.postalDropdown },
+                };
 
-                const data = await fetchPostCodeOptions(selectedAddressFilters, queries);
-                if (!data) return;
+                let refreshSeq = 0;
 
-                if (fieldKey === 'province') fillDatalist(addressProvinceList, Array.isArray(data.provinces) ? data.provinces : []);
-                if (fieldKey === 'city') fillDatalist(addressDistrictList, Array.isArray(data.cities) ? data.cities : []);
-                if (fieldKey === 'district') fillDatalist(addressSubdistrictList, Array.isArray(data.districts) ? data.districts : []);
-                if (fieldKey === 'post_code') fillDatalist(addressPostalList, Array.isArray(data.post_codes) ? data.post_codes : []);
-            }
+                function getSelectedFilters() {
+                    const filters = {};
+                    Object.entries(state.selected).forEach(function([key, value]) {
+                        if (value) {
+                            filters[key] = value;
+                        }
+                    });
+                    return filters;
+                }
 
-            function bindPostCodeField(inputEl, fieldKey) {
-                if (!inputEl) return;
+                function getQueryFilters() {
+                    const queries = {};
+                    Object.entries(state.query).forEach(function([key, value]) {
+                        if (value) {
+                            queries[addressFieldQueryKeys[key]] = value;
+                        }
+                    });
+                    return queries;
+                }
 
-                inputEl.addEventListener('input', function() {
-                    const value = (this.value || '').trim();
-                    if (value === '') {
-                        selectedAddressFilters[fieldKey] = '';
-                        refreshAllPostCodeLists();
+                function getItems(data, fieldKey) {
+                    const responseKey = addressFieldResponseKeys[fieldKey];
+                    return Array.isArray(data?.[responseKey]) ? data[responseKey] : [];
+                }
+
+                function syncInputs() {
+                    Object.entries(fields).forEach(function([fieldKey, field]) {
+                        if (!field.input) return;
+                        field.input.value = state.query[fieldKey] || state.selected[fieldKey] || '';
+                    });
+                }
+
+                function hideDropdown(fieldKey) {
+                    const dropdown = fields[fieldKey]?.dropdown;
+                    if (!dropdown) return;
+                    dropdown.innerHTML = '';
+                    dropdown.classList.add('hidden');
+                }
+
+                function hideAllDropdowns() {
+                    Object.keys(fields).forEach(hideDropdown);
+                }
+
+                function renderDropdown(fieldKey, items) {
+                    const field = fields[fieldKey];
+                    const dropdown = field?.dropdown;
+                    const input = field?.input;
+
+                    if (!dropdown || !input || state.activeField !== fieldKey || input.readOnly) {
+                        hideDropdown(fieldKey);
                         return;
                     }
 
-                    refreshFocusedPostCodeList(fieldKey, value);
-                });
+                    const uniqueItems = Array.from(new Set(items.filter(Boolean)));
+                    dropdown.innerHTML = '';
 
-                inputEl.addEventListener('change', function() {
-                    selectedAddressFilters[fieldKey] = (this.value || '').trim();
-                    refreshAllPostCodeLists();
-                });
+                    if (uniqueItems.length === 0) {
+                        const empty = document.createElement('div');
+                        empty.className = 'address-search-empty';
+                        empty.textContent = 'ไม่พบข้อมูลที่ตรงกับคำค้น';
+                        dropdown.appendChild(empty);
+                        dropdown.classList.remove('hidden');
+                        return;
+                    }
+
+                    uniqueItems.forEach(function(item, index) {
+                        const option = document.createElement('button');
+                        option.type = 'button';
+                        option.className = 'address-search-option';
+                        if (index === 0) {
+                            option.classList.add('is-active');
+                        }
+                        option.textContent = item;
+                        option.addEventListener('mousedown', function(event) {
+                            event.preventDefault();
+                            applySelection(fieldKey, item);
+                        });
+                        dropdown.appendChild(option);
+                    });
+
+                    dropdown.classList.remove('hidden');
+                }
+
+                function normalizeSelections(data, lockedFieldKey) {
+                    let changed = false;
+
+                    Object.keys(fields).forEach(function(fieldKey) {
+                        if (fieldKey === lockedFieldKey) {
+                            return;
+                        }
+
+                        const selectedValue = state.selected[fieldKey];
+                        if (!selectedValue) {
+                            return;
+                        }
+
+                        if (!getItems(data, fieldKey).includes(selectedValue)) {
+                            state.selected[fieldKey] = '';
+                            if (state.query[fieldKey] === selectedValue) {
+                                state.query[fieldKey] = '';
+                            }
+                            changed = true;
+                        }
+                    });
+
+                    if (changed) {
+                        syncInputs();
+                    }
+
+                    return changed;
+                }
+
+                async function refresh(lockedFieldKey = '') {
+                    const currentSeq = ++refreshSeq;
+                    const data = await fetchPostCodeOptions(getSelectedFilters(), getQueryFilters());
+                    if (!data || currentSeq !== refreshSeq) return;
+
+                    if (normalizeSelections(data, lockedFieldKey)) {
+                        await refresh(lockedFieldKey);
+                        return;
+                    }
+
+                    Object.keys(fields).forEach(function(fieldKey) {
+                        renderDropdown(fieldKey, getItems(data, fieldKey));
+                    });
+                }
+
+                function applySelection(fieldKey, value) {
+                    state.selected[fieldKey] = value;
+                    state.query[fieldKey] = value;
+                    state.activeField = '';
+                    syncInputs();
+                    hideAllDropdowns();
+                    refresh(fieldKey);
+                }
+
+                function handleInput(fieldKey) {
+                    const input = fields[fieldKey]?.input;
+                    if (!input) return;
+
+                    const rawValue = (input.value || '').trim();
+                    const value = fieldKey === 'post_code' ? rawValue.replace(/[^\d]/g, '') : rawValue;
+
+                    if (input.value !== value) {
+                        input.value = value;
+                    }
+
+                    state.query[fieldKey] = value;
+                    if (state.selected[fieldKey] !== value) {
+                        state.selected[fieldKey] = '';
+                    }
+
+                    state.activeField = fieldKey;
+                    refresh(fieldKey);
+                }
+
+                function bindField(fieldKey) {
+                    const field = fields[fieldKey];
+                    const input = field?.input;
+                    if (!input) return;
+
+                    input.addEventListener('focus', function() {
+                        state.activeField = fieldKey;
+                        state.query[fieldKey] = (input.value || '').trim();
+                        refresh(fieldKey);
+                    });
+
+                    input.addEventListener('input', function() {
+                        handleInput(fieldKey);
+                    });
+
+                    input.addEventListener('keydown', function(event) {
+                        if (event.key === 'Escape') {
+                            hideDropdown(fieldKey);
+                        }
+
+                        if (event.key === 'Enter') {
+                            const firstOption = field.dropdown?.querySelector('.address-search-option');
+                            if (firstOption) {
+                                event.preventDefault();
+                                firstOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                            }
+                        }
+                    });
+
+                    input.addEventListener('blur', function() {
+                        window.setTimeout(function() {
+                            if (state.activeField === fieldKey) {
+                                state.activeField = '';
+                            }
+                            hideDropdown(fieldKey);
+                        }, 150);
+                    });
+                }
+
+                Object.keys(fields).forEach(bindField);
+
+                return {
+                    async reset() {
+                        Object.keys(state.selected).forEach(function(fieldKey) {
+                            state.selected[fieldKey] = '';
+                            state.query[fieldKey] = '';
+                        });
+                        state.activeField = '';
+                        syncInputs();
+                        hideAllDropdowns();
+                        await refresh();
+                    },
+                    async setValues(values) {
+                        Object.keys(state.selected).forEach(function(fieldKey) {
+                            const value = (values?.[fieldKey] || '').trim();
+                            state.selected[fieldKey] = value;
+                            state.query[fieldKey] = value;
+                        });
+                        state.activeField = '';
+                        syncInputs();
+                        hideAllDropdowns();
+                        await refresh();
+                    },
+                    getValues() {
+                        return {
+                            province: state.selected.province || state.query.province || '',
+                            city: state.selected.city || state.query.city || '',
+                            district: state.selected.district || state.query.district || '',
+                            post_code: state.selected.post_code || state.query.post_code || '',
+                        };
+                    },
+                    setReadOnly(readOnly) {
+                        Object.values(fields).forEach(function(field) {
+                            if (!field.input) return;
+                            field.input.readOnly = readOnly;
+                            field.input.dataset.syncReadonly = readOnly ? 'true' : 'false';
+                            field.input.style.background = readOnly ? '#f3f4f6' : '';
+                            field.input.style.cursor = readOnly ? 'not-allowed' : '';
+                        });
+
+                        if (readOnly) {
+                            hideAllDropdowns();
+                        }
+                    },
+                };
             }
 
-            bindPostCodeField(addressProvinceInput, 'province');
-            bindPostCodeField(addressDistrictInput, 'city');
-            bindPostCodeField(addressSubdistrictInput, 'district');
-            bindPostCodeField(addressPostalInput, 'post_code');
+            const homeAddressController = createAddressLookupController({
+                provinceInput: document.getElementById('address_province'),
+                provinceDropdown: document.getElementById('address_province_dropdown'),
+                cityInput: document.getElementById('address_district'),
+                cityDropdown: document.getElementById('address_district_dropdown'),
+                districtInput: document.getElementById('address_subdistrict'),
+                districtDropdown: document.getElementById('address_subdistrict_dropdown'),
+                postalInput: document.getElementById('address_postal'),
+                postalDropdown: document.getElementById('address_postal_dropdown'),
+            });
 
-            refreshAllPostCodeLists();
+            const workAddressController = createAddressLookupController({
+                provinceInput: document.getElementById('workAddressProvince'),
+                provinceDropdown: document.getElementById('workAddressProvince_dropdown'),
+                cityInput: document.getElementById('workAddressDistrict'),
+                cityDropdown: document.getElementById('workAddressDistrict_dropdown'),
+                districtInput: document.getElementById('workAddressSubdistrict'),
+                districtDropdown: document.getElementById('workAddressSubdistrict_dropdown'),
+                postalInput: document.getElementById('workAddressPostal'),
+                postalDropdown: document.getElementById('workAddressPostal_dropdown'),
+            });
+
+            homeAddressController.reset();
+            workAddressController.reset();
 
             function setFieldValue(fieldName, value) {
                 const field = consentForm?.querySelector(`[name="${fieldName}"]`);
@@ -1007,7 +1286,7 @@
                 }
             }
 
-            function prepareCreateModal() {
+            async function prepareCreateModal() {
                 consentForm?.reset();
                 setFieldValue('consent_id', '');
                 if (consentForm) {
@@ -1035,15 +1314,12 @@
                     signaturePad.clear();
                 }
 
-                selectedAddressFilters.province = '';
-                selectedAddressFilters.city = '';
-                selectedAddressFilters.district = '';
-                selectedAddressFilters.post_code = '';
-                refreshAllPostCodeLists();
+                await homeAddressController.reset();
+                await workAddressController.reset();
                 syncConditionalSections();
             }
 
-            function prepareEditModal(customer) {
+            async function prepareEditModal(customer) {
                 if (!consentForm) return;
                 const hasCustomResidenceStatus = Boolean(
                     customer.residence_status &&
@@ -1143,11 +1419,19 @@
                 setSelectWithOther('spouse_occupation', 'spouseOccupationOther', customer.spouse_occupation, ['พนักงานบริษัท', 'ข้าราชการ/ทหาร/ตำรวจ', 'เจ้าของกิจการ', 'อาชีพอิสระ', 'รับจ้าง', 'อื่นๆ']);
                 setSelectWithOther('companyType', 'companyTypeOther', customer.companyType, ['บจก.', 'บมจ.', 'หจก.', 'ร้านค้า/ทะเบียนพาณิชย์']);
 
-                selectedAddressFilters.province = (customer.address_province || '').trim();
-                selectedAddressFilters.city = (customer.address_district || '').trim();
-                selectedAddressFilters.district = (customer.address_subdistrict || '').trim();
-                selectedAddressFilters.post_code = (customer.address_postal || '').trim();
-                refreshAllPostCodeLists();
+                await homeAddressController.setValues({
+                    province: customer.address_province,
+                    city: customer.address_district,
+                    district: customer.address_subdistrict,
+                    post_code: customer.address_postal,
+                });
+
+                await workAddressController.setValues({
+                    province: customer.useHomeAddress ? customer.address_province : customer.workAddressProvince,
+                    city: customer.useHomeAddress ? customer.address_district : customer.workAddressDistrict,
+                    district: customer.useHomeAddress ? customer.address_subdistrict : customer.workAddressSubdistrict,
+                    post_code: customer.useHomeAddress ? customer.address_postal : customer.workAddressPostal,
+                });
 
                 if ((customer.dwelling_type || '').startsWith('อาศัยอยู่กับผู้อื่น: ')) {
                     setFieldValue('dwelling_type', 'อาศัยอยู่กับผู้อื่น');
@@ -1402,31 +1686,59 @@
                 { id: 'address_postal', workId: 'workAddressPostal' }
             ];
 
+            async function syncHomeAddressToWorkAddress() {
+                homeAddressFields.forEach(field => {
+                    const homeInput = document.getElementById(field.id);
+                    const workInput = document.getElementById(field.workId);
+                    if (!homeInput || !workInput) return;
+                    workInput.value = homeInput.value;
+                });
+
+                await workAddressController.setValues(homeAddressController.getValues());
+            }
+
             if (useHomeAddressCheckbox) {
-                useHomeAddressCheckbox.addEventListener('change', function() {
+                useHomeAddressCheckbox.addEventListener('change', async function() {
                     homeAddressFields.forEach(field => {
                         const homeInput = document.getElementById(field.id);
                         const workInput = document.getElementById(field.workId);
+
+                        if (!homeInput || !workInput) return;
                         
                         if (this.checked) {
-                            workInput.value = homeInput.value;
                             workInput.readOnly = true;
+                            workInput.dataset.syncReadonly = 'true';
+                            workInput.style.background = '#f3f4f6';
+                            workInput.style.cursor = 'not-allowed';
                         } else {
                             workInput.value = '';
                             workInput.readOnly = false;
+                            workInput.dataset.syncReadonly = 'false';
+                            workInput.style.background = '';
+                            workInput.style.cursor = '';
                         }
                     });
+
+                    workAddressController.setReadOnly(this.checked);
+
+                    if (this.checked) {
+                        await syncHomeAddressToWorkAddress();
+                    } else {
+                        await workAddressController.reset();
+                    }
                 });
 
                 // Also listen to changes in home address fields when checkbox is checked
                 homeAddressFields.forEach(field => {
                     const homeInput = document.getElementById(field.id);
-                    homeInput.addEventListener('input', function() {
+                    const syncHandler = async function() {
                         if (useHomeAddressCheckbox.checked) {
-                            const workInput = document.getElementById(field.workId);
-                            workInput.value = this.value;
+                            await syncHomeAddressToWorkAddress();
                         }
-                    });
+                    };
+
+                    homeInput?.addEventListener('input', syncHandler);
+                    homeInput?.addEventListener('change', syncHandler);
                 });
             }
 
@@ -1614,7 +1926,7 @@
             const hasServerErrors = @json($errors->any());
             const oldConsentInput = @json(\Illuminate\Support\Arr::except(old(), ['_token', '_method']));
 
-            function populateConsentFormFromOldInput(oldData) {
+            async function populateConsentFormFromOldInput(oldData) {
                 if (!oldData || typeof oldData !== 'object') return;
 
                 Object.entries(oldData).forEach(function([key, value]) {
@@ -1622,16 +1934,24 @@
                     setFieldValue(key, value);
                 });
 
-                selectedAddressFilters.province = (addressProvinceInput?.value || '').trim();
-                selectedAddressFilters.city = (addressDistrictInput?.value || '').trim();
-                selectedAddressFilters.district = (addressSubdistrictInput?.value || '').trim();
-                selectedAddressFilters.post_code = (addressPostalInput?.value || '').trim();
+                await homeAddressController.setValues({
+                    province: oldData.address_province,
+                    city: oldData.address_district,
+                    district: oldData.address_subdistrict,
+                    post_code: oldData.address_postal,
+                });
 
-                refreshAllPostCodeLists();
+                await workAddressController.setValues({
+                    province: oldData.useHomeAddress ? oldData.address_province : oldData.workAddressProvince,
+                    city: oldData.useHomeAddress ? oldData.address_district : oldData.workAddressDistrict,
+                    district: oldData.useHomeAddress ? oldData.address_subdistrict : oldData.workAddressSubdistrict,
+                    post_code: oldData.useHomeAddress ? oldData.address_postal : oldData.workAddressPostal,
+                });
+
                 syncConditionalSections();
             }
 
-            function openModalWithOldInput(oldData) {
+            async function openModalWithOldInput(oldData) {
                 const consentId = (oldData?.consent_id ?? '').toString().trim();
                 const isEdit = consentId !== '';
 
@@ -1661,14 +1981,11 @@
                     signaturePad.clear();
                 }
 
-                selectedAddressFilters.province = '';
-                selectedAddressFilters.city = '';
-                selectedAddressFilters.district = '';
-                selectedAddressFilters.post_code = '';
-                refreshAllPostCodeLists();
+                await homeAddressController.reset();
+                await workAddressController.reset();
                 syncConditionalSections();
 
-                populateConsentFormFromOldInput(oldData);
+                await populateConsentFormFromOldInput(oldData);
                 openModal();
                 initializeFormSignature(signatureDataInput?.value || '');
             }

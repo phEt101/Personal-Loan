@@ -362,28 +362,28 @@
                         <input type="text" id="address_road" name="address_road" placeholder="ถนน">
                     </div>
 
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 address-search-field">
                         <label for="address_subdistrict">แขวง/ตำบล</label>
-                        <input type="text" id="address_subdistrict" name="address_subdistrict" placeholder="พิมพ์ค้นหา/เลือก แขวง/ตำบล" list="address_subdistrict_list">
-                        <datalist id="address_subdistrict_list"></datalist>
+                        <input type="text" id="address_subdistrict" name="address_subdistrict" placeholder="พิมพ์ค้นหา/เลือก แขวง/ตำบล" autocomplete="off">
+                        <div class="address-search-dropdown hidden" id="address_subdistrict_dropdown"></div>
                     </div>
 
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 address-search-field">
                         <label for="address_district">เขต / อำเภอ</label>
-                        <input type="text" id="address_district" name="address_district" placeholder="พิมพ์ค้นหา/เลือก เขต / อำเภอ" list="address_district_list">
-                        <datalist id="address_district_list"></datalist>
+                        <input type="text" id="address_district" name="address_district" placeholder="พิมพ์ค้นหา/เลือก เขต / อำเภอ" autocomplete="off">
+                        <div class="address-search-dropdown hidden" id="address_district_dropdown"></div>
                     </div>
 
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 address-search-field">
                         <label for="address_province">จังหวัด</label>
-                        <input type="text" id="address_province" name="address_province" placeholder="พิมพ์ค้นหา/เลือก จังหวัด" list="address_province_list">
-                        <datalist id="address_province_list"></datalist>
+                        <input type="text" id="address_province" name="address_province" placeholder="พิมพ์ค้นหา/เลือก จังหวัด" autocomplete="off">
+                        <div class="address-search-dropdown hidden" id="address_province_dropdown"></div>
                     </div>
 
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 address-search-field">
                         <label for="address_postal">รหัสไปรษณีย์</label>
-                        <input type="text" id="address_postal" name="address_postal" placeholder="พิมพ์ค้นหา/เลือก รหัสไปรษณีย์" list="address_postal_list">
-                        <datalist id="address_postal_list"></datalist>
+                        <input type="text" id="address_postal" name="address_postal" placeholder="พิมพ์ค้นหา/เลือก รหัสไปรษณีย์" autocomplete="off" inputmode="numeric">
+                        <div class="address-search-dropdown hidden" id="address_postal_dropdown"></div>
                     </div>
 
                     <div class="form-group col-6">
@@ -491,24 +491,28 @@
                         <input type="text" id="workAddressRoad" name="workAddressRoad" placeholder="ถนน">
                     </div>
 
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 address-search-field">
                         <label for="workAddressSubdistrict">แขวง/ตำบล</label>
-                        <input type="text" id="workAddressSubdistrict" name="workAddressSubdistrict" placeholder="แขวง/ตำบล">
+                        <input type="text" id="workAddressSubdistrict" name="workAddressSubdistrict" placeholder="พิมพ์ค้นหา/เลือก แขวง/ตำบล" autocomplete="off">
+                        <div class="address-search-dropdown hidden" id="workAddressSubdistrict_dropdown"></div>
                     </div>
 
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 address-search-field">
                         <label for="workAddressDistrict">เขต / อำเภอ</label>
-                        <input type="text" id="workAddressDistrict" name="workAddressDistrict" placeholder="เขต / อำเภอ">
+                        <input type="text" id="workAddressDistrict" name="workAddressDistrict" placeholder="พิมพ์ค้นหา/เลือก เขต / อำเภอ" autocomplete="off">
+                        <div class="address-search-dropdown hidden" id="workAddressDistrict_dropdown"></div>
                     </div>
 
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 address-search-field">
                         <label for="workAddressProvince">จังหวัด</label>
-                        <input type="text" id="workAddressProvince" name="workAddressProvince" placeholder="จังหวัด">
+                        <input type="text" id="workAddressProvince" name="workAddressProvince" placeholder="พิมพ์ค้นหา/เลือก จังหวัด" autocomplete="off">
+                        <div class="address-search-dropdown hidden" id="workAddressProvince_dropdown"></div>
                     </div>
 
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 address-search-field">
                         <label for="workAddressPostal">รหัสไปรษณีย์</label>
-                        <input type="text" id="workAddressPostal" name="workAddressPostal" placeholder="รหัสไปรษณีย์" maxlength="5">
+                        <input type="text" id="workAddressPostal" name="workAddressPostal" placeholder="พิมพ์ค้นหา/เลือก รหัสไปรษณีย์" autocomplete="off" inputmode="numeric">
+                        <div class="address-search-dropdown hidden" id="workAddressPostal_dropdown"></div>
                     </div>
 
                     <div class="form-group col-12">
