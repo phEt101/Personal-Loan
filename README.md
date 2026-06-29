@@ -1,59 +1,260 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Personal Loan
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+โปรเจกต์นี้เป็นระบบ `Laravel` ที่รันผ่าน `Docker` โดยมี service หลักดังนี้
 
-## About Laravel
+- `app` สำหรับเว็บแอป Laravel
+- `mysql` สำหรับฐานข้อมูล MySQL
+- `phpmyadmin` สำหรับจัดการฐานข้อมูลผ่านหน้าเว็บ
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## สิ่งที่ต้องมี
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+ก่อนเปิดโปรเจกต์บนคอมเครื่องอื่น ให้เตรียมสิ่งเหล่านี้ก่อน
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- ติดตั้ง `Docker Desktop`
+- เปิด `Docker Desktop` ให้พร้อมใช้งาน
+- มี `Git` หรือมีไฟล์โปรเจกต์อยู่ในเครื่องแล้ว
+- แนะนำให้หยุด `Apache` และ `MySQL` จาก `XAMPP` ถ้ามี เพื่อกันพอร์ตชน
 
-## Learning Laravel
+## ลำดับการเปิดโปรเจกต์บนคอมเครื่องอื่น
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 1. ดาวน์โหลดโปรเจกต์
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+ใช้วิธีใดวิธีหนึ่ง
 
-## Laravel Sponsors
+- `git clone`
+- ดาวน์โหลดไฟล์โปรเจกต์จาก GitHub เป็น zip
+- copy โฟลเดอร์โปรเจกต์จากอีกเครื่อง
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+ตัวอย่าง:
 
-### Premium Partners
+```powershell
+git clone https://github.com/phEt101/Personal-Loan.git
+cd Personal-Loan
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 2. สร้างไฟล์ `.env`
 
-## Contributing
+ไฟล์ `.env` ไม่ถูกเก็บใน Git ดังนั้นหลัง clone โปรเจกต์ต้องสร้างเองจาก `.env.example`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```powershell
+copy .env.example .env
+```
 
-## Code of Conduct
+### 3. ตรวจค่าใน `.env`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+ค่าตั้งต้นของโปรเจกต์สำหรับ Docker local ควรเป็นประมาณนี้
 
-## Security Vulnerabilities
+```env
+APP_NAME=PersonalLoan
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=false
+APP_URL=http://localhost:8080
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=personal_loan
+DB_USERNAME=personal_loan_user
+DB_PASSWORD=secret
 
-## License
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
+CACHE_STORE=file
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+หมายเหตุ:
+
+- `APP_KEY` ปล่อยว่างไว้ก่อนได้ เดี๋ยวค่อย generate
+- ถ้าเครื่องใหม่ต้องใช้ค่าพิเศษอื่น ให้แก้ในขั้นนี้ก่อน
+
+### 4. เปิด Docker containers
+
+รันคำสั่งนี้ที่รากโปรเจกต์
+
+```powershell
+docker compose up -d --build
+```
+
+### 5. เช็กว่า containers ขึ้นครบ
+
+```powershell
+docker compose ps
+```
+
+ควรเห็น service หลักประมาณนี้
+
+- `personal-loan-app`
+- `personal-loan-db`
+- `personal-loan-phpmyadmin`
+
+### 6. สร้าง `APP_KEY`
+
+ถ้าไฟล์ `.env` ยังไม่มี `APP_KEY` ให้รัน
+
+```powershell
+docker compose exec app php artisan key:generate
+```
+
+### 7. สร้างตารางฐานข้อมูล
+
+```powershell
+docker compose exec app php artisan migrate
+```
+
+ถ้าต้องการข้อมูลตัวอย่างด้วย ให้รันเพิ่ม
+
+```powershell
+docker compose exec app php artisan db:seed
+```
+
+### 8. ล้าง cache ของ Laravel
+
+```powershell
+docker compose exec app php artisan optimize:clear
+```
+
+### 9. เปิดใช้งานหน้าเว็บ
+
+เปิดในเบราว์เซอร์ที่ลิงก์เหล่านี้
+
+- เว็บหลัก: [http://localhost:8080](http://localhost:8080)
+- phpMyAdmin: [http://localhost:8081](http://localhost:8081)
+
+## วิธีล็อกอิน phpMyAdmin
+
+ใช้ค่าต่อไปนี้
+
+- Server: `mysql`
+- Username: `root`
+- Password: `root`
+
+หรือใช้ user ของโปรเจกต์
+
+- Server: `mysql`
+- Username: `personal_loan_user`
+- Password: `secret`
+
+## ถ้าต้องย้ายข้อมูลจากเครื่องเดิมมาด้วย
+
+ถ้าไม่ได้ต้องการแค่โค้ด แต่ต้องการข้อมูลในฐานข้อมูลเดิมด้วย ให้ทำเพิ่มดังนี้
+
+### 1. Export ฐานข้อมูลจากเครื่องเดิม
+
+บันทึกออกมาเป็นไฟล์ `.sql`
+
+### 2. เปิด MySQL container บนเครื่องใหม่ก่อน
+
+```powershell
+docker compose up -d mysql
+```
+
+### 3. Import ไฟล์ `.sql` เข้าไป
+
+ตัวอย่าง:
+
+```powershell
+Get-Content .\backup.sql | docker compose exec -T mysql mysql -u root -proot personal_loan
+```
+
+จากนั้นค่อยเปิดเว็บและทดสอบข้อมูล
+
+## คำสั่งที่ใช้บ่อย
+
+### เปิดระบบ
+
+```powershell
+docker compose up -d
+```
+
+### หยุดระบบ
+
+```powershell
+docker compose down
+```
+
+### ดูสถานะ
+
+```powershell
+docker compose ps
+```
+
+### ดู log
+
+```powershell
+docker compose logs -f app
+docker compose logs -f mysql
+docker compose logs -f phpmyadmin
+```
+
+### เข้าไปรันคำสั่ง Laravel
+
+```powershell
+docker compose exec app php artisan migrate
+docker compose exec app php artisan optimize:clear
+```
+
+## ปัญหาที่มักเจอ
+
+### 1. เปิดเว็บไม่ได้
+
+ให้เช็กก่อนว่า `app` container ขึ้นหรือยัง
+
+```powershell
+docker compose ps
+```
+
+### 2. เชื่อมฐานข้อมูลไม่ได้
+
+ให้เช็กใน `.env` ว่าใช้ค่าเหล่านี้
+
+- `DB_HOST=mysql`
+- `DB_PORT=3306`
+- `DB_DATABASE=personal_loan`
+- `DB_USERNAME=personal_loan_user`
+- `DB_PASSWORD=secret`
+
+### 3. ขึ้น error เรื่อง key
+
+ให้รัน
+
+```powershell
+docker compose exec app php artisan key:generate
+```
+
+### 4. ขึ้น error เรื่อง table ไม่มี
+
+ให้รัน
+
+```powershell
+docker compose exec app php artisan migrate
+```
+
+### 5. พอร์ตชนกับโปรแกรมอื่น
+
+โปรเจกต์นี้ใช้พอร์ตหลักดังนี้
+
+- `8080` สำหรับเว็บ Laravel
+- `3307` สำหรับ MySQL จากเครื่อง host
+- `8081` สำหรับ phpMyAdmin
+
+ถ้าเปิดไม่ได้ ให้เช็กว่ามีโปรแกรมอื่นใช้อยู่หรือไม่
+
+## สรุปแบบสั้น
+
+ถ้าจะเปิดบนคอมเครื่องอื่นแบบเร็วที่สุด ให้ทำตามนี้
+
+```powershell
+git clone https://github.com/phEt101/Personal-Loan.git
+cd Personal-Loan
+copy .env.example .env
+docker compose up -d --build
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate
+docker compose exec app php artisan optimize:clear
+```
+
+จากนั้นเปิด
+
+- [http://localhost:8080](http://localhost:8080)
+- [http://localhost:8081](http://localhost:8081)
