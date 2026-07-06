@@ -58,8 +58,8 @@
                         @forelse($customers as $customer)
                             <tr>
                                 <td data-label="รหัส">{{ $customer->app_no ?? '-' }}</td>
-                                <td data-label="ชื่อ">{{ $customer->name }}</td>
-                                <td data-label="วันที่ทำรายการ">{{ $customer->transaction_date ?? '-' }}</td>
+                                <td data-label="ชื่อ">{{ $customer->applicant?->name ?? '-' }}</td>
+                                <td data-label="วันที่ทำรายการ">{{ $customer->created_at?->format('d/m/Y') ?? '-' }}</td>
                                 <td data-label="สถานะ">
                                     @if($customer->status === 'approved')
                                         <span class="badge badge-signed">ผ่าน</span>
@@ -74,7 +74,7 @@
                                         <button
                                             type="button"
                                             class="action-btn outline"
-                                            onclick="viewDocument({{ Js::from($customer) }}); return false;"
+                                            onclick="viewDocument({ id: {{ Js::from($customer->encrypted_id) }} }); return false;"
                                             style="padding: 0.4rem 0.75rem; min-width: 88px;"
                                         >
                                             ดูเอกสาร
@@ -82,12 +82,12 @@
                                         <button
                                             type="button"
                                             class="action-btn"
-                                            onclick="editDocument({{ Js::from($customer) }}); return false;"
+                                            onclick="editDocument({ id: {{ Js::from($customer->encrypted_id) }} }); return false;"
                                             style="padding: 0.4rem 0.75rem; min-width: 70px;"
                                         >
                                             แก้ไข
                                         </button>
-                                        <form method="POST" action="{{ route('consent.destroy', $customer->id) }}" class="delete-consent-form table-actions-form" data-name="{{ $customer->name }}">
+                                        <form method="POST" action="{{ route('consent.destroy', $customer->encrypted_id) }}" class="delete-consent-form table-actions-form" data-name="{{ $customer->applicant?->name ?? '-' }}">
                                             @csrf
                                             @method('DELETE')
                                             <button
@@ -110,6 +110,12 @@
                 </table>
             </div>
         </div>
+
+        @if(method_exists($customers, 'links'))
+            <div style="margin-top: 1rem; display: flex; justify-content: center;">
+                {{ $customers->onEachSide(1)->links() }}
+            </div>
+        @endif
     </section>
 
     <div id="modalMount"></div>
@@ -165,6 +171,11 @@
             view: @json(route('consent.modals.view')),
         };
 
+        const consentBaseUrl = @json(url('/consent'));
+        let modalStoreUrl = '';
+        let modalUpdateBaseUrl = '';
+        let modalNextAppNo = '';
+
         let consentModalLoadPromise = null;
         let viewConsentModalLoadPromise = null;
 
@@ -217,6 +228,21 @@
             await ensureViewConsentModalLoaded();
             const viewModal = document.getElementById('viewConsentModal');
             const contentDiv = document.getElementById('viewConsentContent');
+
+            let fullCustomer = customer;
+            const customerId = customer?.id;
+            if (customerId) {
+                try {
+                    const baseUrl = modalUpdateBaseUrl || consentBaseUrl;
+                    const response = await fetch(`${baseUrl}/${customerId}/data`, { headers: { 'Accept': 'application/json' } });
+                    if (response.ok) {
+                        fullCustomer = await response.json();
+                    }
+                } catch (error) {
+                }
+            }
+
+            customer = fullCustomer;
             
             const title = customer.title || 'นาย/นาง/นางสาว';
             const name = customer.name || '-';
@@ -832,9 +858,9 @@
             const appNoInput = document.getElementById('app_no');
             const appDateInput = document.getElementById('app_date');
             const signatureDataInput = document.getElementById('signatureData');
-            const modalStoreUrl = modal?.dataset.storeUrl || '';
-            const modalUpdateBaseUrl = modal?.dataset.updateBaseUrl || '';
-            const modalNextAppNo = modal?.dataset.nextAppNo || '';
+            modalStoreUrl = modal?.dataset.storeUrl || '';
+            modalUpdateBaseUrl = modal?.dataset.updateBaseUrl || '';
+            modalNextAppNo = modal?.dataset.nextAppNo || '';
             let signaturePad;
             let signatureInitSeq = 0;
             let isSyncingConditionalSections = false;

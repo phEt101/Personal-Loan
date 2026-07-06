@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Modules\Consent\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ConsentEmployment extends Model
+{
+    protected $table = 'consent_employments';
+
+    protected $fillable = [
+        'application_id',
+        'use_home_address',
+        'company_type',
+        'company_name',
+        'business_type',
+        'work_occupation',
+        'work_position',
+        'work_years',
+        'work_months',
+        'work_phone',
+    ];
+
+    protected $casts = [
+        'use_home_address' => 'boolean',
+    ];
+
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(ConsentApplication::class, 'application_id');
+    }
+}
+

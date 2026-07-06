@@ -2,12 +2,23 @@
 
 namespace Database\Seeders;
 
-use App\Modules\Consent\Models\ConsentForm;
+use App\Modules\Consent\Models\ConsentAddress;
+use App\Modules\Consent\Models\ConsentApplicant;
+use App\Modules\Consent\Models\ConsentApplication;
+use App\Modules\Consent\Models\ConsentContact;
+use App\Modules\Consent\Models\ConsentDisbursementAccount;
+use App\Modules\Consent\Models\ConsentDocumentDelivery;
+use App\Modules\Consent\Models\ConsentEmployment;
+use App\Modules\Consent\Models\ConsentLoanRequest;
+use App\Modules\Consent\Models\ConsentPreviousEmployment;
+use App\Modules\Consent\Models\ConsentReference;
+use App\Modules\Consent\Models\ConsentSpouse;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
@@ -23,18 +34,35 @@ class DatabaseSeeder extends Seeder
             ['email' => 'test@example.com'],
             [
                 'name' => 'Test User',
-                'password' => 'password',
+                'password' => Hash::make('password'),
             ]
         );
 
-        if (Schema::hasTable('consent_forms')) {
+        if (Schema::hasTable('consent_requests')) {
             Schema::disableForeignKeyConstraints();
-            DB::table('consent_forms')->truncate();
+            foreach ([
+                'consent_disbursement_accounts',
+                'consent_loan_requests',
+                'consent_references',
+                'consent_document_deliveries',
+                'consent_previous_employments',
+                'consent_employments',
+                'consent_addresses',
+                'consent_contacts',
+                'consent_spouses',
+                'consent_request_applicants',
+                'consent_requests',
+            ] as $table) {
+                if (Schema::hasTable($table)) {
+                    DB::table($table)->truncate();
+                }
+            }
             Schema::enableForeignKeyConstraints();
         }
 
         foreach ($this->buildConsentForms() as $index => $attributes) {
-            ConsentForm::create($this->makeConsentFormPayload($attributes, $index + 1));
+            $payload = $this->makeConsentFormPayload($attributes, $index + 1);
+            $this->seedConsentApplication($payload);
         }
 
         $this->call(PostCodeSeeder::class);
@@ -406,5 +434,199 @@ class DatabaseSeeder extends Seeder
         }
 
         return 'approved';
+    }
+
+    private function seedConsentApplication(array $payload): void
+    {
+        if (!Schema::hasTable('consent_requests')) {
+            return;
+        }
+
+        DB::transaction(function () use ($payload) {
+            $application = ConsentApplication::create([
+                'app_date' => $payload['app_date'] ?? null,
+                'app_no' => $payload['app_no'] ?? null,
+                'officer_name' => $payload['officer_name'] ?? null,
+                'officer_phone' => $payload['officer_phone'] ?? null,
+                'status' => $payload['status'] ?? 'pending',
+                'signed' => (bool) ($payload['signed'] ?? false),
+                'signed_at' => $payload['signed_at'] ?? null,
+                'signature_data' => $payload['signature_data'] ?? null,
+            ]);
+
+            if (!$application->encrypted_id) {
+                $application->encrypted_id = ConsentApplication::makeEncryptedId((string) $application->id);
+                $application->saveQuietly();
+            }
+
+            $hasOtherDebtsRaw = $payload['has_other_debts'] ?? null;
+            $hasOtherDebts = $hasOtherDebtsRaw === null ? null : ($hasOtherDebtsRaw === 'มี');
+
+            $hasExistingLoanRaw = $payload['has_existing_loan'] ?? null;
+            $hasExistingLoan = $hasExistingLoanRaw === null ? null : ($hasExistingLoanRaw === 'มี');
+
+            ConsentApplicant::create([
+                'application_id' => $application->id,
+                'title' => $payload['title'] ?? null,
+                'name' => $payload['name'] ?? '-',
+                'name_en' => $payload['name_en'] ?? null,
+                'dob' => $payload['dob'] ?? null,
+                'id_card' => $payload['id_card'] ?? null,
+                'gender' => $payload['gender'] ?? null,
+                'age' => $payload['age'] ?? null,
+                'nationality' => $payload['nationality'] ?? null,
+                'marital_status' => $payload['marital_status'] ?? null,
+                'education' => $payload['education'] ?? null,
+                'occupation' => $payload['occupation'] ?? null,
+                'income' => $payload['income'] ?? null,
+                'extra_income' => $payload['extra_income'] ?? null,
+                'extra_income_source' => $payload['extra_income_source'] ?? null,
+                'business_income' => $payload['business_income'] ?? null,
+                'average_monthly_income' => $payload['average_monthly_income'] ?? null,
+                'has_other_debts' => $hasOtherDebts,
+                'other_debt_installment' => $payload['other_debt_installment'] ?? null,
+                'has_existing_loan' => $hasExistingLoan,
+            ]);
+
+            $spousePayload = [
+                'application_id' => $application->id,
+                'spouse_title' => $payload['spouse_title'] ?? null,
+                'spouse_name' => $payload['spouse_name'] ?? null,
+                'spouse_phone' => $payload['spouse_phone'] ?? null,
+                'spouse_mobile' => $payload['spouse_mobile'] ?? null,
+                'spouse_education' => $payload['spouse_education'] ?? null,
+                'spouse_occupation' => $payload['spouse_occupation'] ?? null,
+                'spouse_company' => $payload['spouse_company'] ?? null,
+                'spouse_income' => $payload['spouse_income'] ?? null,
+            ];
+
+            $hasSpouseData = false;
+            foreach ($spousePayload as $key => $value) {
+                if ($key === 'application_id') {
+                    continue;
+                }
+                if ($value !== null && $value !== '') {
+                    $hasSpouseData = true;
+                    break;
+                }
+            }
+
+            if ($hasSpouseData) {
+                ConsentSpouse::create($spousePayload);
+            }
+
+            ConsentContact::create([
+                'application_id' => $application->id,
+                'phone_home' => $payload['phone_home'] ?? null,
+                'phone_mobile' => $payload['phone_mobile'] ?? null,
+                'email' => $payload['email'] ?? null,
+                'line_id' => $payload['line_id'] ?? null,
+            ]);
+
+            ConsentAddress::create([
+                'application_id' => $application->id,
+                'kind' => 'home',
+                'dwelling_type' => $payload['dwelling_type'] ?? null,
+                'residence_status' => $payload['residence_status'] ?? null,
+                'residence_rent_amount' => $payload['residence_rent_amount'] ?? null,
+                'residence_years' => $payload['residence_years'] ?? null,
+                'address_no' => $payload['address_no'] ?? null,
+                'address_floor' => $payload['address_floor'] ?? null,
+                'address_village' => $payload['address_village'] ?? null,
+                'address_building' => $payload['address_building'] ?? null,
+                'address_soi' => $payload['address_soi'] ?? null,
+                'address_road' => $payload['address_road'] ?? null,
+                'address_subdistrict' => $payload['address_subdistrict'] ?? null,
+                'address_district' => $payload['address_district'] ?? null,
+                'address_province' => $payload['address_province'] ?? null,
+                'address_postal' => $payload['address_postal'] ?? null,
+            ]);
+
+            ConsentEmployment::create([
+                'application_id' => $application->id,
+                'use_home_address' => (bool) ($payload['use_home_address'] ?? false),
+                'company_type' => $payload['company_type'] ?? null,
+                'company_name' => $payload['company_name'] ?? null,
+                'business_type' => $payload['business_type'] ?? null,
+                'work_occupation' => $payload['work_occupation'] ?? null,
+                'work_position' => $payload['work_position'] ?? null,
+                'work_years' => $payload['work_years'] ?? null,
+                'work_months' => $payload['work_months'] ?? null,
+                'work_phone' => $payload['work_phone'] ?? null,
+            ]);
+
+            ConsentAddress::create([
+                'application_id' => $application->id,
+                'kind' => 'work',
+                'address_no' => $payload['work_address_no'] ?? null,
+                'address_floor' => $payload['work_address_floor'] ?? null,
+                'address_village' => $payload['work_address_village'] ?? null,
+                'address_building' => $payload['work_address_building'] ?? null,
+                'address_soi' => $payload['work_address_soi'] ?? null,
+                'address_road' => $payload['work_address_road'] ?? null,
+                'address_subdistrict' => $payload['work_address_subdistrict'] ?? null,
+                'address_district' => $payload['work_address_district'] ?? null,
+                'address_province' => $payload['work_address_province'] ?? null,
+                'address_postal' => $payload['work_address_postal'] ?? null,
+            ]);
+
+            ConsentPreviousEmployment::create([
+                'application_id' => $application->id,
+                'previous_company_name' => $payload['previous_company_name'] ?? null,
+                'previous_business_type' => $payload['previous_business_type'] ?? null,
+                'previous_position' => $payload['previous_position'] ?? null,
+                'previous_income' => $payload['previous_income'] ?? null,
+                'previous_work_years' => $payload['previous_work_years'] ?? null,
+                'previous_phone' => $payload['previous_phone'] ?? null,
+            ]);
+
+            ConsentDocumentDelivery::create([
+                'application_id' => $application->id,
+                'document_delivery' => $payload['document_delivery'] ?? null,
+                'document_email' => $payload['document_email'] ?? null,
+            ]);
+
+            ConsentReference::create([
+                'application_id' => $application->id,
+                'ref_name' => $payload['ref_name'] ?? null,
+                'ref_relation' => $payload['ref_relation'] ?? null,
+                'ref_phone_home' => $payload['ref_phone_home'] ?? null,
+                'ref_phone_mobile' => $payload['ref_phone_mobile'] ?? null,
+                'ref_email' => $payload['ref_email'] ?? null,
+                'ref_line_id' => $payload['ref_line_id'] ?? null,
+            ]);
+
+            ConsentAddress::create([
+                'application_id' => $application->id,
+                'kind' => 'reference',
+                'address_no' => $payload['ref_address_no'] ?? null,
+                'address_floor' => $payload['ref_address_floor'] ?? null,
+                'address_village' => $payload['ref_address_village'] ?? null,
+                'address_building' => $payload['ref_address_building'] ?? null,
+                'address_soi' => $payload['ref_address_soi'] ?? null,
+                'address_road' => $payload['ref_address_road'] ?? null,
+                'address_subdistrict' => $payload['ref_address_subdistrict'] ?? null,
+                'address_district' => $payload['ref_address_district'] ?? null,
+                'address_province' => $payload['ref_address_province'] ?? null,
+                'address_postal' => $payload['ref_address_postal'] ?? null,
+            ]);
+
+            ConsentLoanRequest::create([
+                'application_id' => $application->id,
+                'loan_term' => $payload['loan_term'] ?? null,
+                'loan_amount_type' => $payload['loan_amount_type'] ?? null,
+                'custom_loan_amount' => $payload['custom_loan_amount'] ?? null,
+                'loan_purpose' => $payload['loan_purpose'] ?? null,
+            ]);
+
+            ConsentDisbursementAccount::create([
+                'application_id' => $application->id,
+                'bank_name' => $payload['bank_name'] ?? null,
+                'bank_branch' => $payload['bank_branch'] ?? null,
+                'account_name' => $payload['account_name'] ?? null,
+                'account_type' => $payload['account_type'] ?? null,
+                'account_number' => $payload['account_number'] ?? null,
+            ]);
+        });
     }
 }

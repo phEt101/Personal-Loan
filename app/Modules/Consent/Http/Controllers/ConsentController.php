@@ -2,11 +2,19 @@
 
 namespace App\Modules\Consent\Http\Controllers;
 
-use App\Models\User;
-use App\Modules\Consent\Models\ConsentForm;
+use App\Modules\Consent\Models\ConsentAddress;
+use App\Modules\Consent\Models\ConsentApplicant;
+use App\Modules\Consent\Models\ConsentApplication;
+use App\Modules\Consent\Models\ConsentContact;
+use App\Modules\Consent\Models\ConsentDisbursementAccount;
+use App\Modules\Consent\Models\ConsentDocumentDelivery;
+use App\Modules\Consent\Models\ConsentEmployment;
+use App\Modules\Consent\Models\ConsentLoanRequest;
+use App\Modules\Consent\Models\ConsentPreviousEmployment;
+use App\Modules\Consent\Models\ConsentReference;
+use App\Modules\Consent\Models\ConsentSpouse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -14,7 +22,7 @@ class ConsentController extends Controller
 {
     public function modalConsentForm()
     {
-        $lastAppNo = ConsentForm::whereNotNull('app_no')->orderBy('id', 'desc')->value('app_no');
+        $lastAppNo = ConsentApplication::whereNotNull('app_no')->orderBy('id', 'desc')->value('app_no');
         $nextAppNo = $lastAppNo ? str_pad((int) $lastAppNo + 1, 13, '0', STR_PAD_LEFT) : '0000000000001';
 
         return view('consent::consent_form_modal', compact('nextAppNo'));
@@ -224,106 +232,16 @@ class ConsentController extends Controller
 
     public function index()
     {
-        $customers = ConsentForm::orderBy('id', 'desc')->get()->map(function ($form) {
-            return (object) array_merge($form->toArray(), [
-                'transaction_date' => $form->created_at?->format('d/m/Y'),
-                'signed_date' => $form->signed_at?->format('Y-m-d'),
-                'signatureData' => $form->signature_data,
-                'status' => $form->status,
-                // Map camelCase from form to snake_case from DB
-                'extraIncome' => $form->extra_income,
-                'extraIncomeSource' => $form->extra_income_source,
-                'businessIncome' => $form->business_income,
-                'averageMonthlyIncome' => $form->average_monthly_income,
-                'hasOtherDebts' => $form->has_other_debts,
-                'otherDebtInstallment' => $form->other_debt_installment,
-                'hasExistingLoan' => $form->has_existing_loan,
-                'spouseTitle' => $form->spouse_title,
-                'spouseName' => $form->spouse_name,
-                'spousePhone' => $form->spouse_phone,
-                'spouseMobile' => $form->spouse_mobile,
-                'spouseEducation' => $form->spouse_education,
-                'spouseOccupation' => $form->spouse_occupation,
-                'spouseCompany' => $form->spouse_company,
-                'spouseIncome' => $form->spouse_income,
-                'dwellingType' => $form->dwelling_type,
-                'residenceStatus' => $form->residence_status,
-                'residenceRentAmount' => $form->residence_rent_amount,
-                'residenceYears' => $form->residence_years,
-                'addressNo' => $form->address_no,
-                'addressFloor' => $form->address_floor,
-                'addressVillage' => $form->address_village,
-                'addressBuilding' => $form->address_building,
-                'addressSoi' => $form->address_soi,
-                'addressRoad' => $form->address_road,
-                'addressSubdistrict' => $form->address_subdistrict,
-                'addressDistrict' => $form->address_district,
-                'addressProvince' => $form->address_province,
-                'addressPostal' => $form->address_postal,
-                'phoneHome' => $form->phone_home,
-                'phoneMobile' => $form->phone_mobile,
-                'lineId' => $form->line_id,
-                'useHomeAddress' => $form->use_home_address,
-                'companyType' => $form->company_type,
-                'companyName' => $form->company_name,
-                'businessType' => $form->business_type,
-                'workOccupation' => $form->work_occupation,
-                'workPosition' => $form->work_position,
-                'workYears' => $form->work_years,
-                'workMonths' => $form->work_months,
-                'workAddressNo' => $form->work_address_no,
-                'workAddressFloor' => $form->work_address_floor,
-                'workAddressVillage' => $form->work_address_village,
-                'workAddressBuilding' => $form->work_address_building,
-                'workAddressSoi' => $form->work_address_soi,
-                'workAddressRoad' => $form->work_address_road,
-                'workAddressSubdistrict' => $form->work_address_subdistrict,
-                'workAddressDistrict' => $form->work_address_district,
-                'workAddressProvince' => $form->work_address_province,
-                'workAddressPostal' => $form->work_address_postal,
-                'workPhone' => $form->work_phone,
-                'previousCompanyName' => $form->previous_company_name,
-                'previousBusinessType' => $form->previous_business_type,
-                'previousPosition' => $form->previous_position,
-                'previousIncome' => $form->previous_income,
-                'previousWorkYears' => $form->previous_work_years,
-                'previousPhone' => $form->previous_phone,
-                'documentDelivery' => $form->document_delivery,
-                'documentEmail' => $form->document_email,
-                'refName' => $form->ref_name,
-                'refRelation' => $form->ref_relation,
-                'refAddressNo' => $form->ref_address_no,
-                'refAddressFloor' => $form->ref_address_floor,
-                'refAddressVillage' => $form->ref_address_village,
-                'refAddressBuilding' => $form->ref_address_building,
-                'refAddressSoi' => $form->ref_address_soi,
-                'refAddressRoad' => $form->ref_address_road,
-                'refAddressSubdistrict' => $form->ref_address_subdistrict,
-                'refAddressDistrict' => $form->ref_address_district,
-                'refAddressProvince' => $form->ref_address_province,
-                'refAddressPostal' => $form->ref_address_postal,
-                'refPhoneHome' => $form->ref_phone_home,
-                'refPhoneMobile' => $form->ref_phone_mobile,
-                'refEmail' => $form->ref_email,
-                'refLineId' => $form->ref_line_id,
-                'loanTerm' => $form->loan_term,
-                'loanAmountType' => $form->loan_amount_type,
-                'customLoanAmount' => $form->custom_loan_amount,
-                'loanPurpose' => $form->loan_purpose,
-                'bankName' => $form->bank_name,
-                'bankBranch' => $form->bank_branch,
-                'accountName' => $form->account_name,
-                'accountType' => $form->account_type,
-                'accountNumber' => $form->account_number,
-            ]);
-        });
+        $customers = ConsentApplication::query()
+            ->with(['applicant:id,application_id,name'])
+            ->orderByDesc('id')
+            ->paginate(10);
 
-        $total = $customers->count();
-        $approved = $customers->where('status', 'approved')->count();
-        $rejected = $customers->where('status', 'rejected')->count();
+        $total = ConsentApplication::count();
+        $approved = ConsentApplication::where('status', 'approved')->count();
+        $rejected = ConsentApplication::where('status', 'rejected')->count();
 
-        // Generate next app_no
-        $lastAppNo = ConsentForm::whereNotNull('app_no')->orderBy('id', 'desc')->value('app_no');
+        $lastAppNo = ConsentApplication::whereNotNull('app_no')->orderBy('id', 'desc')->value('app_no');
         $nextAppNo = $lastAppNo ? str_pad((int)$lastAppNo + 1, 13, '0', STR_PAD_LEFT) : '0000000000001';
 
         return view('consent::index', compact('customers', 'total', 'approved', 'rejected', 'nextAppNo'));
@@ -335,115 +253,42 @@ class ConsentController extends Controller
 
         return redirect()
             ->route('consent.index')
-            ->with('success', 'สร้างใบยินยอมสำหรับ ' . $consent->name . ' เรียบร้อยแล้ว (สถานะ: ' . ($consent->status === 'approved' ? 'ผ่าน' : 'ไม่ผ่าน') . ')');
+            ->with('success', 'สร้างใบยินยอมสำหรับ ' . ($consent->applicant?->name ?: '-') . ' เรียบร้อยแล้ว (สถานะ: ' . ($consent->status === 'approved' ? 'ผ่าน' : 'ไม่ผ่าน') . ')');
     }
 
-    public function update(Request $request, ConsentForm $consent)
+    public function update(Request $request, ConsentApplication $consent)
     {
         $consent = $this->saveConsent($request, $consent);
 
         return redirect()
             ->route('consent.index')
-            ->with('success', 'แก้ไขใบยินยอมของ ' . $consent->name . ' เรียบร้อยแล้ว (สถานะ: ' . ($consent->status === 'approved' ? 'ผ่าน' : 'ไม่ผ่าน') . ')');
+            ->with('success', 'แก้ไขใบยินยอมของ ' . ($consent->applicant?->name ?: '-') . ' เรียบร้อยแล้ว (สถานะ: ' . ($consent->status === 'approved' ? 'ผ่าน' : 'ไม่ผ่าน') . ')');
     }
 
-    public function data(ConsentForm $consent)
+    public function data(ConsentApplication $consent)
     {
-        return response()->json((object) array_merge($consent->toArray(), [
-            'transaction_date' => $consent->created_at?->format('d/m/Y'),
-            'signed_date' => $consent->signed_at?->format('Y-m-d'),
-            'signatureData' => $consent->signature_data,
-            'status' => $consent->status,
-            'extraIncome' => $consent->extra_income,
-            'extraIncomeSource' => $consent->extra_income_source,
-            'businessIncome' => $consent->business_income,
-            'averageMonthlyIncome' => $consent->average_monthly_income,
-            'hasOtherDebts' => $consent->has_other_debts,
-            'otherDebtInstallment' => $consent->other_debt_installment,
-            'hasExistingLoan' => $consent->has_existing_loan,
-            'spouseTitle' => $consent->spouse_title,
-            'spouseName' => $consent->spouse_name,
-            'spousePhone' => $consent->spouse_phone,
-            'spouseMobile' => $consent->spouse_mobile,
-            'spouseEducation' => $consent->spouse_education,
-            'spouseOccupation' => $consent->spouse_occupation,
-            'spouseCompany' => $consent->spouse_company,
-            'spouseIncome' => $consent->spouse_income,
-            'dwellingType' => $consent->dwelling_type,
-            'residenceStatus' => $consent->residence_status,
-            'residenceRentAmount' => $consent->residence_rent_amount,
-            'residenceYears' => $consent->residence_years,
-            'addressNo' => $consent->address_no,
-            'addressFloor' => $consent->address_floor,
-            'addressVillage' => $consent->address_village,
-            'addressBuilding' => $consent->address_building,
-            'addressSoi' => $consent->address_soi,
-            'addressRoad' => $consent->address_road,
-            'addressSubdistrict' => $consent->address_subdistrict,
-            'addressDistrict' => $consent->address_district,
-            'addressProvince' => $consent->address_province,
-            'addressPostal' => $consent->address_postal,
-            'phoneHome' => $consent->phone_home,
-            'phoneMobile' => $consent->phone_mobile,
-            'lineId' => $consent->line_id,
-            'useHomeAddress' => $consent->use_home_address,
-            'companyType' => $consent->company_type,
-            'companyName' => $consent->company_name,
-            'businessType' => $consent->business_type,
-            'workOccupation' => $consent->work_occupation,
-            'workPosition' => $consent->work_position,
-            'workYears' => $consent->work_years,
-            'workMonths' => $consent->work_months,
-            'workAddressNo' => $consent->work_address_no,
-            'workAddressFloor' => $consent->work_address_floor,
-            'workAddressVillage' => $consent->work_address_village,
-            'workAddressBuilding' => $consent->work_address_building,
-            'workAddressSoi' => $consent->work_address_soi,
-            'workAddressRoad' => $consent->work_address_road,
-            'workAddressSubdistrict' => $consent->work_address_subdistrict,
-            'workAddressDistrict' => $consent->work_address_district,
-            'workAddressProvince' => $consent->work_address_province,
-            'workAddressPostal' => $consent->work_address_postal,
-            'workPhone' => $consent->work_phone,
-            'previousCompanyName' => $consent->previous_company_name,
-            'previousBusinessType' => $consent->previous_business_type,
-            'previousPosition' => $consent->previous_position,
-            'previousIncome' => $consent->previous_income,
-            'previousWorkYears' => $consent->previous_work_years,
-            'previousPhone' => $consent->previous_phone,
-            'documentDelivery' => $consent->document_delivery,
-            'documentEmail' => $consent->document_email,
-            'refName' => $consent->ref_name,
-            'refRelation' => $consent->ref_relation,
-            'refAddressNo' => $consent->ref_address_no,
-            'refAddressFloor' => $consent->ref_address_floor,
-            'refAddressVillage' => $consent->ref_address_village,
-            'refAddressBuilding' => $consent->ref_address_building,
-            'refAddressSoi' => $consent->ref_address_soi,
-            'refAddressRoad' => $consent->ref_address_road,
-            'refAddressSubdistrict' => $consent->ref_address_subdistrict,
-            'refAddressDistrict' => $consent->ref_address_district,
-            'refAddressProvince' => $consent->ref_address_province,
-            'refAddressPostal' => $consent->ref_address_postal,
-            'refPhoneHome' => $consent->ref_phone_home,
-            'refPhoneMobile' => $consent->ref_phone_mobile,
-            'refEmail' => $consent->ref_email,
-            'refLineId' => $consent->ref_line_id,
-            'loanTerm' => $consent->loan_term,
-            'loanAmountType' => $consent->loan_amount_type,
-            'customLoanAmount' => $consent->custom_loan_amount,
-            'loanPurpose' => $consent->loan_purpose,
-            'bankName' => $consent->bank_name,
-            'bankBranch' => $consent->bank_branch,
-            'accountName' => $consent->account_name,
-            'accountType' => $consent->account_type,
-            'accountNumber' => $consent->account_number,
-        ]));
+        $consent->load([
+            'applicant',
+            'spouse',
+            'contact',
+            'homeAddress',
+            'workAddress',
+            'referenceAddress',
+            'employment',
+            'previousEmployment',
+            'documentDelivery',
+            'reference',
+            'loanRequest',
+            'disbursementAccount',
+        ]);
+
+        return response()->json((object) $this->toFrontendData($consent));
     }
 
-    public function destroy(ConsentForm $consent)
+    public function destroy(ConsentApplication $consent)
     {
-        $name = $consent->name;
+        $consent->load('applicant:id,application_id,name');
+        $name = $consent->applicant?->name;
         $appNo = $consent->app_no;
 
         $consent->delete();
@@ -453,7 +298,7 @@ class ConsentController extends Controller
             ->with('success', 'ลบใบยินยอมเลขที่ ' . ($appNo ?: '-') . ' ของ ' . $name . ' เรียบร้อยแล้ว');
     }
 
-    private function saveConsent(Request $request, ?ConsentForm $consent = null): ConsentForm
+    private function saveConsent(Request $request, ?ConsentApplication $consent = null): ConsentApplication
     {
         $validated = $request->validate([
             'app_date' => ['nullable', 'date'],
@@ -628,119 +473,388 @@ class ConsentController extends Controller
             $status = 'rejected';
         }
 
-        $data = [
+        $hasOtherDebts = ($validated['hasOtherDebts'] ?? null) === 'มี'
+            ? true
+            : (($validated['hasOtherDebts'] ?? null) === 'ไม่มี' ? false : null);
+
+        $hasExistingLoan = ($validated['hasExistingLoan'] ?? null) === 'มี'
+            ? true
+            : (($validated['hasExistingLoan'] ?? null) === 'ไม่มี' ? false : null);
+
+        $applicationPayload = [
             'app_date' => $validated['app_date'] ?? null,
             'app_no' => $validated['app_no'] ?? $consent?->app_no,
             'officer_name' => $validated['officer_name'] ?? null,
             'officer_phone' => $validated['officer_phone'] ?? null,
-            'title' => $validated['title'] ?? null,
-            'name' => $validated['name'],
-            'name_en' => $validated['name_en'] ?? null,
-            'dob' => $validated['dob'] ?? null,
-            'id_card' => $validated['id_card'] ?? null,
-            'gender' => $validated['gender'] ?? null,
-            'age' => $validated['age'] ?? null,
-            'nationality' => $validated['nationality'] ?? null,
-            'marital_status' => $validated['marital_status'] ?? null,
-            'education' => $validated['education'] ?? null,
-            'occupation' => $validated['occupation'] ?? null,
-            'income' => $validated['income'] ?? null,
-            'extra_income' => $validated['extraIncome'] ?? null,
-            'extra_income_source' => $validated['extraIncomeSource'] ?? null,
-            'business_income' => $validated['businessIncome'] ?? null,
-            'average_monthly_income' => $validated['averageMonthlyIncome'] ?? null,
-            'has_other_debts' => $validated['hasOtherDebts'] ?? null,
-            'other_debt_installment' => $validated['otherDebtInstallment'] ?? null,
-            'has_existing_loan' => $validated['hasExistingLoan'] ?? null,
-            'spouse_title' => $validated['spouse_title'] ?? null,
-            'spouse_name' => $validated['spouse_name'] ?? null,
-            'spouse_phone' => $validated['spouse_phone'] ?? null,
-            'spouse_mobile' => $validated['spouse_mobile'] ?? null,
-            'spouse_education' => $validated['spouse_education'] ?? null,
-            'spouse_occupation' => $validated['spouse_occupation'] ?? null,
-            'spouse_company' => $validated['spouse_company'] ?? null,
-            'spouse_income' => $validated['spouse_income'] ?? null,
-            'dwelling_type' => $validated['dwelling_type'] ?? null,
-            'residence_status' => $validated['residence_status'] ?? null,
-            'residence_rent_amount' => $validated['residence_rent_amount'] ?? null,
-            'residence_years' => $validated['residence_years'] ?? null,
-            'address_no' => $validated['address_no'] ?? null,
-            'address_floor' => $validated['address_floor'] ?? null,
-            'address_village' => $validated['address_village'] ?? null,
-            'address_building' => $validated['address_building'] ?? null,
-            'address_soi' => $validated['address_soi'] ?? null,
-            'address_road' => $validated['address_road'] ?? null,
-            'address_subdistrict' => $validated['address_subdistrict'] ?? null,
-            'address_district' => $validated['address_district'] ?? null,
-            'address_province' => $validated['address_province'] ?? null,
-            'address_postal' => $validated['address_postal'] ?? null,
-            'phone_home' => $validated['phone_home'] ?? null,
-            'phone_mobile' => $validated['phone_mobile'] ?? null,
-            'email' => $validated['email'] ?? null,
-            'line_id' => $validated['line_id'] ?? null,
-            'use_home_address' => $validated['useHomeAddress'] ?? false,
-            'company_type' => $validated['companyType'] ?? null,
-            'company_name' => $validated['companyName'] ?? null,
-            'business_type' => $validated['businessType'] ?? null,
-            'work_occupation' => $validated['workOccupation'] ?? null,
-            'work_position' => $validated['workPosition'] ?? null,
-            'work_years' => $validated['workYears'] ?? null,
-            'work_months' => $validated['workMonths'] ?? null,
-            'work_address_no' => $validated['workAddressNo'] ?? null,
-            'work_address_floor' => $validated['workAddressFloor'] ?? null,
-            'work_address_village' => $validated['workAddressVillage'] ?? null,
-            'work_address_building' => $validated['workAddressBuilding'] ?? null,
-            'work_address_soi' => $validated['workAddressSoi'] ?? null,
-            'work_address_road' => $validated['workAddressRoad'] ?? null,
-            'work_address_subdistrict' => $validated['workAddressSubdistrict'] ?? null,
-            'work_address_district' => $validated['workAddressDistrict'] ?? null,
-            'work_address_province' => $validated['workAddressProvince'] ?? null,
-            'work_address_postal' => $validated['workAddressPostal'] ?? null,
-            'work_phone' => $validated['workPhone'] ?? null,
-            'previous_company_name' => $validated['previousCompanyName'] ?? null,
-            'previous_business_type' => $validated['previousBusinessType'] ?? null,
-            'previous_position' => $validated['previousPosition'] ?? null,
-            'previous_income' => $validated['previousIncome'] ?? null,
-            'previous_work_years' => $validated['previousWorkYears'] ?? null,
-            'previous_phone' => $validated['previousPhone'] ?? null,
-            'document_delivery' => $validated['documentDelivery'] ?? null,
-            'document_email' => $validated['documentEmail'] ?? null,
-            'ref_name' => $validated['refName'] ?? null,
-            'ref_relation' => $validated['refRelation'] ?? null,
-            'ref_address_no' => $validated['refAddressNo'] ?? null,
-            'ref_address_floor' => $validated['refAddressFloor'] ?? null,
-            'ref_address_village' => $validated['refAddressVillage'] ?? null,
-            'ref_address_building' => $validated['refAddressBuilding'] ?? null,
-            'ref_address_soi' => $validated['refAddressSoi'] ?? null,
-            'ref_address_road' => $validated['refAddressRoad'] ?? null,
-            'ref_address_subdistrict' => $validated['refAddressSubdistrict'] ?? null,
-            'ref_address_district' => $validated['refAddressDistrict'] ?? null,
-            'ref_address_province' => $validated['refAddressProvince'] ?? null,
-            'ref_address_postal' => $validated['refAddressPostal'] ?? null,
-            'ref_phone_home' => $validated['refPhoneHome'] ?? null,
-            'ref_phone_mobile' => $validated['refPhoneMobile'] ?? null,
-            'ref_email' => $validated['refEmail'] ?? null,
-            'ref_line_id' => $validated['refLineId'] ?? null,
-            'loan_term' => $validated['loanTerm'] ?? null,
-            'loan_amount_type' => $validated['loanAmountType'] ?? null,
-            'custom_loan_amount' => $validated['customLoanAmount'] ?? null,
-            'loan_purpose' => $validated['loanPurpose'] ?? null,
-            'bank_name' => $validated['bankName'] ?? null,
-            'bank_branch' => $validated['bankBranch'] ?? null,
-            'account_name' => $validated['accountName'] ?? null,
-            'account_type' => $validated['accountType'] ?? null,
-            'account_number' => $validated['accountNumber'] ?? null,
             'signed' => true,
             'signed_at' => $consent?->signed_at ?? now(),
             'signature_data' => $request->input('signatureData'),
             'status' => $status,
         ];
 
-        if ($consent) {
-            $consent->update($data);
-            return $consent->fresh();
-        }
+        return DB::transaction(function () use ($consent, $applicationPayload, $validated, $hasOtherDebts, $hasExistingLoan) {
+            $application = $consent
+                ? tap($consent)->update($applicationPayload)
+                : ConsentApplication::create($applicationPayload);
 
-        return ConsentForm::create($data);
+            ConsentApplicant::updateOrCreate(
+                ['application_id' => $application->id],
+                [
+                    'title' => $validated['title'] ?? null,
+                    'name' => $validated['name'],
+                    'name_en' => $validated['name_en'] ?? null,
+                    'dob' => $validated['dob'] ?? null,
+                    'id_card' => $validated['id_card'] ?? null,
+                    'gender' => $validated['gender'] ?? null,
+                    'age' => $validated['age'] ?? null,
+                    'nationality' => $validated['nationality'] ?? null,
+                    'marital_status' => $validated['marital_status'] ?? null,
+                    'education' => $validated['education'] ?? null,
+                    'occupation' => $validated['occupation'] ?? null,
+                    'income' => $validated['income'] ?? null,
+                    'extra_income' => $validated['extraIncome'] ?? null,
+                    'extra_income_source' => $validated['extraIncomeSource'] ?? null,
+                    'business_income' => $validated['businessIncome'] ?? null,
+                    'average_monthly_income' => $validated['averageMonthlyIncome'] ?? null,
+                    'has_other_debts' => $hasOtherDebts,
+                    'other_debt_installment' => $validated['otherDebtInstallment'] ?? null,
+                    'has_existing_loan' => $hasExistingLoan,
+                ]
+            );
+
+            $spousePayload = [
+                'spouse_title' => $validated['spouse_title'] ?? null,
+                'spouse_name' => $validated['spouse_name'] ?? null,
+                'spouse_phone' => $validated['spouse_phone'] ?? null,
+                'spouse_mobile' => $validated['spouse_mobile'] ?? null,
+                'spouse_education' => $validated['spouse_education'] ?? null,
+                'spouse_occupation' => $validated['spouse_occupation'] ?? null,
+                'spouse_company' => $validated['spouse_company'] ?? null,
+                'spouse_income' => $validated['spouse_income'] ?? null,
+            ];
+
+            $hasSpouseData = false;
+            foreach ($spousePayload as $value) {
+                if ($value !== null && $value !== '') {
+                    $hasSpouseData = true;
+                    break;
+                }
+            }
+
+            if ($hasSpouseData) {
+                ConsentSpouse::updateOrCreate(['application_id' => $application->id], $spousePayload);
+            } else {
+                ConsentSpouse::where('application_id', $application->id)->delete();
+            }
+
+            ConsentContact::updateOrCreate(
+                ['application_id' => $application->id],
+                [
+                    'phone_home' => $validated['phone_home'] ?? null,
+                    'phone_mobile' => $validated['phone_mobile'] ?? null,
+                    'email' => $validated['email'] ?? null,
+                    'line_id' => $validated['line_id'] ?? null,
+                ]
+            );
+
+            ConsentAddress::updateOrCreate(
+                ['application_id' => $application->id, 'kind' => 'home'],
+                [
+                    'dwelling_type' => $validated['dwelling_type'] ?? null,
+                    'residence_status' => $validated['residence_status'] ?? null,
+                    'residence_rent_amount' => $validated['residence_rent_amount'] ?? null,
+                    'residence_years' => $validated['residence_years'] ?? null,
+                    'address_no' => $validated['address_no'] ?? null,
+                    'address_floor' => $validated['address_floor'] ?? null,
+                    'address_village' => $validated['address_village'] ?? null,
+                    'address_building' => $validated['address_building'] ?? null,
+                    'address_soi' => $validated['address_soi'] ?? null,
+                    'address_road' => $validated['address_road'] ?? null,
+                    'address_subdistrict' => $validated['address_subdistrict'] ?? null,
+                    'address_district' => $validated['address_district'] ?? null,
+                    'address_province' => $validated['address_province'] ?? null,
+                    'address_postal' => $validated['address_postal'] ?? null,
+                ]
+            );
+
+            ConsentEmployment::updateOrCreate(
+                ['application_id' => $application->id],
+                [
+                    'use_home_address' => (bool) ($validated['useHomeAddress'] ?? false),
+                    'company_type' => $validated['companyType'] ?? null,
+                    'company_name' => $validated['companyName'] ?? null,
+                    'business_type' => $validated['businessType'] ?? null,
+                    'work_occupation' => $validated['workOccupation'] ?? null,
+                    'work_position' => $validated['workPosition'] ?? null,
+                    'work_years' => $validated['workYears'] ?? null,
+                    'work_months' => $validated['workMonths'] ?? null,
+                    'work_phone' => $validated['workPhone'] ?? null,
+                ]
+            );
+
+            ConsentAddress::updateOrCreate(
+                ['application_id' => $application->id, 'kind' => 'work'],
+                [
+                    'address_no' => $validated['workAddressNo'] ?? null,
+                    'address_floor' => $validated['workAddressFloor'] ?? null,
+                    'address_village' => $validated['workAddressVillage'] ?? null,
+                    'address_building' => $validated['workAddressBuilding'] ?? null,
+                    'address_soi' => $validated['workAddressSoi'] ?? null,
+                    'address_road' => $validated['workAddressRoad'] ?? null,
+                    'address_subdistrict' => $validated['workAddressSubdistrict'] ?? null,
+                    'address_district' => $validated['workAddressDistrict'] ?? null,
+                    'address_province' => $validated['workAddressProvince'] ?? null,
+                    'address_postal' => $validated['workAddressPostal'] ?? null,
+                ]
+            );
+
+            ConsentPreviousEmployment::updateOrCreate(
+                ['application_id' => $application->id],
+                [
+                    'previous_company_name' => $validated['previousCompanyName'] ?? null,
+                    'previous_business_type' => $validated['previousBusinessType'] ?? null,
+                    'previous_position' => $validated['previousPosition'] ?? null,
+                    'previous_income' => $validated['previousIncome'] ?? null,
+                    'previous_work_years' => $validated['previousWorkYears'] ?? null,
+                    'previous_phone' => $validated['previousPhone'] ?? null,
+                ]
+            );
+
+            ConsentDocumentDelivery::updateOrCreate(
+                ['application_id' => $application->id],
+                [
+                    'document_delivery' => $validated['documentDelivery'] ?? null,
+                    'document_email' => $validated['documentEmail'] ?? null,
+                ]
+            );
+
+            ConsentReference::updateOrCreate(
+                ['application_id' => $application->id],
+                [
+                    'ref_name' => $validated['refName'] ?? null,
+                    'ref_relation' => $validated['refRelation'] ?? null,
+                    'ref_phone_home' => $validated['refPhoneHome'] ?? null,
+                    'ref_phone_mobile' => $validated['refPhoneMobile'] ?? null,
+                    'ref_email' => $validated['refEmail'] ?? null,
+                    'ref_line_id' => $validated['refLineId'] ?? null,
+                ]
+            );
+
+            ConsentAddress::updateOrCreate(
+                ['application_id' => $application->id, 'kind' => 'reference'],
+                [
+                    'address_no' => $validated['refAddressNo'] ?? null,
+                    'address_floor' => $validated['refAddressFloor'] ?? null,
+                    'address_village' => $validated['refAddressVillage'] ?? null,
+                    'address_building' => $validated['refAddressBuilding'] ?? null,
+                    'address_soi' => $validated['refAddressSoi'] ?? null,
+                    'address_road' => $validated['refAddressRoad'] ?? null,
+                    'address_subdistrict' => $validated['refAddressSubdistrict'] ?? null,
+                    'address_district' => $validated['refAddressDistrict'] ?? null,
+                    'address_province' => $validated['refAddressProvince'] ?? null,
+                    'address_postal' => $validated['refAddressPostal'] ?? null,
+                ]
+            );
+
+            ConsentLoanRequest::updateOrCreate(
+                ['application_id' => $application->id],
+                [
+                    'loan_term' => $validated['loanTerm'] ?? null,
+                    'loan_amount_type' => $validated['loanAmountType'] ?? null,
+                    'custom_loan_amount' => $validated['customLoanAmount'] ?? null,
+                    'loan_purpose' => $validated['loanPurpose'] ?? null,
+                ]
+            );
+
+            ConsentDisbursementAccount::updateOrCreate(
+                ['application_id' => $application->id],
+                [
+                    'bank_name' => $validated['bankName'] ?? null,
+                    'bank_branch' => $validated['bankBranch'] ?? null,
+                    'account_name' => $validated['accountName'] ?? null,
+                    'account_type' => $validated['accountType'] ?? null,
+                    'account_number' => $validated['accountNumber'] ?? null,
+                ]
+            );
+
+            return $application->fresh()->load('applicant');
+        });
+    }
+
+    private function toFrontendData(ConsentApplication $consent): array
+    {
+        $applicant = $consent->applicant;
+        $spouse = $consent->spouse;
+        $contact = $consent->contact;
+        $home = $consent->homeAddress;
+        $work = $consent->workAddress;
+        $referenceAddress = $consent->referenceAddress;
+        $employment = $consent->employment;
+        $previousEmployment = $consent->previousEmployment;
+        $documentDelivery = $consent->documentDelivery;
+        $reference = $consent->reference;
+        $loan = $consent->loanRequest;
+        $account = $consent->disbursementAccount;
+
+        $hasOtherDebtsValue = $applicant?->has_other_debts;
+        $hasOtherDebts = $hasOtherDebtsValue === null ? null : ($hasOtherDebtsValue ? 'มี' : 'ไม่มี');
+
+        $hasExistingLoanValue = $applicant?->has_existing_loan;
+        $hasExistingLoan = $hasExistingLoanValue === null ? null : ($hasExistingLoanValue ? 'มี' : 'ไม่มี');
+
+        return array_merge($consent->toArray(), [
+            'id' => $consent->encrypted_id,
+            'transaction_date' => $consent->created_at?->format('d/m/Y'),
+            'signed_date' => $consent->signed_at?->format('Y-m-d'),
+            'signatureData' => $consent->signature_data,
+
+            'title' => $applicant?->title,
+            'name' => $applicant?->name,
+            'name_en' => $applicant?->name_en,
+            'dob' => $applicant?->dob?->format('Y-m-d'),
+            'id_card' => $applicant?->id_card,
+            'gender' => $applicant?->gender,
+            'age' => $applicant?->age,
+            'nationality' => $applicant?->nationality,
+            'marital_status' => $applicant?->marital_status,
+            'education' => $applicant?->education,
+            'occupation' => $applicant?->occupation,
+            'income' => $applicant?->income,
+            'extra_income' => $applicant?->extra_income,
+            'extra_income_source' => $applicant?->extra_income_source,
+            'business_income' => $applicant?->business_income,
+            'average_monthly_income' => $applicant?->average_monthly_income,
+            'has_other_debts' => $hasOtherDebts,
+            'other_debt_installment' => $applicant?->other_debt_installment,
+            'has_existing_loan' => $hasExistingLoan,
+
+            'spouse_title' => $spouse?->spouse_title,
+            'spouse_name' => $spouse?->spouse_name,
+            'spouse_phone' => $spouse?->spouse_phone,
+            'spouse_mobile' => $spouse?->spouse_mobile,
+            'spouse_education' => $spouse?->spouse_education,
+            'spouse_occupation' => $spouse?->spouse_occupation,
+            'spouse_company' => $spouse?->spouse_company,
+            'spouse_income' => $spouse?->spouse_income,
+
+            'dwelling_type' => $home?->dwelling_type,
+            'residence_status' => $home?->residence_status,
+            'residence_rent_amount' => $home?->residence_rent_amount,
+            'residence_years' => $home?->residence_years,
+            'address_no' => $home?->address_no,
+            'address_floor' => $home?->address_floor,
+            'address_village' => $home?->address_village,
+            'address_building' => $home?->address_building,
+            'address_soi' => $home?->address_soi,
+            'address_road' => $home?->address_road,
+            'address_subdistrict' => $home?->address_subdistrict,
+            'address_district' => $home?->address_district,
+            'address_province' => $home?->address_province,
+            'address_postal' => $home?->address_postal,
+
+            'phone_home' => $contact?->phone_home,
+            'phone_mobile' => $contact?->phone_mobile,
+            'email' => $contact?->email,
+            'line_id' => $contact?->line_id,
+
+            'use_home_address' => $employment?->use_home_address,
+            'company_type' => $employment?->company_type,
+            'company_name' => $employment?->company_name,
+            'business_type' => $employment?->business_type,
+            'work_occupation' => $employment?->work_occupation,
+            'work_position' => $employment?->work_position,
+            'work_years' => $employment?->work_years,
+            'work_months' => $employment?->work_months,
+            'work_phone' => $employment?->work_phone,
+
+            'previous_company_name' => $previousEmployment?->previous_company_name,
+            'previous_business_type' => $previousEmployment?->previous_business_type,
+            'previous_position' => $previousEmployment?->previous_position,
+            'previous_income' => $previousEmployment?->previous_income,
+            'previous_work_years' => $previousEmployment?->previous_work_years,
+            'previous_phone' => $previousEmployment?->previous_phone,
+
+            'document_delivery' => $documentDelivery?->document_delivery,
+            'document_email' => $documentDelivery?->document_email,
+
+            'ref_name' => $reference?->ref_name,
+            'ref_relation' => $reference?->ref_relation,
+            'ref_phone_home' => $reference?->ref_phone_home,
+            'ref_phone_mobile' => $reference?->ref_phone_mobile,
+            'ref_email' => $reference?->ref_email,
+            'ref_line_id' => $reference?->ref_line_id,
+
+            'loan_term' => $loan?->loan_term,
+            'loan_amount_type' => $loan?->loan_amount_type,
+            'custom_loan_amount' => $loan?->custom_loan_amount,
+            'loan_purpose' => $loan?->loan_purpose,
+
+            'bank_name' => $account?->bank_name,
+            'bank_branch' => $account?->bank_branch,
+            'account_name' => $account?->account_name,
+            'account_type' => $account?->account_type,
+            'account_number' => $account?->account_number,
+
+            'extraIncome' => $applicant?->extra_income,
+            'extraIncomeSource' => $applicant?->extra_income_source,
+            'businessIncome' => $applicant?->business_income,
+            'averageMonthlyIncome' => $applicant?->average_monthly_income,
+            'hasOtherDebts' => $hasOtherDebts,
+            'otherDebtInstallment' => $applicant?->other_debt_installment,
+            'hasExistingLoan' => $hasExistingLoan,
+            'lineId' => $contact?->line_id,
+            'useHomeAddress' => $employment?->use_home_address,
+            'companyType' => $employment?->company_type,
+            'companyName' => $employment?->company_name,
+            'businessType' => $employment?->business_type,
+            'workOccupation' => $employment?->work_occupation,
+            'workPosition' => $employment?->work_position,
+            'workYears' => $employment?->work_years,
+            'workMonths' => $employment?->work_months,
+            'workAddressNo' => $work?->address_no,
+            'workAddressFloor' => $work?->address_floor,
+            'workAddressVillage' => $work?->address_village,
+            'workAddressBuilding' => $work?->address_building,
+            'workAddressSoi' => $work?->address_soi,
+            'workAddressRoad' => $work?->address_road,
+            'workAddressSubdistrict' => $work?->address_subdistrict,
+            'workAddressDistrict' => $work?->address_district,
+            'workAddressProvince' => $work?->address_province,
+            'workAddressPostal' => $work?->address_postal,
+            'workPhone' => $employment?->work_phone,
+            'previousCompanyName' => $previousEmployment?->previous_company_name,
+            'previousBusinessType' => $previousEmployment?->previous_business_type,
+            'previousPosition' => $previousEmployment?->previous_position,
+            'previousIncome' => $previousEmployment?->previous_income,
+            'previousWorkYears' => $previousEmployment?->previous_work_years,
+            'previousPhone' => $previousEmployment?->previous_phone,
+            'documentDelivery' => $documentDelivery?->document_delivery,
+            'documentEmail' => $documentDelivery?->document_email,
+            'refName' => $reference?->ref_name,
+            'refRelation' => $reference?->ref_relation,
+            'refAddressNo' => $referenceAddress?->address_no,
+            'refAddressFloor' => $referenceAddress?->address_floor,
+            'refAddressVillage' => $referenceAddress?->address_village,
+            'refAddressBuilding' => $referenceAddress?->address_building,
+            'refAddressSoi' => $referenceAddress?->address_soi,
+            'refAddressRoad' => $referenceAddress?->address_road,
+            'refAddressSubdistrict' => $referenceAddress?->address_subdistrict,
+            'refAddressDistrict' => $referenceAddress?->address_district,
+            'refAddressProvince' => $referenceAddress?->address_province,
+            'refAddressPostal' => $referenceAddress?->address_postal,
+            'refPhoneHome' => $reference?->ref_phone_home,
+            'refPhoneMobile' => $reference?->ref_phone_mobile,
+            'refEmail' => $reference?->ref_email,
+            'refLineId' => $reference?->ref_line_id,
+            'loanTerm' => $loan?->loan_term,
+            'loanAmountType' => $loan?->loan_amount_type,
+            'customLoanAmount' => $loan?->custom_loan_amount,
+            'loanPurpose' => $loan?->loan_purpose,
+            'bankName' => $account?->bank_name,
+            'bankBranch' => $account?->bank_branch,
+            'accountName' => $account?->account_name,
+            'accountType' => $account?->account_type,
+            'accountNumber' => $account?->account_number,
+        ]);
     }
 }
