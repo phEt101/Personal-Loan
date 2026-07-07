@@ -17,9 +17,6 @@
                     </div>
                     <div class="user-dropdown-links">
                         <a href="#" class="user-dropdown-item">My Profile</a>
-                        <a href="#" class="user-dropdown-item">Messages</a>
-                        <a href="#" class="user-dropdown-item">Activity</a>
-                        <a href="#" class="user-dropdown-item">FAQ</a>
                         <a href="#" class="user-dropdown-item user-dropdown-signout">Sign Out</a>
                     </div>
                 </div>

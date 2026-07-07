@@ -12,28 +12,33 @@ return new class extends Migration
             $table->bigIncrements('id')->comment('Primary key');
             $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
             $table->string('title', 50)->nullable()->comment('คำนำหน้า');
-            $table->string('name', 150)->comment('ชื่อ-นามสกุล');
+            $table->string('name', 150)->nullable()->comment('ชื่อ-นามสกุล');
             $table->string('name_en', 150)->nullable()->comment('ชื่อ-นามสกุล (อังกฤษ)');
-            $table->date('dob')->nullable()->comment('วันเดือนปีเกิด');
+            $table->date('birthdate')->nullable()->comment('วันเดือนปีเกิด');
             $table->string('id_card', 20)->nullable()->comment('เลขบัตรประชาชน');
-            $table->string('gender', 10)->nullable()->comment('เพศ');
-            $table->integer('age')->nullable()->comment('อายุ');
+            $table->string('passport', 20)->nullable()->comment('เลขหนังสือเดินทาง');
             $table->string('nationality', 50)->nullable()->comment('สัญชาติ');
             $table->string('marital_status', 50)->nullable()->comment('สถานภาพสมรส');
             $table->string('education', 50)->nullable()->comment('ระดับการศึกษา');
             $table->string('occupation', 100)->nullable()->comment('อาชีพ');
+            $table->string('government_level', 100)->nullable()->comment('ระดับข้าราชการ');
+            $table->string('occupation_other', 100)->nullable()->comment('ระบุอาชีพอื่นๆ');
+            $table->string('career_field', 100)->nullable()->comment('สาขาอาชีพ');
+            $table->string('career_field_other', 100)->nullable()->comment('ระบุสาขาอาชีพอื่นๆ');
             $table->decimal('income', 12, 2)->nullable()->comment('รายได้หลัก');
             $table->decimal('extra_income', 12, 2)->nullable()->comment('รายได้เสริม');
-            $table->string('extra_income_source', 100)->nullable()->comment('แหล่งที่มารายได้เสริม');
-            $table->string('business_income', 255)->nullable()->comment('รายได้จากธุรกิจ/กิจการ');
-            $table->decimal('average_monthly_income', 12, 2)->nullable()->comment('รายได้เฉลี่ยต่อเดือน');
+            $table->string('extra_income_source', 100)->nullable()->comment('แหล่งที่มาของรายได้');
+            $table->string('income_country', 100)->nullable()->comment('ประเทศที่มาของรายได้');
             $table->boolean('has_other_debts')->nullable()->comment('มีหนี้สินอื่นหรือไม่');
             $table->decimal('other_debt_installment', 12, 2)->nullable()->comment('ค่างวดหนี้สินอื่นต่อเดือน');
             $table->boolean('has_existing_loan')->nullable()->comment('มีสินเชื่อ/กู้ยืมเดิมหรือไม่');
+            $table->unsignedInteger('existing_loan_institution_count')->nullable()->comment('จำนวนสถาบัน/ผู้ประกอบธุรกิจที่มีวงเงินสินเชื่อรวม');
+            $table->decimal('existing_loan_total_amount', 12, 2)->nullable()->comment('วงเงินสินเชื่อส่วนบุคคลรวมทั้งสิ้น');
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
 
             $table->index('id_card');
+            $table->index('passport');
         });
     }
 

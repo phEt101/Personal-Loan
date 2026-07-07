@@ -12,11 +12,9 @@ class ConsentEmployment extends Model
     protected $fillable = [
         'application_id',
         'use_home_address',
-        'company_type',
         'company_name',
         'business_type',
-        'work_occupation',
-        'work_position',
+        'work_department',
         'work_years',
         'work_months',
         'work_phone',
@@ -31,4 +29,3 @@ class ConsentEmployment extends Model
         return $this->belongsTo(ConsentApplication::class, 'application_id');
     }
 }
-

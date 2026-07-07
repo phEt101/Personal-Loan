@@ -20,6 +20,7 @@ class ConsentApplication extends Model
         'app_no',
         'officer_name',
         'officer_phone',
+        'document_delivery',
         'status',
         'signed',
         'signed_at',
@@ -61,11 +62,6 @@ class ConsentApplication extends Model
         return $this->hasOne(ConsentApplicant::class, 'application_id');
     }
 
-    public function spouse(): HasOne
-    {
-        return $this->hasOne(ConsentSpouse::class, 'application_id');
-    }
-
     public function contact(): HasOne
     {
         return $this->hasOne(ConsentContact::class, 'application_id');
@@ -74,6 +70,11 @@ class ConsentApplication extends Model
     public function addresses(): HasMany
     {
         return $this->hasMany(ConsentAddress::class, 'application_id');
+    }
+
+    public function incomeDocuments(): HasMany
+    {
+        return $this->hasMany(ConsentIncomeDocument::class, 'application_id');
     }
 
     public function homeAddress(): HasOne
@@ -91,6 +92,11 @@ class ConsentApplication extends Model
         return $this->hasOne(ConsentAddress::class, 'application_id')->where('kind', 'reference');
     }
 
+    public function documentAddress(): HasOne
+    {
+        return $this->hasOne(ConsentAddress::class, 'application_id')->where('kind', 'document');
+    }
+
     public function employment(): HasOne
     {
         return $this->hasOne(ConsentEmployment::class, 'application_id');
@@ -99,11 +105,6 @@ class ConsentApplication extends Model
     public function previousEmployment(): HasOne
     {
         return $this->hasOne(ConsentPreviousEmployment::class, 'application_id');
-    }
-
-    public function documentDelivery(): HasOne
-    {
-        return $this->hasOne(ConsentDocumentDelivery::class, 'application_id');
     }
 
     public function reference(): HasOne

@@ -531,9 +531,27 @@ body {
 
 .modal-form-actions {
     justify-content: flex-end;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 1rem;
-    margin-top: 1rem;
+    gap: 0.75rem;
+}
+
+.modal-footer,
+.view-modal-footer {
+    padding: 0.5rem 1rem 0.75rem;
+    border-top: 1px solid #f3f4f6;
+    background: #ffffff;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-shrink: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+.consent-form-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 0;
 }
 
 .action-link {
@@ -705,6 +723,8 @@ body {
     transition: transform 0.3s ease;
     overflow: hidden;
     touch-action: pan-y;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal.show .modal-content {
@@ -752,7 +772,8 @@ body {
 }
 
 .modal-body.scrollable {
-    max-height: 80vh;
+    flex: 1;
+    max-height: calc(100vh - 160px);
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior-y: contain;
@@ -885,7 +906,103 @@ body {
     color: #4b5563;
 }
 
-.form-group select {
+.file-attachment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #f3f4f6;
+}
+
+.file-attachment-row a,
+.file-attachment-row span {
+    word-break: break-word;
+    color: #374151;
+    font-size: 0.9rem;
+    text-decoration: none;
+    flex-grow: 1;
+}
+
+.file-attachment-row a:hover {
+    color: #10b981;
+    text-decoration: underline;
+}
+
+.file-remove-btn {
+    border: 1px solid #fee2e2;
+    background: #ffffff;
+    color: #ef4444;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.file-remove-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+.custom-file-upload {
+    display: block;
+    width: 100%;
+    padding: 1.5rem;
+    border: 2px dashed rgba(16, 185, 129, 0.3);
+    border-radius: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #f0fdf4;
+}
+
+.custom-file-upload:hover {
+    border-color: #10b981;
+    background: #ecfdf5;
+}
+
+.custom-file-upload i {
+    font-size: 1.5rem;
+    color: #10b981;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.custom-file-upload span {
+    color: #065f46;
+    font-weight: 500;
+}
+
+.custom-file-upload p {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.file-input-hidden {
+    display: none;
+}
+
+.uploaded-files-section {
+    margin-top: 1rem;
+}
+
+.uploaded-files-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-group select,
+.form-group textarea {
     width: 100%;
     padding: 0.75rem 0.9rem;
     border: 1px solid rgba(16, 185, 129, 0.25);
@@ -896,7 +1013,8 @@ body {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
     outline: none;
     border-color: #10b981;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
@@ -991,15 +1109,6 @@ body {
     min-width: 560px;
 }
 
-.view-modal-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #e5e7eb;
-    background: #ffffff;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-}
-
 @media (max-width: 768px) {
     .col-9, .col-8, .col-6, .col-4, .col-3, .col-2 {
         grid-column: span 12;
@@ -1075,11 +1184,13 @@ body {
     }
 
     .modal-form-actions,
+    .modal-footer,
     .view-modal-footer {
         flex-direction: column-reverse;
     }
 
     .modal-form-actions .action-btn,
+    .modal-footer .action-btn,
     .view-modal-footer .action-btn {
         width: 100%;
     }
@@ -1177,4 +1288,158 @@ body {
         right: 0;
         min-width: min(240px, calc(100vw - 1.5rem));
     }
+}
+
+/* Address Search Styles */
+.address-search-field {
+    position: relative;
+}
+
+.address-search-dropdown {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    right: 0;
+    max-height: 220px;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+    z-index: 30;
+}
+
+.address-search-option,
+.address-search-empty {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.95rem;
+    text-align: left;
+}
+
+.address-search-option {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.address-search-option:hover,
+.address-search-option.is-active {
+    background: #eff6ff;
+}
+
+.address-search-empty {
+    color: #6b7280;
+}
+
+/* Pagination Styles */
+.pagination-container {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+/* Alert Styles - additional */
+.alert-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.alert-list {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+/* Table Action Button Styles */
+.table-action-btn-small {
+    padding: 0.4rem 0.75rem;
+    min-width: 88px;
+}
+
+.action-btn.table-action-btn-delete {
+    padding: 0.4rem 0.75rem;
+    min-width: 56px;
+    background: #dc2626;
+}
+
+.action-btn.table-action-btn-delete:hover {
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+/* Cleanup styles from inline CSS */
+.hidden-accessible {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.input-readonly {
+    background: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.text-muted {
+    color: #4b5563;
+}
+
+.mb-1 {
+    margin-bottom: 1rem;
+}
+
+.display-contents {
+    display: contents;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.line-height-relaxed {
+    line-height: 1.6;
+}
+
+.line-height-extra {
+    line-height: 1.8;
+}
+
+.text-indent-large {
+    text-indent: 3rem;
+}
+
+.mb-1-5 {
+    margin-bottom: 1.5rem;
+}
+
+.warning-box {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.warning-title {
+    color: #856404;
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.warning-list {
+    margin: 0;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+    color: #856404;
+}
+
+.warning-item {
+    margin-bottom: 0.5rem;
+}
+
+.signature-canvas {
+    width: 100%;
+    height: 120px;
+    cursor: crosshair;
 }

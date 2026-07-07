@@ -14,7 +14,6 @@ class ConsentContact extends Model
         'phone_home',
         'phone_mobile',
         'email',
-        'line_id',
     ];
 
     public function application(): BelongsTo

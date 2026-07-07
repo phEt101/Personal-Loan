@@ -14,7 +14,6 @@ return new class extends Migration
             $table->string('phone_home', 20)->nullable()->comment('เบอร์โทรศัพท์บ้าน');
             $table->string('phone_mobile', 20)->nullable()->comment('เบอร์โทรศัพท์มือถือ');
             $table->string('email', 100)->nullable()->comment('อีเมล');
-            $table->string('line_id', 100)->nullable()->comment('LINE ID');
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
 

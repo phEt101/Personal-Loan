@@ -12,10 +12,9 @@ class ConsentAddress extends Model
     protected $fillable = [
         'application_id',
         'kind',
-        'dwelling_type',
         'residence_status',
-        'residence_rent_amount',
-        'residence_years',
+        'address_text',
+        'address_room',
         'address_no',
         'address_floor',
         'address_village',
@@ -26,10 +25,12 @@ class ConsentAddress extends Model
         'address_district',
         'address_province',
         'address_postal',
+        'birth_place_address',
     ];
 
     protected $casts = [
-        'residence_rent_amount' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function application(): BelongsTo
@@ -37,4 +38,3 @@ class ConsentAddress extends Model
         return $this->belongsTo(ConsentApplication::class, 'application_id');
     }
 }
-

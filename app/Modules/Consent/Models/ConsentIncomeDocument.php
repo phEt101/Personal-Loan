@@ -5,24 +5,21 @@ namespace App\Modules\Consent\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ConsentSpouse extends Model
+class ConsentIncomeDocument extends Model
 {
-    protected $table = 'consent_spouses';
+    protected $table = 'consent_income_documents';
 
     protected $fillable = [
         'application_id',
-        'spouse_title',
-        'spouse_name',
-        'spouse_phone',
-        'spouse_mobile',
-        'spouse_education',
-        'spouse_occupation',
-        'spouse_company',
-        'spouse_income',
+        'disk',
+        'path',
+        'original_name',
+        'mime_type',
+        'size',
     ];
 
     protected $casts = [
-        'spouse_income' => 'decimal:2',
+        'size' => 'integer',
     ];
 
     public function application(): BelongsTo
@@ -30,4 +27,3 @@ class ConsentSpouse extends Model
         return $this->belongsTo(ConsentApplication::class, 'application_id');
     }
 }
-

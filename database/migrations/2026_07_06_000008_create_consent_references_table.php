@@ -15,8 +15,6 @@ return new class extends Migration
             $table->string('ref_relation', 100)->nullable()->comment('ความสัมพันธ์กับผู้กู้');
             $table->string('ref_phone_home', 20)->nullable()->comment('เบอร์โทรบ้านผู้รับรอง');
             $table->string('ref_phone_mobile', 20)->nullable()->comment('เบอร์มือถือผู้รับรอง');
-            $table->string('ref_email', 100)->nullable()->comment('อีเมลผู้รับรอง');
-            $table->string('ref_line_id', 100)->nullable()->comment('LINE ID ผู้รับรอง');
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
         });

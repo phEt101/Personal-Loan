@@ -12,10 +12,16 @@ class ConsentDisbursementAccount extends Model
     protected $fillable = [
         'application_id',
         'bank_name',
-        'bank_branch',
         'account_name',
         'account_type',
         'account_number',
+        'payment_method',
+        'direct_debit_amount',
+        'direct_debit_account_number',
+    ];
+
+    protected $casts = [
+        'direct_debit_amount' => 'decimal:2',
     ];
 
     public function application(): BelongsTo

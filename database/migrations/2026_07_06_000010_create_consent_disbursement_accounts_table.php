@@ -12,10 +12,12 @@ return new class extends Migration
             $table->bigIncrements('id')->comment('Primary key');
             $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
             $table->string('bank_name', 100)->nullable()->comment('ชื่อธนาคาร');
-            $table->string('bank_branch', 100)->nullable()->comment('สาขาธนาคาร');
             $table->string('account_name', 150)->nullable()->comment('ชื่อบัญชี');
             $table->string('account_type', 50)->nullable()->comment('ประเภทบัญชี');
             $table->string('account_number', 50)->nullable()->comment('เลขที่บัญชี');
+            $table->string('payment_method', 100)->nullable()->comment('วิธีการชำระเงิน');
+            $table->decimal('direct_debit_amount', 12, 2)->nullable()->comment('จำนวนเงินหักบัญชีต่อเดือน');
+            $table->string('direct_debit_account_number', 50)->nullable()->comment('เลขที่บัญชีสำหรับหักเงิน');
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
         });

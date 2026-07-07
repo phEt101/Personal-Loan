@@ -18,8 +18,8 @@
 
         @if($errors->any())
             <div class="alert alert-danger">
-                <div style="font-weight: 700; margin-bottom: 0.5rem;">บันทึกข้อมูลไม่สำเร็จ กรุณาตรวจสอบข้อมูลอีกครั้ง</div>
-                <ul style="margin: 0; padding-left: 1.25rem;">
+                <div class="alert-title">บันทึกข้อมูลไม่สำเร็จ กรุณาตรวจสอบข้อมูลอีกครั้ง</div>
+                <ul class="alert-list">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -73,17 +73,15 @@
                                     <div class="table-actions">
                                         <button
                                             type="button"
-                                            class="action-btn outline"
+                                            class="action-btn outline table-action-btn-small"
                                             onclick="viewDocument({ id: {{ Js::from($customer->encrypted_id) }} }); return false;"
-                                            style="padding: 0.4rem 0.75rem; min-width: 88px;"
                                         >
                                             ดูเอกสาร
                                         </button>
                                         <button
                                             type="button"
-                                            class="action-btn"
+                                            class="action-btn table-action-btn-small"
                                             onclick="editDocument({ id: {{ Js::from($customer->encrypted_id) }} }); return false;"
-                                            style="padding: 0.4rem 0.75rem; min-width: 70px;"
                                         >
                                             แก้ไข
                                         </button>
@@ -92,8 +90,7 @@
                                             @method('DELETE')
                                             <button
                                                 type="submit"
-                                                class="action-btn"
-                                                style="padding: 0.4rem 0.75rem; min-width: 56px; background: #dc2626;"
+                                                class="action-btn table-action-btn-delete"
                                             >
                                                 ลบ
                                             </button>
@@ -112,7 +109,7 @@
         </div>
 
         @if(method_exists($customers, 'links'))
-            <div style="margin-top: 1rem; display: flex; justify-content: center;">
+            <div class="pagination-container">
                 {{ $customers->onEachSide(1)->links() }}
             </div>
         @endif
@@ -120,50 +117,7 @@
 
     <div id="modalMount"></div>
 
-    <style>
-        .address-search-field {
-            position: relative;
-        }
-
-        .address-search-dropdown {
-            position: absolute;
-            top: calc(100% + 0.35rem);
-            left: 0;
-            right: 0;
-            max-height: 220px;
-            overflow-y: auto;
-            background: #fff;
-            border: 1px solid #d1d5db;
-            border-radius: 0.75rem;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
-            z-index: 30;
-        }
-
-        .address-search-option,
-        .address-search-empty {
-            width: 100%;
-            padding: 0.7rem 0.85rem;
-            font-size: 0.95rem;
-            text-align: left;
-        }
-
-        .address-search-option {
-            background: transparent;
-            border: 0;
-            cursor: pointer;
-        }
-
-        .address-search-option:hover,
-        .address-search-option.is-active {
-            background: #eff6ff;
-        }
-
-        .address-search-empty {
-            color: #6b7280;
-        }
-    </style>
-
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <script src="{{ asset('js/signature_pad.umd.min.js') }}"></script>
 
     <script>
         const modalEndpoints = {
@@ -178,6 +132,15 @@
 
         let consentModalLoadPromise = null;
         let viewConsentModalLoadPromise = null;
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
         function getModalMount() {
             let mount = document.getElementById('modalMount');
@@ -249,25 +212,37 @@
             const name_en = customer.name_en || '-';
             
             // Format Dates
-            const dob = customer.dob ? new Date(customer.dob).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+            const birthdate = customer.birthdate ? new Date(customer.birthdate).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
             const appDateFormatted = customer.app_date ? new Date(customer.app_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
             
-            const id_card = customer.id_card || '-';
-            const gender = customer.gender || '-';
-            const age = customer.age ? customer.age + ' ปี' : '-';
+            const id_card = customer.id_card || customer.passport || '-';
             const nationality = customer.nationality || '-';
             const marital_status = customer.marital_status || '-';
             const education = customer.education || '-';
             const occupation = customer.occupation || '-';
+            const governmentLevel = customer.governmentLevel || '-';
+            const occupationOther = customer.occupationOther || '-';
+            const careerField = customer.careerField || '-';
+            const careerFieldOther = customer.careerFieldOther || '-';
             const income = customer.income ? parseInt(customer.income).toLocaleString('th-TH') + ' บาท' : '-';
             const extraIncome = customer.extraIncome ? parseInt(customer.extraIncome).toLocaleString('th-TH') + ' บาท' : '-';
             const extraIncomeSource = customer.extraIncomeSource || '-';
-            const businessIncome = customer.businessIncome || '-';
-            const averageMonthlyIncome = customer.averageMonthlyIncome ? parseInt(customer.averageMonthlyIncome).toLocaleString('th-TH') + ' บาท' : '-';
+            const incomeCountry = customer.incomeCountry || '-';
             const hasOtherDebts = customer.hasOtherDebts || '-';
             const otherDebtInstallment = customer.otherDebtInstallment ? parseInt(customer.otherDebtInstallment).toLocaleString('th-TH') + ' บาท' : '-';
             const hasExistingLoan = customer.hasExistingLoan || '-';
-            const existingLoanInstallment = customer.existingLoanInstallment ? parseInt(customer.existingLoanInstallment).toLocaleString('th-TH') + ' บาท' : '-';
+            const existingLoanInstitutionCount = customer.existingLoanInstitutionCount ?? '-';
+            const existingLoanTotalAmount = customer.existingLoanTotalAmount ? parseInt(customer.existingLoanTotalAmount).toLocaleString('th-TH') + ' บาท' : '-';
+            const incomeDocuments = Array.isArray(customer.incomeDocuments) ? customer.incomeDocuments : [];
+            const incomeDocumentsHtml = incomeDocuments.length
+                ? incomeDocuments
+                    .map(function(document) {
+                        const url = document?.downloadUrl ?? '#';
+                        const name = document?.originalName ?? 'ไฟล์แนบ';
+                        return `<div style="margin-bottom: 0.35rem;"><a href="${url}" target="_blank" rel="noopener" style="color: #10b981; text-decoration: none;">📄 ${escapeHtml(name)}</a></div>`;
+                    })
+                    .join('')
+                : '-';
 
             const signed_at = customer.signed_at || new Date().toISOString().split('T')[0];
             const signedDateFormatted = new Date(signed_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -275,20 +250,10 @@
             // Officer & Application Details
             const officer_name = customer.officer_name || '-';
             const officer_phone = customer.officer_phone || '-';
-            const spouse_title = customer.spouse_title || '-';
-            const spouse_name = customer.spouse_name || '-';
-            const spouse_phone = customer.spouse_phone || '-';
-            const spouse_mobile = customer.spouse_mobile || '-';
-            const spouse_education = customer.spouse_education || '-';
-            const spouse_occupation = customer.spouse_occupation || '-';
-            const spouse_company = customer.spouse_company || '-';
-            const spouse_income = customer.spouse_income ? parseInt(customer.spouse_income).toLocaleString('th-TH') + ' บาท' : '-';
             
             // Address fields
-            const dwelling_type = customer.dwelling_type || '-';
             const residence_status = customer.residence_status || '-';
-            const residence_rent_amount = customer.residence_rent_amount ? parseInt(customer.residence_rent_amount).toLocaleString('th-TH') + ' บาท' : '-';
-            const residence_years = customer.residence_years ? customer.residence_years + ' ปี' : '-';
+            const address_room = customer.address_room || '-';
             const address_no = customer.address_no || '-';
             const address_floor = customer.address_floor || '-';
             const address_village = customer.address_village || '-';
@@ -302,13 +267,14 @@
             const phone_home = customer.phone_home || '-';
             const phone_mobile = customer.phone_mobile || '-';
             const email = customer.email || '-';
-            const line_id = customer.line_id || '-';
+            const documentAddressText = customer.documentAddressText || '-';
+            const documentAddressProvince = customer.documentAddressProvince || '-';
+            const documentAddressPostal = customer.documentAddressPostal || '-';
+            const birthPlaceAddress = customer.birthPlaceAddress || '-';
             // Work fields
-            const companyType = customer.companyType || '-';
             const companyName = customer.companyName || '-';
             const businessType = customer.businessType || '-';
-            const workOccupation = customer.workOccupation || '-';
-            const workPosition = customer.workPosition || '-';
+            const workDepartment = customer.workDepartment || '-';
             const workYears = customer.workYears || '0';
             const workMonths = customer.workMonths || '0';
             const workAddressNo = customer.workAddressNo || '-';
@@ -324,14 +290,12 @@
             const workPhone = customer.workPhone || '-';
             // Previous work fields
             const previousCompanyName = customer.previousCompanyName || '-';
-            const previousBusinessType = customer.previousBusinessType || '-';
             const previousPosition = customer.previousPosition || '-';
             const previousIncome = customer.previousIncome ? parseInt(customer.previousIncome).toLocaleString('th-TH') + ' บาท' : '-';
-            const previousWorkYears = customer.previousWorkYears || '0';
+            const previousWorkAddress = customer.previousWorkAddress || '-';
             const previousPhone = customer.previousPhone || '-';
             // Document delivery fields
             const documentDelivery = customer.documentDelivery || '-';
-            const documentEmail = customer.documentEmail || '-';
             // Reference person fields
             const refName = customer.refName || '-';
             const refRelation = customer.refRelation || '-';
@@ -347,18 +311,18 @@
             const refAddressPostal = customer.refAddressPostal || '-';
             const refPhoneHome = customer.refPhoneHome || '-';
             const refPhoneMobile = customer.refPhoneMobile || '-';
-            const refEmail = customer.refEmail || '-';
-            const refLineId = customer.refLineId || '-';
             // Loan request fields
             const loanTerm = customer.loanTerm ? `${customer.loanTerm} เดือน` : '-';
             const loanAmountType = customer.loanAmountType || '-';
             const customLoanAmount = customer.customLoanAmount ? parseInt(customer.customLoanAmount).toLocaleString('th-TH') + ' บาท' : '-';
             const loanPurpose = customer.loanPurpose || '-';
             const bankName = customer.bankName || '-';
-            const bankBranch = customer.bankBranch || '-';
             const accountName = customer.accountName || '-';
             const accountType = customer.accountType || '-';
             const accountNumber = customer.accountNumber || '-';
+            const paymentMethod = customer.paymentMethod || '-';
+            const directDebitAmount = customer.directDebitAmount ? parseInt(customer.directDebitAmount).toLocaleString('th-TH') : '.....................................';
+            const directDebitAccountNumber = customer.directDebitAccountNumber || '.........................................';
             // Consent & signature fields
             const signatureData = customer.signatureData || null;
             const signed_date = customer.signed_date ? new Date(customer.signed_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
@@ -418,11 +382,11 @@
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
                             <td style="padding: 0.5rem; font-weight: 600;">วัน / เดือน / ปีเกิด:</td>
-                            <td style="padding: 0.5rem;">${dob}</td>
+                            <td style="padding: 0.5rem;">${birthdate}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">เพศ / อายุ / สัญชาติ:</td>
-                            <td style="padding: 0.5rem;">${gender} / ${age} / สัญชาติ ${nationality}</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">สัญชาติ:</td>
+                            <td style="padding: 0.5rem;">สัญชาติ ${nationality}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
                             <td style="padding: 0.5rem; font-weight: 600;">สถานภาพสมรส:</td>
@@ -434,29 +398,42 @@
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
                             <td style="padding: 0.5rem; font-weight: 600;">อาชีพ:</td>
-                            <td style="padding: 0.5rem;">${occupation}</td>
+                            <td style="padding: 0.5rem;">
+                                ${occupation}
+                                ${customer.occupation === 'ข้าราชการ' && customer.governmentLevel ? ` (ระดับ: ${governmentLevel})` : ''}
+                                ${customer.occupation === 'อื่นๆ' && customer.occupationOther ? ` (ระบุ: ${occupationOther})` : ''}
+                            </td>
                         </tr>
+                        ${customer.careerField ? `
+                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 0.5rem; font-weight: 600;">สาขาอาชีพ:</td>
+                            <td style="padding: 0.5rem;">
+                                ${careerField}
+                                ${customer.careerField === 'อื่นๆ' && customer.careerFieldOther ? ` (ระบุ: ${careerFieldOther})` : ''}
+                            </td>
+                        </tr>
+                        ` : ''}
                         <tr style="border-bottom: 1px solid #f3f4f6;">
                             <td style="padding: 0.5rem; font-weight: 600;">รายได้รวมต่อเดือน:</td>
                             <td style="padding: 0.5rem; color: #166534; font-weight: 700;">${income}</td>
                         </tr>
                         ${customer.extraIncome && parseInt(customer.extraIncome) > 0 ? `
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">รายได้พิเศษ:</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">รายได้อื่นๆ:</td>
                             <td style="padding: 0.5rem;">${extraIncome}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">แหล่งที่มาของรายได้พิเศษ:</td>
-                            <td style="padding: 0.5rem;">${extraIncomeSource}</td>
                         </tr>
                         ` : ''}
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ชื่อกิจการ:</td>
-                            <td style="padding: 0.5rem;">${businessIncome}</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">แหล่งที่มาของรายได้:</td>
+                            <td style="padding: 0.5rem;">${extraIncomeSource}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">รายได้จากกิจการ เฉลี่ยต่อเดือน:</td>
-                            <td style="padding: 0.5rem;">${averageMonthlyIncome}</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">ประเทศที่มาของรายได้:</td>
+                            <td style="padding: 0.5rem;">${incomeCountry}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 0.5rem; font-weight: 600;">ไฟล์หลักฐานการเงิน:</td>
+                            <td style="padding: 0.5rem;">${incomeDocumentsHtml}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f3f4f6;">
                             <td style="padding: 0.5rem; font-weight: 600;">ภาระหนี้อื่นๆ ในปัจจุบัน:</td>
@@ -473,48 +450,26 @@
 
                 ${(customer.income && parseInt(customer.income) < 30000) ? `
                 <div style="margin-bottom: 1.5rem; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">การแจ้งการมีวงเงินสินเชื่อบุคคล (เฉพาะผู้มีรายได้น้อยกว่า 30,000 บาท)</h4>
+                    <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">การชี้แจงการมีสินเชื่อบุคคล</h4>
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
                         <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ในช่วง 2 เดือนที่ผ่านมาผู้กู้เคยได้รับอนุมัติสินเชื่อ หรือ ยื่นสมัครสินเชื่อบุคคล/สินเชื่อนาโนไฟแนนซ์/สินเชื่อสวัสดิการพนักงานกับสถาบันการเงินมากกว่า 2 แห่งหรือไม่:</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">ปัจจุบันมีวงเงินสินเชื่อส่วนบุคคล และวงเงินที่อยู่ระหว่างขอยื่น/ขอเพิ่มตั้งแต่ 2 เดือนก่อนหน้าจนถึงปัจจุบัน จากสถาบันการเงิน/ผู้ประกอบธุรกิจสินเชื่อบุคคลที่ไม่ใช่สถาบันการเงินมากกว่า 2 แห่งหรือไม่:</td>
                             <td style="padding: 0.5rem;">${hasExistingLoan || '-'}</td>
                         </tr>
+                        ${hasExistingLoan === 'ใช่' ? `
+                        <tr style="border-bottom: 1px solid #e0f2fe;">
+                            <td style="padding: 0.5rem; font-weight: 600;">จำนวนแห่ง:</td>
+                            <td style="padding: 0.5rem;">${existingLoanInstitutionCount}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0f2fe;">
+                            <td style="padding: 0.5rem; font-weight: 600;">รวมทั้งสิ้น:</td>
+                            <td style="padding: 0.5rem;">${existingLoanTotalAmount}</td>
+                        </tr>
+                        ` : ''}
                     </table>
                     <div style="margin-top: 0.75rem; background: #fef9c3; border: 1px solid #facc15; padding: 0.6rem 0.85rem; border-radius: 0.375rem; font-size: 0.85rem; color: #854d0e;">
-                        <strong>**</strong> กรณีพบว่ามีสินเชื่อบุคคล/สินเชื่อนาโน/สินเชื่อสวัสดิการพนักงานกับสถาบันการเงินตั้งแต่ 3 แห่งขึ้นไป บริษัทมีสิทธิ์ปฏิเสธการให้สินเชื่อ หรือระงับการให้สินเชื่อ หรือยกเลิกสัญญา
+                        ( หมายเหตุ กรณีกรอกข้อมูลไม่ถูกต้องไม่ครบถ้วน และ/หรือมีรายได้หรือกระเเสเงินสดหมุนเวียนเข้าในบัญชีเงินฝากสถาบันการเงินโดยเฉลี่ยน้อยกว่า 30,000 บาทต่อเดือน โดยมีวงเงินสินเชื่อส่วนบุคคลรวมตั้งแต่ 3 แห่งขึ้นไป บริษัทมีสิทธิปฏิเสธการให้สินเชื่อ หรือกรณีที่ทําสัญญาเงินกู้ ให้ถือว่าบริษัทมีสิทธิลดหรือยกเลิกวงเงินได้ทันที )
                     </div>
-                </div>
-                ` : ''}
-
-                ${(marital_status === 'สมรส' || marital_status === 'สมรสไม่จดทะเบียน') ? `
-                <div style="margin-bottom: 1.5rem; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #d97706; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #f59e0b; padding-bottom: 0.35rem;">ข้อมูลคู่สมรส</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">คำนำหน้านาม - ชื่อ - นามสกุล:</td>
-                            <td style="padding: 0.5rem;">${spouse_title} ${spouse_name}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600;">หมายเลขโทรศัพท์:</td>
-                            <td style="padding: 0.5rem;">${spouse_phone}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600;">หมายเลขโทรศัพท์มือถือ:</td>
-                            <td style="padding: 0.5rem;">${spouse_mobile}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600;">การศึกษา:</td>
-                            <td style="padding: 0.5rem;">${spouse_education}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600;">อาชีพ / บริษัท:</td>
-                            <td style="padding: 0.5rem;">${spouse_occupation} (${spouse_company})</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 0.5rem; font-weight: 600;">รายได้ต่อเดือน:</td>
-                            <td style="padding: 0.5rem; color: #d97706; font-weight: 700;">${spouse_income}</td>
-                        </tr>
-                    </table>
                 </div>
                 ` : ''}
 
@@ -522,30 +477,17 @@
                     <h4 style="color: #be185d; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #f472b6; padding-bottom: 0.35rem;">ข้อมูลที่อยู่</h4>
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
                         <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ลักษณะที่อยู่อาศัย:</td>
-                            <td style="padding: 0.5rem;">${dwelling_type}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">สถานที่อยู่:</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">สถานะของการอยู่อาศัย / Residence type:</td>
                             <td style="padding: 0.5rem;">${residence_status}</td>
                         </tr>
-                        ${customer.residence_status === 'เช่า/ผ่อนชำระ' ? `
                         <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ยอดเช่า/ผ่อนต่อเดือน:</td>
-                            <td style="padding: 0.5rem;">${residence_rent_amount}</td>
-                        </tr>
-                        ` : ''}
-                        <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">อยู่อาศัยมาเป็นเวลา:</td>
-                            <td style="padding: 0.5rem;">${residence_years}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ที่อยู่:</td>
+                            <td style="padding: 0.5rem; font-weight: 600;">ที่อยู่ปัจจุบัน / Current address:</td>
                             <td style="padding: 0.5rem;">
-                                ${address_no !== '-' ? 'เลขที่ ' + address_no : ''}
+                                ${address_building !== '-' ? 'หมู่บ้าน/อาคาร ' + address_building : ''}
+                                ${address_room !== '-' ? ' เลขที่ห้อง ' + address_room : ''}
                                 ${address_floor !== '-' ? ' ชั้น ' + address_floor : ''}
+                                ${address_no !== '-' ? ' บ้านเลขที่ ' + address_no : ''}
                                 ${address_village !== '-' ? ' หมู่ ' + address_village : ''}
-                                ${address_building !== '-' ? ' ' + address_building : ''}
                                 ${address_soi !== '-' ? ' ซอย ' + address_soi : ''}
                                 ${address_road !== '-' ? ' ถนน ' + address_road : ''}
                                 ${address_subdistrict !== '-' ? ' แขวง/ตำบล ' + address_subdistrict : ''}
@@ -566,10 +508,6 @@
                             <td style="padding: 0.5rem; font-weight: 600;">E-mail:</td>
                             <td style="padding: 0.5rem;">${email}</td>
                         </tr>
-                        <tr>
-                            <td style="padding: 0.5rem; font-weight: 600;">Line ID:</td>
-                            <td style="padding: 0.5rem;">${line_id}</td>
-                        </tr>
                     </table>
                 </div>
 
@@ -577,10 +515,6 @@
                 <div style="margin-bottom: 1.5rem; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
                     <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">สถานที่ทำงานปัจจุบัน</h4>
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ประเภทสถานที่ทำงาน:</td>
-                            <td style="padding: 0.5rem;">${companyType}</td>
-                        </tr>
                         <tr style="border-bottom: 1px solid #e0f2fe;">
                             <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ชื่อกิจการ/ที่ทำงาน:</td>
                             <td style="padding: 0.5rem;">${companyName}</td>
@@ -590,16 +524,8 @@
                             <td style="padding: 0.5rem;">${businessType}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">อาชีพ:</td>
-                            <td style="padding: 0.5rem;">${workOccupation}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ตำแหน่ง:</td>
-                            <td style="padding: 0.5rem;">${workPosition}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">อายุงาน:</td>
-                            <td style="padding: 0.5rem;">${workYears} ปี ${workMonths} เดือน</td>
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">แผนก/ฝ่าย:</td>
+                            <td style="padding: 0.5rem;">${workDepartment}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #e0f2fe;">
                             <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่ที่ทำงาน:</td>
@@ -620,6 +546,10 @@
                             <td style="padding: 0.5rem; font-weight: 600; width: 30%;">หมายเลขโทรศัพท์ (ที่ทำงาน):</td>
                             <td style="padding: 0.5rem;">${workPhone}</td>
                         </tr>
+                        <tr style="border-bottom: 1px solid #e0f2fe;">
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">อายุงานรวม:</td>
+                            <td style="padding: 0.5rem;">${workYears} ปี ${workMonths} เดือน</td>
+                        </tr>
                     </table>
                 </div>
 
@@ -633,10 +563,6 @@
                             <td style="padding: 0.5rem;">${previousCompanyName}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ประเภทธุรกิจ:</td>
-                            <td style="padding: 0.5rem;">${previousBusinessType}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fef3c7;">
                             <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ตำแหน่ง:</td>
                             <td style="padding: 0.5rem;">${previousPosition}</td>
                         </tr>
@@ -645,8 +571,8 @@
                             <td style="padding: 0.5rem;">${previousIncome}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">อายุงาน:</td>
-                            <td style="padding: 0.5rem;">${previousWorkYears} ปี</td>
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่ที่ทำงานเดิม:</td>
+                            <td style="padding: 0.5rem;">${previousWorkAddress}</td>
                         </tr>
                         <tr>
                             <td style="padding: 0.5rem; font-weight: 600; width: 30%;">หมายเลขโทรศัพท์:</td>
@@ -658,16 +584,27 @@
 
                 <!-- Document Delivery Section -->
                 <div style="margin-bottom: 1.5rem; background: #dcfce7; border: 1px solid #22c55e; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #166534; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #22c55e; padding-bottom: 0.35rem;">สถานที่ส่งเอกสาร</h4>
+                    <h4 style="color: #166534; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #22c55e; padding-bottom: 0.35rem;">ช่องทางการรับเอกสาร</h4>
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
                         <tr style="border-bottom: 1px solid #dcfce7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">สถานที่ส่งเอกสาร:</td>
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ช่องทางการรับเอกสาร:</td>
                             <td style="padding: 0.5rem;">${documentDelivery}</td>
                         </tr>
-                        ${documentDelivery === 'E-mail' ? `
+                        <tr style="border-bottom: 1px solid #dcfce7;">
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่ตามเอกสารสําคัญ:</td>
+                            <td style="padding: 0.5rem;">${documentAddressText}</td>
+                        </tr>
                         <tr>
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">E-mail:</td>
-                            <td style="padding: 0.5rem;">${documentEmail}</td>
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">จังหวัด / รหัสไปรษณีย์:</td>
+                            <td style="padding: 0.5rem;">
+                                ${documentAddressProvince !== '-' ? documentAddressProvince : '-'}
+                                ${documentAddressPostal !== '-' ? ' ' + documentAddressPostal : ''}
+                            </td>
+                        </tr>
+                        ${birthPlaceAddress !== '-' ? `
+                        <tr>
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่บ้านเกิด:</td>
+                            <td style="padding: 0.5rem;">${birthPlaceAddress}</td>
                         </tr>
                         ` : ''}
                     </table>
@@ -708,14 +645,6 @@
                             <td style="padding: 0.5rem; font-weight: 600; width: 30%;">หมายเลขโทรศัพท์มือถือ:</td>
                             <td style="padding: 0.5rem;">${refPhoneMobile}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #ede9fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">E-mail:</td>
-                            <td style="padding: 0.5rem;">${refEmail}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">Line ID:</td>
-                            <td style="padding: 0.5rem;">${refLineId}</td>
-                        </tr>
                     </table>
                 </div>
 
@@ -742,28 +671,43 @@
 
                 <!-- Bank account section -->
                 <div style="margin-bottom: 1.5rem; background: #f0fdf4; border: 1px solid #22c55e; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #166534; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #22c55e; padding-bottom: 0.35rem;">ข้อมูลบัญชีสำหรับรับโอนเงินกู้</h4>
+                    <h4 style="color: #166534; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #22c55e; padding-bottom: 0.35rem;">ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก</h4>
+                    <p style="font-size: 0.85rem; color: #4b5563; margin-bottom: 1rem;">ในกรณีที่บริษัทอนุมัติสินเชื่อ ข้าพเจ้ามีความประสงค์ให้บริษัทโอนเงินกู้เข้าบัญชีของข้าพเจ้า โดยโอนเข้าบัญชีเงินฝากเลขที่ (กรอกข้อมูล)</p>
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
                         <tr style="border-bottom: 1px solid #f0fdf4;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ธนาคาร:</td>
-                            <td style="padding: 0.5rem;">${bankName}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f0fdf4;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">สาขา:</td>
-                            <td style="padding: 0.5rem;">${bankBranch}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f0fdf4;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ชื่อบัญชี:</td>
-                            <td style="padding: 0.5rem;">${accountName}</td>
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">เลขที่บัญชี:</td>
+                            <td style="padding: 0.5rem;">${accountNumber}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f0fdf4;">
                             <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ประเภทบัญชี:</td>
                             <td style="padding: 0.5rem;">${accountType}</td>
                         </tr>
-                        <tr>
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">เลขที่บัญชี:</td>
-                            <td style="padding: 0.5rem;">${accountNumber}</td>
+                        <tr style="border-bottom: 1px solid #f0fdf4;">
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ธนาคาร:</td>
+                            <td style="padding: 0.5rem;">${bankName}</td>
                         </tr>
+                        <tr>
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ชื่อบัญชี:</td>
+                            <td style="padding: 0.5rem;">${accountName}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Payment method section -->
+                <div style="margin-bottom: 1.5rem; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
+                    <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">วิธีการชําระเงิน</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                        <tr>
+                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">วิธีการชําระเงิน:</td>
+                            <td style="padding: 0.5rem;">${paymentMethod}</td>
+                        </tr>
+                        ${paymentMethod === 'ชําระโดยการหักบัญชี' ? `
+                        <tr>
+                            <td colspan="2" style="padding: 0.5rem; font-size: 0.85rem; color: #4b5563; line-height: 1.6; background: #fffbeb; border-radius: 0.375rem; margin-top: 0.5rem; display: block;">
+                                กรณียินยอมหักบัญชี ข้าพเจ้ายินยอมให้สถาบันการเงินหักเงินจากบัญชีเงินเดือนของข้าพเจ้าที่มีอยู่กับสถาบันการเงิน เป็นจํานวนเงิน <strong>${directDebitAmount}</strong> บาท/เดือน จากบัญชีเลขที่ <strong>${directDebitAccountNumber}</strong> เท่านั้น ณ วันครบกําหนดชําระตามที่บริษัทแจ้งให้ทราบ หรือทุกวันที่เงินเดือนออกในแต่ละเดือนแล้วแต่วันใดจะถึงก่อน เพื่อชําระเงินกู้รวมทั้งดอกเบี้ยจนกว่าจะชําระหนี้ให้แก่บริษัทจนเสร็จสิ้น หากบริษัทไม่สามารถหักเงินจากบัญชีดังกล่าวในวันดังกล่าวได้ ข้าพเจ้าตกลงยอมรับให้บริษัทถือว่าเป็นการผิดนัดชําระหนี้และขอรับรองว่าการที่บริษัทหักเงินจากบัญชีของข้าพเจ้าตามใบสมัครฉบับนี้เป็นไปตามคําร้องขอของข้าพเจ้า หากมีความเสียหายหรือผิดพลาดใดๆ เกิดขึ้นแก่บริษัท ข้าพเจ้าตกลงชดใช้ค่าเสียหายให้แก่บริษัททั้งจํานวนทันที
+                            </td>
+                        </tr>
+                        ` : ''}
                     </table>
                 </div>
 
@@ -771,21 +715,16 @@
                 <div style="margin-bottom: 1.5rem; background: #e5f0ff; border: 1px solid #3b82f6; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
                     <h4 style="color: #1e40af; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #3b82f6; padding-bottom: 0.35rem;">ส่วนที่ 5: ข้อความยินยอม</h4>
                     <p style="text-align: left; line-height: 1.8; margin-bottom: 1.5rem; text-indent: 3rem;">
-                        ข้าพเจ้าขอรับรองว่าข้อมูลรายละเอียดที่ระบุไว้ข้างต้นเป็นความจริงทุกประการ และข้าพเจ้ารับทราบการมอบอำนาจให้ทางบริษัทติดต่อสอบถาม และ/หรือ ตรวจสอบข้อมูลรายละเอียดต่างๆ ของข้าพเจ้าในบัตรประชาชน และ/หรือ บุคคลที่เกี่ยวข้องได้จากบุคคล และ/หรือ นิติบุคคลอื่นใดและไม่ว่าด้วยวิธีใด นอกจากข้าพเจ้ารับทราบให้บริษัทมีสิทธิอย่างสมบูรณ์ที่จะปฏิเสธ หรืออนุมัติการขอสินเชื่อครั้งนี้ หรืออนุมัติเป็นอย่างอื่น รวมทั้งปฏิบัติตามข้อกำหนดและเงื่อนไขตามที่บริษัทเห็นสมควรทุกประการ และ/หรือ ที่บริษัทจะเปลี่ยนแปลงภายหลัง และข้าพเจ้ารับทราบที่จะเสียค่าธรรมเนียม ค่าใช้จ่ายต่างๆ ที่บริษัทกำหนดทุกประการ การดำเนินการของบริษัทตามความประสงค์ของข้าพเจ้าในคำขอฉบับนี้ให้ถือว่าข้าพเจ้าได้รับสินเชื่อโดยชอบธรรมจากบริษัท (ผู้ได้รับผลประโยชน์ที่แท้จริงคือผู้ขอสินเชื่อ)
+                        ข้าพเจ้าขอรับรองว่าข้อความข้างต้นเป็นความจริงทุกประการ รวมทั้งได้รับทราบเงื่อนไขและหลักเกณฑ์ที่กำหนดในการใช้บริการสินเชื่อ โดยลงนามในใบสมัครสินเชื่อส่วนบุคคล (Personal Loan) นี้ และเมื่อบริษัทอนุมัติสินเชื่อดังกล่าวให้ข้าพเจ้าแล้ว ข้าพเจ้าตกลงปฏิบัติตามภาระผูกพันที่เกิดขึ้นตามสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ที่ปรากฏอยู่ในใบสมัครนี้ รวมทั้งข้อกำหนด/เงื่อนไขในการใช้สินเชื่อภายใต้ชื่อสินเชื่อส่วนบุคคล (Personal Loan) ของบริษัท และให้ถือว่าใบสมัครสินเชื่อส่วนบุคคล (Personal Loan) นี้ เป็นส่วนหนึ่งของสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ด้วย ข้าพเจ้าได้อ่านและเข้าใจข้อกำหนดและเงื่อนไขต่างๆ ที่เกี่ยวข้องถี่ถ้วนแล้ว พร้อมทั้งได้รับสำเนาสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ไว้เรียบร้อยแล้ว จึงลงลายมือชื่อไว้เป็นหลักฐาน
                     </p>
                     <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
                         <h5 style="color: #856404; margin: 0 0 0.75rem 0; font-size: 0.95rem; font-weight: 700;">ข้อควรระวัง</h5>
                         <ul style="margin: 0; padding-left: 1.5rem; list-style-type: disc; color: #856404;">
-                            <li style="margin-bottom: 0.5rem;">หากท่านผิดนัดชำระหนี้ บริษัทจะคิดดอกเบี้ยสูงสุดตั้งแต่วันที่เริ่มผิดนัด และอาจจะมีค่าติดตามทวงถามหนี้ (คิดเมื่อครบกำหนดชำระ และมีการทวงถามหนี้แล้ว)</li>
-                            <li>กรุณาอ่านข้อกำหนด และเงื่อนไขที่สำคัญก่อนลงนาม หากมีข้อสงสัยสามารถติดต่อเจ้าหน้าที่ เบอร์โทรศัพท์ 082-257-7997</li>
+                            <li style="margin-bottom: 0.5rem;">บริษัทจะคิดดอกเบี้ยตั้งแต่วันที่ผู้ขอกู้ได้รับเงินกู้ กรณีผิดนัดชำระหรือชำระต่ำกว่ายอดชำระขั้นต่ำจะมีดอกเบี้ยและค่าใช้จ่ายในการติดตามทวงถามหนี้เพิ่ม</li>
+                            <li style="margin-bottom: 0.5rem;">โปรดทำความเข้าใจผลิตภัณฑ์และเงื่อนไขก่อนลงนาม หากมีข้อสงสัยหรือต้องการสอบถามข้อมูลเพิ่มเติม สามารถติดต่อได้ที่โทรศัพท์ 082-257-7997</li>
+                            <li>บริษัทอาจมอบหมายให้ผู้ที่รับมอบหมายจำเป็นที่ต้องดำเนินการทางกฎหมาย หากท่านผิดนัดชำระ หรือไม่ชำระค่างวดอย่างสม่ำเสมอ</li>
                         </ul>
                     </div>
-                    <p style="text-align: left; line-height: 1.8; margin-bottom: 0.75rem; text-indent: 3rem;">
-                        ข้าพเจ้าทราบว่าบริษัทอาจเก็บรวบรวมข้อมูลส่วนบุคคลของข้าพเจ้าและบุคคลที่ข้าพเจ้าระบุไว้ในเอกสารนี้ เช่น ผู้กู้ร่วม ผู้ค้ำประกัน เพื่อใช้ในการบริหารความเสี่ยงของบริษัท และขอรับรองว่า ข้าพเจ้าได้แจ้งให้บุคคลดังกล่าวทราบถึงการเก็บรวบรวมข้อมูลส่วนบุคคลนี้ด้วย
-                    </p>
-                    <p style="text-align: left; line-height: 1.8; text-indent: 3rem;">
-                        ข้าพเจ้าได้อ่านและทำความเข้าใจ รับทราบถึงเนื้อหาของประกาศความเป็นส่วนตัวของบริษัท ดังที่ปรากฏรายละเอียดหน้าเว็บไซต์ <a href="https://www.bigmoneyplus.co.th/การคุ้มครองข้อมูลส่วนบุคคล" target="_blank" style="color: #059669; text-decoration: underline;">www.bigmoneyplus.co.th/การคุ้มครองข้อมูลส่วนบุคคล</a> และรับทราบว่าบริษัทเก็บรวบรวมใช้ และ/หรือ เปิดเผยข้อมูลส่วนบุคคลภายใต้หรือเกี่ยวกับคำขอฉบับนี้เพื่อวัตถุประสงค์ตามที่ระบุไว้ในประกาศความเป็นส่วนตัวของบริษัท
-                    </p>
                 </div>
 
                 <!-- Signature area -->
@@ -1234,8 +1173,28 @@
                 postalDropdown: document.getElementById('workAddressPostal_dropdown'),
             });
 
+            const documentAddressController = createAddressLookupController({
+                provinceInput: document.getElementById('documentAddressProvince'),
+                provinceDropdown: document.getElementById('documentAddressProvince_dropdown'),
+                postalInput: document.getElementById('documentAddressPostal'),
+                postalDropdown: document.getElementById('documentAddressPostal_dropdown'),
+            });
+
+            const refAddressController = createAddressLookupController({
+                provinceInput: document.getElementById('refAddressProvince'),
+                provinceDropdown: document.getElementById('refAddressProvince_dropdown'),
+                cityInput: document.getElementById('refAddressDistrict'),
+                cityDropdown: document.getElementById('refAddressDistrict_dropdown'),
+                districtInput: document.getElementById('refAddressSubdistrict'),
+                districtDropdown: document.getElementById('refAddressSubdistrict_dropdown'),
+                postalInput: document.getElementById('refAddressPostal'),
+                postalDropdown: document.getElementById('refAddressPostal_dropdown'),
+            });
+
             homeAddressController.reset();
             workAddressController.reset();
+            documentAddressController.reset();
+            refAddressController.reset();
 
             function setFieldValue(fieldName, value) {
                 const field = consentForm?.querySelector(`[name="${fieldName}"]`);
@@ -1270,21 +1229,176 @@
                 }
             }
 
+            function renderIncomeDocumentsExisting(customer) {
+                const wrapper = document.getElementById('incomeDocumentsExistingWrapper');
+                const list = document.getElementById('incomeDocumentsExistingList');
+                if (!wrapper || !list) return;
+
+                const documents = Array.isArray(customer?.incomeDocuments) ? customer.incomeDocuments : [];
+                if (!documents.length) {
+                    wrapper.classList.add('hidden');
+                    list.innerHTML = '';
+                    return;
+                }
+
+                wrapper.classList.remove('hidden');
+                list.innerHTML = documents
+                    .map(function(document) {
+                        const url = document?.downloadUrl ?? '#';
+                        const name = document?.originalName ?? 'ไฟล์แนบ';
+                        const destroyUrl = document?.destroyUrl ?? '';
+                        const deleteButton = destroyUrl
+                            ? `<button type="button" class="file-remove-btn" data-destroy-url="${escapeHtml(destroyUrl)}">ลบ</button>`
+                            : '';
+                        return `<div class="file-attachment-row">
+                            <a href="${escapeHtml(url)}" target="_blank" rel="noopener">📄 ${escapeHtml(name)}</a>
+                            ${deleteButton}
+                        </div>`;
+                    })
+                    .join('');
+            }
+
+            const incomeDocumentsInput = document.getElementById('incomeDocuments');
+            const incomeDocumentsSelectedWrapper = document.getElementById('incomeDocumentsSelectedWrapper');
+            const incomeDocumentsSelectedList = document.getElementById('incomeDocumentsSelectedList');
+            const incomeDocumentsExistingList = document.getElementById('incomeDocumentsExistingList');
+            let incomeDocumentsTransfer = null;
+            let objectUrls = [];
+
+            function clearObjectUrls() {
+                objectUrls.forEach(url => URL.revokeObjectURL(url));
+                objectUrls = [];
+            }
+
+            function resetIncomeDocumentsSelection() {
+                clearObjectUrls();
+                if (incomeDocumentsInput) {
+                    incomeDocumentsInput.value = '';
+                }
+                incomeDocumentsTransfer = null;
+                if (incomeDocumentsSelectedWrapper) {
+                    incomeDocumentsSelectedWrapper.classList.add('hidden');
+                }
+                if (incomeDocumentsSelectedList) {
+                    incomeDocumentsSelectedList.innerHTML = '';
+                }
+            }
+
+            function renderIncomeDocumentsSelection() {
+                if (!incomeDocumentsInput || !incomeDocumentsSelectedWrapper || !incomeDocumentsSelectedList) {
+                    return;
+                }
+
+                clearObjectUrls();
+                const files = Array.from(incomeDocumentsInput.files || []);
+                if (!files.length) {
+                    incomeDocumentsSelectedWrapper.classList.add('hidden');
+                    incomeDocumentsSelectedList.innerHTML = '';
+                    return;
+                }
+
+                incomeDocumentsSelectedWrapper.classList.remove('hidden');
+                incomeDocumentsSelectedList.innerHTML = files
+                    .map(function(file, index) {
+                        const url = URL.createObjectURL(file);
+                        objectUrls.push(url);
+                        return `<div class="file-attachment-row">
+                            <a href="${url}" target="_blank" rel="noopener">📄 ${escapeHtml(file.name)}</a>
+                            <button type="button" class="file-remove-btn" data-remove-index="${index}">ลบ</button>
+                        </div>`;
+                    })
+                    .join('');
+            }
+
+            if (incomeDocumentsInput && incomeDocumentsSelectedWrapper && incomeDocumentsSelectedList) {
+                incomeDocumentsInput.addEventListener('change', function() {
+                    const previousFiles = incomeDocumentsTransfer ? Array.from(incomeDocumentsTransfer.files) : [];
+                    const newFiles = Array.from(incomeDocumentsInput.files || []);
+                    const nextTransfer = new DataTransfer();
+                    const seen = new Set();
+
+                    [...previousFiles, ...newFiles].forEach(function(file) {
+                        const key = [file.name, file.size, file.lastModified].join('|');
+                        if (seen.has(key)) {
+                            return;
+                        }
+                        seen.add(key);
+                        nextTransfer.items.add(file);
+                    });
+
+                    incomeDocumentsTransfer = nextTransfer;
+                    incomeDocumentsInput.files = nextTransfer.files;
+                    renderIncomeDocumentsSelection();
+                });
+            }
+
+            if (incomeDocumentsSelectedList && incomeDocumentsInput) {
+                incomeDocumentsSelectedList.addEventListener('click', function(event) {
+                    const button = event.target.closest('[data-remove-index]');
+                    if (!button) return;
+                    const removeIndex = Number(button.dataset.removeIndex);
+                    const files = Array.from(incomeDocumentsInput.files || []);
+                    if (!Number.isFinite(removeIndex) || removeIndex < 0 || removeIndex >= files.length) {
+                        return;
+                    }
+
+                    const nextTransfer = new DataTransfer();
+                    files.forEach(function(file, index) {
+                        if (index !== removeIndex) {
+                            nextTransfer.items.add(file);
+                        }
+                    });
+                    incomeDocumentsTransfer = nextTransfer;
+                    incomeDocumentsInput.files = nextTransfer.files;
+                    renderIncomeDocumentsSelection();
+                });
+            }
+
+            if (incomeDocumentsExistingList) {
+                incomeDocumentsExistingList.addEventListener('click', async function(event) {
+                    const button = event.target.closest('[data-destroy-url]');
+                    if (!button) return;
+                    const destroyUrl = button.dataset.destroyUrl;
+                    if (!destroyUrl) return;
+                    if (!confirm('ต้องการลบไฟล์นี้ใช่ไหม?')) return;
+
+                    const token = document.querySelector('input[name="_token"]')?.value ?? '';
+                    const response = await fetch(destroyUrl, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    if (!response.ok) {
+                        alert('ลบไฟล์ไม่สำเร็จ');
+                        return;
+                    }
+
+                    const row = button.closest('.file-attachment-row');
+                    row?.remove();
+                    if (!incomeDocumentsExistingList.querySelector('.file-attachment-row')) {
+                        document.getElementById('incomeDocumentsExistingWrapper')?.classList.add('hidden');
+                        incomeDocumentsExistingList.innerHTML = '';
+                    }
+                });
+            }
+
             function syncConditionalSections() {
                 isSyncingConditionalSections = true;
                 try {
                     [
                         'title',
+                        'id_type',
                         'marital_status',
-                        'spouse_title',
                         'occupation',
-                        'spouse_occupation',
                         'hasOtherDebts',
-                        'dwelling_type',
                         'residence_status',
-                        'companyType',
+                        'businessType',
                         'documentDelivery',
-                        'loanAmountType'
+                        'loanAmountType',
+                        'paymentMethod'
                     ].forEach(function(fieldName) {
                         const field = consentForm?.querySelector(`[name="${fieldName}"]`);
                         field?.dispatchEvent(new Event('change'));
@@ -1315,6 +1429,8 @@
             async function prepareCreateModal() {
                 consentForm?.reset();
                 setFieldValue('consent_id', '');
+                resetIncomeDocumentsSelection();
+                renderIncomeDocumentsExisting(null);
                 if (consentForm) {
                     consentForm.action = modalStoreUrl;
                 }
@@ -1342,17 +1458,19 @@
 
                 await homeAddressController.reset();
                 await workAddressController.reset();
+                await documentAddressController.reset();
                 syncConditionalSections();
             }
 
             async function prepareEditModal(customer) {
                 if (!consentForm) return;
-                const hasCustomResidenceStatus = Boolean(
-                    customer.residence_status &&
-                    !['เช่า/ผ่อนชำระ', 'ปลอดภาระ', 'บ้านพักสวัสดิการ', 'อื่นๆ'].includes(customer.residence_status)
-                );
 
                 consentForm.reset();
+                resetIncomeDocumentsSelection();
+                homeAddressController.reset();
+                workAddressController.reset();
+                documentAddressController.reset();
+                refAddressController.reset();
                 setFieldValue('consent_id', customer.id);
                 consentForm.action = `${modalUpdateBaseUrl}/${customer.id}`;
                 if (consentFormMethod) {
@@ -1365,32 +1483,45 @@
                     consentSubmitBtn.textContent = 'บันทึกการแก้ไข';
                 }
 
+                const hasPassport = (customer.passport ?? '').toString().trim() !== '';
+                const inferredIdType = hasPassport ? 'passport' : 'id_card';
+                const inferredIdNumber = hasPassport ? customer.passport : customer.id_card;
+
+                setFieldValue('id_type', inferredIdType);
+
                 [
-                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'title', 'name', 'name_en', 'dob', 'id_card', 'gender',
-                    'age', 'nationality', 'marital_status', 'education', 'occupation', 'spouse_title', 'spouse_name',
-                    'spouse_phone', 'spouse_mobile', 'spouse_education', 'spouse_occupation', 'spouse_company',
-                    'spouse_income', 'dwelling_type', 'residence_status', 'residence_rent_amount', 'residence_years',
-                    'address_no', 'address_floor', 'address_village', 'address_building', 'address_soi', 'address_road',
-                    'address_subdistrict', 'address_district', 'address_province', 'address_postal', 'phone_home',
-                    'phone_mobile', 'email', 'line_id'
+                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'title', 'name', 'name_en', 'birthdate', 'id_card',
+                    'nationality', 'marital_status', 'education', 'occupation', 'governmentLevel', 'occupationOther',
+                    'careerField', 'careerFieldOther', 'residence_status', 'address_room', 'address_no', 'address_floor',
+                    'address_village', 'address_building', 'address_soi', 'address_road', 'address_subdistrict',
+                    'address_district', 'address_province', 'address_postal', 'phone_home', 'phone_mobile', 'email',
+                    'documentAddressText', 'documentAddressProvince', 'documentAddressPostal', 'birthPlaceAddress'
                 ].forEach(function(fieldName) {
                     setFieldValue(fieldName, customer[fieldName]);
                 });
 
+                // Trigger change events to show correct fields
+                if (occupationSelect) {
+                    occupationSelect.dispatchEvent(new Event('change'));
+                }
+                if (careerFieldSelect) {
+                    careerFieldSelect.dispatchEvent(new Event('change'));
+                }
+
+                setFieldValue('id_card', inferredIdNumber);
+
                 setFieldValue('income', customer.income);
                 setFieldValue('extraIncome', customer.extraIncome);
-                setFieldValue('extraIncomeSource', customer.extraIncomeSource);
-                setFieldValue('businessIncome', customer.businessIncome);
-                setFieldValue('averageMonthlyIncome', customer.averageMonthlyIncome);
+                setFieldValue('incomeCountry', customer.incomeCountry);
                 setFieldValue('hasOtherDebts', customer.hasOtherDebts);
                 setFieldValue('otherDebtInstallment', customer.otherDebtInstallment);
                 setFieldValue('hasExistingLoan', customer.hasExistingLoan);
+                setFieldValue('existingLoanInstitutionCount', customer.existingLoanInstitutionCount);
+                setFieldValue('existingLoanTotalAmount', customer.existingLoanTotalAmount);
                 setFieldValue('useHomeAddress', customer.useHomeAddress);
-                setFieldValue('companyType', customer.companyType);
                 setFieldValue('companyName', customer.companyName);
                 setFieldValue('businessType', customer.businessType);
-                setFieldValue('workOccupation', customer.workOccupation);
-                setFieldValue('workPosition', customer.workPosition);
+                setFieldValue('workDepartment', customer.workDepartment);
                 setFieldValue('workYears', customer.workYears);
                 setFieldValue('workMonths', customer.workMonths);
                 setFieldValue('workAddressNo', customer.workAddressNo);
@@ -1405,13 +1536,11 @@
                 setFieldValue('workAddressPostal', customer.workAddressPostal);
                 setFieldValue('workPhone', customer.workPhone);
                 setFieldValue('previousCompanyName', customer.previousCompanyName);
-                setFieldValue('previousBusinessType', customer.previousBusinessType);
                 setFieldValue('previousPosition', customer.previousPosition);
                 setFieldValue('previousIncome', customer.previousIncome);
-                setFieldValue('previousWorkYears', customer.previousWorkYears);
+                setFieldValue('previousWorkAddress', customer.previousWorkAddress);
                 setFieldValue('previousPhone', customer.previousPhone);
                 setFieldValue('documentDelivery', customer.documentDelivery);
-                setFieldValue('documentEmail', customer.documentEmail);
                 setFieldValue('refName', customer.refName);
                 setFieldValue('refRelation', customer.refRelation);
                 setFieldValue('refAddressNo', customer.refAddressNo);
@@ -1426,24 +1555,35 @@
                 setFieldValue('refAddressPostal', customer.refAddressPostal);
                 setFieldValue('refPhoneHome', customer.refPhoneHome);
                 setFieldValue('refPhoneMobile', customer.refPhoneMobile);
-                setFieldValue('refEmail', customer.refEmail);
-                setFieldValue('refLineId', customer.refLineId);
                 setFieldValue('loanTerm', customer.loanTerm);
                 setFieldValue('loanAmountType', customer.loanAmountType);
                 setFieldValue('customLoanAmount', customer.customLoanAmount);
                 setFieldValue('loanPurpose', customer.loanPurpose);
                 setFieldValue('bankName', customer.bankName);
-                setFieldValue('bankBranch', customer.bankBranch);
                 setFieldValue('accountName', customer.accountName);
                 setFieldValue('accountType', customer.accountType);
                 setFieldValue('accountNumber', customer.accountNumber);
+                setFieldValue('paymentMethod', customer.paymentMethod);
+                setFieldValue('directDebitAmount', customer.directDebitAmount);
+                setFieldValue('directDebitAccountNumber', customer.directDebitAccountNumber);
                 setFieldValue('signatureData', customer.signatureData);
 
                 setSelectWithOther('title', 'title_other', customer.title, ['นาย', 'นาง', 'นางสาว']);
-                setSelectWithOther('occupation', 'occupationOther', customer.occupation, ['พนักงานบริษัท', 'ข้าราชการ/ทหาร/ตำรวจ', 'เจ้าของกิจการ', 'อาชีพอิสระ', 'รับจ้าง', 'อื่นๆ']);
-                setSelectWithOther('spouse_title', 'spouse_title_other', customer.spouse_title, ['นาย', 'นาง', 'นางสาว']);
-                setSelectWithOther('spouse_occupation', 'spouseOccupationOther', customer.spouse_occupation, ['พนักงานบริษัท', 'ข้าราชการ/ทหาร/ตำรวจ', 'เจ้าของกิจการ', 'อาชีพอิสระ', 'รับจ้าง', 'อื่นๆ']);
-                setSelectWithOther('companyType', 'companyTypeOther', customer.companyType, ['บจก.', 'บมจ.', 'หจก.', 'ร้านค้า/ทะเบียนพาณิชย์']);
+                setSelectWithOther('occupation', 'occupationOther', customer.occupation, ['ข้าราชการ', 'พนักงานราชการ', 'พนักงานรัฐวิสาหกิจ', 'พนักงานบริษัทเอกชน', 'อาชีพอิสระ', 'เจ้าของกิจการที่จดทะเบียนพาณิชย์', 'เจ้าของกิจการที่ไม่จดทะเบียนพาณิชย์', 'อื่นๆ']);
+                setSelectWithOther('careerField', 'careerFieldOther', customer.careerField, ['ครู/อาจารย์', 'ตํารวจ/ทหาร', 'แพทย์/ทันตแพทย์/สัตวแพยท์', 'เภสัชกร', 'พยาบาล', 'สถาปนิก', 'วิศวกร', 'บัญชีการเงิน', 'พนักงานขาย', 'อื่นๆ']);
+                setSelectWithOther('extraIncomeSource', 'extraIncomeSourceOther', customer.extraIncomeSource, ['รับจ้าง/เงินเดือน', 'ค่าคอมมมิชั่น', 'โบนัส', 'ธุรกิจส่วนตัว', 'อื่นๆ']);
+                setSelectWithOther('businessType', 'businessTypeOther', customer.businessType, ['การศึกษา', 'รับเหมาก่อสร้าง', 'วัสดุก่อสร้าง / Construction materials', 'บริการ', 'ฟอร์นิเจอร์/โรงเลื่อย', 'สิ่งทอ', 'พลาสติก', 'เครื่องจักร/ผลิตภัณฑ์โลหะ', 'สาธารณูปโภค/ไฟฟ้า', 'ขนส่ง', 'สาธารณูปโภค', 'ไฟฟ้า', 'เวชภัณฑ์/โรงพยาบาล/คลินิก', 'อาหาร/เครื่องดื่ม', 'ร้านสะดวกซื้อ', 'โรงแรม/ร้านอาหาร', 'อื่นๆ']);
+
+                const extraIncomeSourceSelect = document.getElementById('extraIncomeSource');
+                if (extraIncomeSourceSelect) {
+                    extraIncomeSourceSelect.dispatchEvent(new Event('change'));
+                }
+                const hasExistingLoanSelect = document.getElementById('hasExistingLoan');
+                if (hasExistingLoanSelect) {
+                    hasExistingLoanSelect.dispatchEvent(new Event('change'));
+                }
+
+                renderIncomeDocumentsExisting(customer);
 
                 await homeAddressController.setValues({
                     province: customer.address_province,
@@ -1459,27 +1599,19 @@
                     post_code: customer.useHomeAddress ? customer.address_postal : customer.workAddressPostal,
                 });
 
-                if ((customer.dwelling_type || '').startsWith('อาศัยอยู่กับผู้อื่น: ')) {
-                    setFieldValue('dwelling_type', 'อาศัยอยู่กับผู้อื่น');
-                    consentForm?.querySelector('[name="dwelling_type"]')?.dispatchEvent(new Event('change'));
-                    setFieldValue('dwelling_type_other', customer.dwelling_type.replace('อาศัยอยู่กับผู้อื่น: ', ''));
-                } else {
-                    setFieldValue('dwelling_type', customer.dwelling_type);
-                }
+                await documentAddressController.setValues({
+                    province: customer.documentAddressProvince,
+                    post_code: customer.documentAddressPostal,
+                });
 
-                if (hasCustomResidenceStatus) {
-                    setFieldValue('residence_status', 'อื่นๆ');
-                    consentForm?.querySelector('[name="residence_status"]')?.dispatchEvent(new Event('change'));
-                    setFieldValue('residence_status_other', customer.residence_status);
-                } else {
-                    setFieldValue('residence_status', customer.residence_status);
-                }
+                await refAddressController.setValues({
+                    province: customer.refAddressProvince,
+                    city: customer.refAddressDistrict,
+                    district: customer.refAddressSubdistrict,
+                    post_code: customer.refAddressPostal,
+                });
 
                 syncConditionalSections();
-
-                if (hasCustomResidenceStatus) {
-                    setFieldValue('residence_status_other', customer.residence_status);
-                }
 
                 if (!customer.useHomeAddress) {
                     setFieldValue('workAddressNo', customer.workAddressNo);
@@ -1523,48 +1655,55 @@
                 });
             }
 
-            // Handle spouse fields based on marital status
-            const maritalStatusSelect = document.getElementById('marital_status');
-            const spouseSectionTitle = document.getElementById('spouse_section_title');
-            const spouseFields = document.getElementById('spouse_fields');
-            
-            if (maritalStatusSelect) {
-                maritalStatusSelect.addEventListener('change', function() {
-                    if (this.value === 'สมรส' || this.value === 'สมรสไม่จดทะเบียน') {
-                        spouseSectionTitle.classList.remove('hidden');
-                        spouseFields.classList.remove('hidden');
-                    } else {
-                        spouseSectionTitle.classList.add('hidden');
-                        spouseFields.classList.add('hidden');
-                    }
-                });
+            const idTypeSelect = document.getElementById('id_type');
+            const idNumberLabel = document.getElementById('idNumberLabel');
+            const idCardInput = document.getElementById('id_card');
+
+            function syncIdentityDocumentField() {
+                if (!idTypeSelect || !idNumberLabel || !idCardInput) {
+                    return;
+                }
+
+                if (idTypeSelect.value === 'passport') {
+                    idNumberLabel.innerHTML = 'เลขหนังสือเดินทาง <span class="required-asterisk">*</span>';
+                    idCardInput.placeholder = 'ระบุเลขหนังสือเดินทาง';
+                    idCardInput.maxLength = 20;
+                    idCardInput.removeAttribute('inputmode');
+                    idCardInput.value = idCardInput.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                    return;
+                }
+
+                idNumberLabel.innerHTML = 'เลขบัตรประจำตัวประชาชน <span class="required-asterisk">*</span>';
+                idCardInput.placeholder = 'เลข 13 หลัก';
+                idCardInput.maxLength = 13;
+                idCardInput.setAttribute('inputmode', 'numeric');
+                idCardInput.value = idCardInput.value.replace(/[^0-9]/g, '').slice(0, 13);
             }
 
-            // Handle "อื่นๆ" choice for spouse's คำนำหน้านาม
-            const spouseTitleSelect = document.getElementById('spouse_title');
-            const spouseTitleOtherWrapper = document.getElementById('spouse_title_other_wrapper');
-            const spouseTitleOtherInput = document.getElementById('spouse_title_other');
-
-            if (spouseTitleSelect) {
-                spouseTitleSelect.addEventListener('change', function() {
-                    if (this.value === 'อื่นๆ') {
-                        spouseTitleOtherWrapper.classList.remove('hidden');
-                        spouseTitleOtherInput.setAttribute('required', 'required');
-                    } else {
-                        spouseTitleOtherWrapper.classList.add('hidden');
-                        spouseTitleOtherInput.removeAttribute('required');
-                        spouseTitleOtherInput.value = '';
-                    }
-                });
+            if (idTypeSelect) {
+                idTypeSelect.addEventListener('change', syncIdentityDocumentField);
             }
 
             // Handle "อื่นๆ" choice for applicant's occupation
             const occupationSelect = document.getElementById('occupation');
             const occupationOtherWrapper = document.getElementById('occupationOtherWrapper');
             const occupationOtherInput = document.getElementById('occupationOther');
+            const governmentLevelWrapper = document.getElementById('governmentLevelWrapper');
+            const governmentLevelInput = document.getElementById('governmentLevel');
 
             if (occupationSelect) {
                 occupationSelect.addEventListener('change', function() {
+                    // Handle government level
+                    if (this.value === 'ข้าราชการ') {
+                        governmentLevelWrapper.classList.remove('hidden');
+                        governmentLevelInput.setAttribute('required', 'required');
+                    } else {
+                        governmentLevelWrapper.classList.add('hidden');
+                        governmentLevelInput.removeAttribute('required');
+                        governmentLevelInput.value = '';
+                    }
+
+                    // Handle occupation other
                     if (this.value === 'อื่นๆ') {
                         occupationOtherWrapper.classList.remove('hidden');
                         occupationOtherInput.setAttribute('required', 'required');
@@ -1576,38 +1715,38 @@
                 });
             }
 
-            // Handle "อื่นๆ" choice for spouse's occupation
-            const spouseOccupationSelect = document.getElementById('spouse_occupation');
-            const spouseOccupationOtherWrapper = document.getElementById('spouseOccupationOtherWrapper');
-            const spouseOccupationOtherInput = document.getElementById('spouseOccupationOther');
+            // Handle career field
+            const careerFieldSelect = document.getElementById('careerField');
+            const careerFieldOtherWrapper = document.getElementById('careerFieldOtherWrapper');
+            const careerFieldOtherInput = document.getElementById('careerFieldOther');
 
-            if (spouseOccupationSelect) {
-                spouseOccupationSelect.addEventListener('change', function() {
+            if (careerFieldSelect) {
+                careerFieldSelect.addEventListener('change', function() {
                     if (this.value === 'อื่นๆ') {
-                        spouseOccupationOtherWrapper.classList.remove('hidden');
-                        spouseOccupationOtherInput.setAttribute('required', 'required');
+                        careerFieldOtherWrapper.classList.remove('hidden');
+                        careerFieldOtherInput.setAttribute('required', 'required');
                     } else {
-                        spouseOccupationOtherWrapper.classList.add('hidden');
-                        spouseOccupationOtherInput.removeAttribute('required');
-                        spouseOccupationOtherInput.value = '';
+                        careerFieldOtherWrapper.classList.add('hidden');
+                        careerFieldOtherInput.removeAttribute('required');
+                        careerFieldOtherInput.value = '';
                     }
                 });
             }
 
             // Handle extra income source field
-            const extraIncomeInput = document.getElementById('extraIncome');
-            const extraIncomeSourceWrapper = document.getElementById('extraIncomeSourceWrapper');
-            const extraIncomeSourceInput = document.getElementById('extraIncomeSource');
+            const extraIncomeSourceSelect = document.getElementById('extraIncomeSource');
+            const extraIncomeSourceOtherWrapper = document.getElementById('extraIncomeSourceOtherWrapper');
+            const extraIncomeSourceOtherInput = document.getElementById('extraIncomeSourceOther');
 
-            if (extraIncomeInput) {
-                extraIncomeInput.addEventListener('input', function() {
-                    if (this.value && parseInt(this.value) > 0) {
-                        extraIncomeSourceWrapper.classList.remove('hidden');
-                        extraIncomeSourceInput.setAttribute('required', 'required');
+            if (extraIncomeSourceSelect && extraIncomeSourceOtherWrapper && extraIncomeSourceOtherInput) {
+                extraIncomeSourceSelect.addEventListener('change', function() {
+                    if (this.value === 'อื่นๆ') {
+                        extraIncomeSourceOtherWrapper.classList.remove('hidden');
+                        extraIncomeSourceOtherInput.setAttribute('required', 'required');
                     } else {
-                        extraIncomeSourceWrapper.classList.add('hidden');
-                        extraIncomeSourceInput.removeAttribute('required');
-                        extraIncomeSourceInput.value = '';
+                        extraIncomeSourceOtherWrapper.classList.add('hidden');
+                        extraIncomeSourceOtherInput.removeAttribute('required');
+                        extraIncomeSourceOtherInput.value = '';
                     }
                 });
             }
@@ -1630,69 +1769,54 @@
                 });
             }
 
-            // Handle dwelling type "อาศัยอยู่กับผู้อื่น"
-            const dwellingTypeSelect = document.getElementById('dwelling_type');
-            const dwellingTypeOtherWrapper = document.getElementById('dwelling_type_other_wrapper');
-            const dwellingTypeOtherInput = document.getElementById('dwelling_type_other');
+            // Handle existing loan fields
+            const hasExistingLoanSelect = document.getElementById('hasExistingLoan');
+            const existingLoanInstitutionCountWrapper = document.getElementById('existingLoanInstitutionCountWrapper');
+            const existingLoanInstitutionCountInput = document.getElementById('existingLoanInstitutionCount');
+            const existingLoanTotalAmountWrapper = document.getElementById('existingLoanTotalAmountWrapper');
+            const existingLoanTotalAmountInput = document.getElementById('existingLoanTotalAmount');
 
-            if (dwellingTypeSelect) {
-                dwellingTypeSelect.addEventListener('change', function() {
-                    if (this.value === 'อาศัยอยู่กับผู้อื่น') {
-                        dwellingTypeOtherWrapper.classList.remove('hidden');
-                        dwellingTypeOtherInput.setAttribute('required', 'required');
+            if (hasExistingLoanSelect && existingLoanInstitutionCountWrapper && existingLoanInstitutionCountInput && existingLoanTotalAmountWrapper && existingLoanTotalAmountInput) {
+                hasExistingLoanSelect.addEventListener('change', function() {
+                    if (this.value === 'ใช่') {
+                        existingLoanInstitutionCountWrapper.classList.remove('hidden');
+                        existingLoanTotalAmountWrapper.classList.remove('hidden');
+                        existingLoanInstitutionCountInput.setAttribute('required', 'required');
+                        existingLoanTotalAmountInput.setAttribute('required', 'required');
                     } else {
-                        dwellingTypeOtherWrapper.classList.add('hidden');
-                        dwellingTypeOtherInput.removeAttribute('required');
-                        dwellingTypeOtherInput.value = '';
+                        existingLoanInstitutionCountWrapper.classList.add('hidden');
+                        existingLoanTotalAmountWrapper.classList.add('hidden');
+                        existingLoanInstitutionCountInput.removeAttribute('required');
+                        existingLoanTotalAmountInput.removeAttribute('required');
+                        existingLoanInstitutionCountInput.value = '';
+                        existingLoanTotalAmountInput.value = '';
                     }
                 });
             }
 
             // Handle residence status
             const residenceStatusSelect = document.getElementById('residence_status');
-            const residenceRentWrapper = document.getElementById('residence_rent_wrapper');
-            const residenceRentAmountInput = document.getElementById('residence_rent_amount');
-            const residenceStatusOtherWrapper = document.getElementById('residence_status_other_wrapper');
-            const residenceStatusOtherInput = document.getElementById('residence_status_other');
 
             if (residenceStatusSelect) {
                 residenceStatusSelect.addEventListener('change', function() {
-                    // Reset all
-                    residenceRentWrapper.classList.add('hidden');
-                    residenceRentAmountInput.removeAttribute('required');
-                    if (!isSyncingConditionalSections) {
-                        residenceRentAmountInput.value = '';
-                    }
-                    residenceStatusOtherWrapper.classList.add('hidden');
-                    residenceStatusOtherInput.removeAttribute('required');
-                    if (!isSyncingConditionalSections) {
-                        residenceStatusOtherInput.value = '';
-                    }
-
-                    if (this.value === 'เช่า/ผ่อนชำระ') {
-                        residenceRentWrapper.classList.remove('hidden');
-                        residenceRentAmountInput.setAttribute('required', 'required');
-                    } else if (this.value === 'อื่นๆ') {
-                        residenceStatusOtherWrapper.classList.remove('hidden');
-                        residenceStatusOtherInput.setAttribute('required', 'required');
-                    }
+                    // Reserved for future residence-status-specific interactions.
                 });
             }
 
-            // Handle company type "อื่นๆ"
-            const companyTypeSelect = document.getElementById('companyType');
-            const companyTypeOtherWrapper = document.getElementById('companyTypeOtherWrapper');
-            const companyTypeOtherInput = document.getElementById('companyTypeOther');
+            // Handle business type "อื่นๆ"
+            const businessTypeSelect = document.getElementById('businessType');
+            const businessTypeOtherWrapper = document.getElementById('businessTypeOtherWrapper');
+            const businessTypeOtherInput = document.getElementById('businessTypeOther');
 
-            if (companyTypeSelect) {
-                companyTypeSelect.addEventListener('change', function() {
+            if (businessTypeSelect) {
+                businessTypeSelect.addEventListener('change', function() {
                     if (this.value === 'อื่นๆ') {
-                        companyTypeOtherWrapper.classList.remove('hidden');
-                        companyTypeOtherInput.setAttribute('required', 'required');
+                        businessTypeOtherWrapper.classList.remove('hidden');
+                        businessTypeOtherInput.setAttribute('required', 'required');
                     } else {
-                        companyTypeOtherWrapper.classList.add('hidden');
-                        companyTypeOtherInput.removeAttribute('required');
-                        companyTypeOtherInput.value = '';
+                        businessTypeOtherWrapper.classList.add('hidden');
+                        businessTypeOtherInput.removeAttribute('required');
+                        businessTypeOtherInput.value = '';
                     }
                 });
             }
@@ -1790,24 +1914,6 @@
             if (workMonthsInput) workMonthsInput.addEventListener('input', togglePreviousWorkSection);
             togglePreviousWorkSection();
 
-            // Handle document delivery email field
-            const documentDeliverySelect = document.getElementById('documentDelivery');
-            const documentEmailWrapper = document.getElementById('documentEmailWrapper');
-            const documentEmailInput = document.getElementById('documentEmail');
-
-            if (documentDeliverySelect) {
-                documentDeliverySelect.addEventListener('change', function() {
-                    if (this.value === 'E-mail') {
-                        documentEmailWrapper.classList.remove('hidden');
-                        documentEmailInput.setAttribute('required', 'required');
-                    } else {
-                        documentEmailWrapper.classList.add('hidden');
-                        documentEmailInput.removeAttribute('required');
-                        documentEmailInput.value = '';
-                    }
-                });
-            }
-
             // Handle custom loan amount field
             const loanAmountTypeSelect = document.getElementById('loanAmountType');
             const customLoanAmountWrapper = document.getElementById('customLoanAmountWrapper');
@@ -1824,6 +1930,45 @@
                         customLoanAmountInput.value = '';
                     }
                 });
+            }
+
+            // Handle payment method toggle
+            const paymentMethodSelect = document.getElementById('paymentMethod');
+            const directDebitWrapper = document.getElementById('directDebitWrapper');
+            const directDebitAmountInput = document.getElementById('directDebitAmount');
+            const directDebitAccountNumberInput = document.getElementById('directDebitAccountNumber');
+
+            if (paymentMethodSelect && directDebitWrapper) {
+                const displayAmount = document.getElementById('display_directDebitAmount');
+                const displayAccountNumber = document.getElementById('display_directDebitAccountNumber');
+
+                const syncDirectDebitText = () => {
+                    if (displayAmount) {
+                        const val = directDebitAmountInput?.value;
+                        displayAmount.textContent = val ? Number(val).toLocaleString('th-TH') : '.....................................';
+                    }
+                    if (displayAccountNumber) {
+                        displayAccountNumber.textContent = directDebitAccountNumberInput?.value || '.........................................';
+                    }
+                };
+
+                paymentMethodSelect.addEventListener('change', function() {
+                    if (this.value === 'ชําระโดยการหักบัญชี') {
+                        directDebitWrapper.classList.remove('hidden');
+                        directDebitAmountInput?.setAttribute('required', 'required');
+                        directDebitAccountNumberInput?.setAttribute('required', 'required');
+                        syncDirectDebitText();
+                    } else {
+                        directDebitWrapper.classList.add('hidden');
+                        directDebitAmountInput?.removeAttribute('required');
+                        directDebitAccountNumberInput?.removeAttribute('required');
+                        if (directDebitAmountInput) directDebitAmountInput.value = '';
+                        if (directDebitAccountNumberInput) directDebitAccountNumberInput.value = '';
+                    }
+                });
+
+                directDebitAmountInput?.addEventListener('input', syncDirectDebitText);
+                directDebitAccountNumberInput?.addEventListener('input', syncDirectDebitText);
             }
 
             // Handle Section 4 visibility (only when income < 30,000)
@@ -1848,11 +1993,15 @@
                 toggleSection4();
             }
 
-            // Restrict ID card/Juridical registration input to digits only
-            const idCardInput = document.getElementById('id_card');
+            // Restrict identity document input based on selected document type
             if (idCardInput) {
                 idCardInput.addEventListener('input', function() {
-                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (idTypeSelect?.value === 'passport') {
+                        this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 20);
+                        return;
+                    }
+
+                    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 13);
                 });
             }
 

@@ -12,10 +12,9 @@ return new class extends Migration
             $table->bigIncrements('id')->comment('Primary key');
             $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
             $table->string('previous_company_name', 100)->nullable()->comment('ชื่อสถานที่ทำงานเดิม');
-            $table->string('previous_business_type', 100)->nullable()->comment('ประเภทธุรกิจเดิม');
             $table->string('previous_position', 100)->nullable()->comment('ตำแหน่งเดิม');
             $table->decimal('previous_income', 12, 2)->nullable()->comment('รายได้เดิม');
-            $table->integer('previous_work_years')->nullable()->comment('อายุงานเดิม (ปี)');
+            $table->text('previous_address')->nullable()->comment('ที่อยู่สถานที่ทำงานเดิม');
             $table->string('previous_phone', 20)->nullable()->comment('เบอร์โทรที่ทำงานเดิม');
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');

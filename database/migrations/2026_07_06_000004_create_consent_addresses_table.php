@@ -11,11 +11,10 @@ return new class extends Migration
         Schema::create('consent_addresses', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
             $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete();
-            $table->enum('kind', ['home', 'work', 'reference'])->comment('ประเภทที่อยู่: home=บ้าน, work=ที่ทำงาน, reference=ผู้รับรอง');
-            $table->string('dwelling_type', 100)->nullable()->comment('ประเภทที่อยู่อาศัย');
+            $table->enum('kind', ['home', 'work', 'reference', 'document'])->comment('ประเภทที่อยู่: home=บ้าน, work=ที่ทำงาน, reference=ผู้รับรอง, document=ที่อยู่ตามเอกสารสำคัญ');
             $table->string('residence_status', 100)->nullable()->comment('สถานะที่อยู่อาศัย (เช่า/เป็นเจ้าของ/อื่นๆ)');
-            $table->decimal('residence_rent_amount', 12, 2)->nullable()->comment('ค่าเช่าที่อยู่อาศัย');
-            $table->integer('residence_years')->nullable()->comment('ระยะเวลาที่อาศัย (ปี)');
+            $table->text('address_text')->nullable()->comment('ที่อยู่แบบข้อความอิสระ');
+            $table->string('address_room', 50)->nullable()->comment('เลขที่ห้อง');
             $table->string('address_no', 50)->nullable()->comment('เลขที่');
             $table->string('address_floor', 30)->nullable()->comment('ชั้น');
             $table->string('address_village', 100)->nullable()->comment('หมู่บ้าน/หมู่ที่');
@@ -26,6 +25,7 @@ return new class extends Migration
             $table->string('address_district', 100)->nullable()->comment('เขต/อำเภอ');
             $table->string('address_province', 100)->nullable()->comment('จังหวัด');
             $table->string('address_postal', 20)->nullable()->comment('รหัสไปรษณีย์');
+            $table->text('birth_place_address')->nullable()->comment('ที่อยู่บ้านเกิด (สำหรับชาวต่างชาติ)');
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
 

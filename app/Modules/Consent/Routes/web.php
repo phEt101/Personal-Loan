@@ -19,4 +19,6 @@ Route::middleware('web')->group(function () {
     Route::get('/consent/modals/view', [ConsentController::class, 'modalConsentView'])->name('consent.modals.view');
 
     Route::get('/consent/{consent}/data', [ConsentController::class, 'data'])->name('consent.data');
+    Route::get('/consent/{consent}/income-documents/{document}', [ConsentController::class, 'downloadIncomeDocument'])->name('consent.income-documents.download');
+    Route::delete('/consent/{consent}/income-documents/{document}', [ConsentController::class, 'destroyIncomeDocument'])->name('consent.income-documents.destroy');
 });

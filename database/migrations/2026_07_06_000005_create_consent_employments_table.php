@@ -12,11 +12,9 @@ return new class extends Migration
             $table->bigIncrements('id')->comment('Primary key');
             $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
             $table->boolean('use_home_address')->default(false)->comment('ใช้ที่อยู่บ้านเป็นที่อยู่ที่ทำงานหรือไม่');
-            $table->string('company_type', 100)->nullable()->comment('ประเภทบริษัท/หน่วยงาน');
             $table->string('company_name', 100)->nullable()->comment('ชื่อบริษัท/หน่วยงาน');
             $table->string('business_type', 100)->nullable()->comment('ประเภทธุรกิจ');
-            $table->string('work_occupation', 100)->nullable()->comment('ลักษณะงาน/อาชีพ');
-            $table->string('work_position', 100)->nullable()->comment('ตำแหน่งงาน');
+            $table->string('work_department', 100)->nullable()->comment('แผนก/ฝ่าย');
             $table->integer('work_years')->nullable()->comment('อายุงาน (ปี)');
             $table->integer('work_months')->nullable()->comment('อายุงาน (เดือน)');
             $table->string('work_phone', 20)->nullable()->comment('เบอร์โทรที่ทำงาน');

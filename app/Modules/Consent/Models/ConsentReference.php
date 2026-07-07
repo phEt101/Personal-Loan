@@ -15,8 +15,6 @@ class ConsentReference extends Model
         'ref_relation',
         'ref_phone_home',
         'ref_phone_mobile',
-        'ref_email',
-        'ref_line_id',
     ];
 
     public function application(): BelongsTo

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('app_no', 50)->nullable()->comment('เลขที่ใบสมัคร');
             $table->string('officer_name', 100)->nullable()->comment('ชื่อเจ้าหน้าที่ผู้รับเรื่อง');
             $table->string('officer_phone', 20)->nullable()->comment('เบอร์โทรเจ้าหน้าที่ผู้รับเรื่อง');
+            $table->string('document_delivery', 50)->nullable()->comment('ช่องทางการรับเอกสาร');
             $table->string('status', 20)->default('pending')->comment('สถานะคำขอ');
             $table->boolean('signed')->default(false)->comment('ระบุว่าเซ็นเอกสารแล้วหรือไม่');
             $table->dateTime('signed_at')->nullable()->comment('วันที่เวลาเซ็นเอกสาร');

@@ -12,10 +12,9 @@ class ConsentPreviousEmployment extends Model
     protected $fillable = [
         'application_id',
         'previous_company_name',
-        'previous_business_type',
         'previous_position',
         'previous_income',
-        'previous_work_years',
+        'previous_address',
         'previous_phone',
     ];
 
@@ -28,4 +27,3 @@ class ConsentPreviousEmployment extends Model
         return $this->belongsTo(ConsentApplication::class, 'application_id');
     }
 }
-

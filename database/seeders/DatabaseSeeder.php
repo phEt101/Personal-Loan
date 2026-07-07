@@ -7,12 +7,10 @@ use App\Modules\Consent\Models\ConsentApplicant;
 use App\Modules\Consent\Models\ConsentApplication;
 use App\Modules\Consent\Models\ConsentContact;
 use App\Modules\Consent\Models\ConsentDisbursementAccount;
-use App\Modules\Consent\Models\ConsentDocumentDelivery;
 use App\Modules\Consent\Models\ConsentEmployment;
 use App\Modules\Consent\Models\ConsentLoanRequest;
 use App\Modules\Consent\Models\ConsentPreviousEmployment;
 use App\Modules\Consent\Models\ConsentReference;
-use App\Modules\Consent\Models\ConsentSpouse;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -41,15 +39,14 @@ class DatabaseSeeder extends Seeder
         if (Schema::hasTable('consent_requests')) {
             Schema::disableForeignKeyConstraints();
             foreach ([
+                'consent_income_documents',
                 'consent_disbursement_accounts',
                 'consent_loan_requests',
                 'consent_references',
-                'consent_document_deliveries',
                 'consent_previous_employments',
                 'consent_employments',
                 'consent_addresses',
                 'consent_contacts',
-                'consent_spouses',
                 'consent_request_applicants',
                 'consent_requests',
             ] as $table) {
@@ -75,25 +72,21 @@ class DatabaseSeeder extends Seeder
                 'title' => 'นาย',
                 'name' => 'ณัฐพงศ์ วัฒนศิริ',
                 'name_en' => 'NATTHAPHONG WATTANASIRI',
-                'gender' => 'ชาย',
-                'dob' => '1992-11-18',
+                'birthdate' => '1992-11-18',
                 'id_card' => '1101701234567',
-                'age' => 33,
                 'nationality' => 'ไทย',
                 'marital_status' => 'โสด',
                 'education' => 'ปริญญาตรี',
                 'occupation' => 'พนักงานบริษัท',
                 'income' => 38000,
                 'extra_income' => 5000,
-                'extra_income_source' => 'งานฟรีแลนซ์ (กราฟิก)',
+                'extra_income_source' => 'ค่าคอมมมิชั่น',
                 'has_other_debts' => 'มี',
                 'other_debt_installment' => 12000,
-                'dwelling_type' => 'ทาวน์เฮาส์',
-                'residence_status' => 'เช่า/ผ่อนชำระ',
-                'residence_rent_amount' => 8500,
-                'residence_years' => 3,
+                'residence_status' => 'เช่าอยู่',
+                'address_room' => '1201',
                 'address_no' => '88/12',
-                'address_floor' => '-',
+                'address_floor' => '12',
                 'address_village' => '3',
                 'address_building' => 'หมู่บ้านเดอะกรีนวิลล์',
                 'address_soi' => 'สุขุมวิท 103',
@@ -104,33 +97,30 @@ class DatabaseSeeder extends Seeder
                 'address_postal' => '10260',
                 'phone_mobile' => '0891234567',
                 'email' => 'natthaphong.demo@example.com',
-                'line_id' => 'natthaphong_w',
                 'use_home_address' => true,
-                'company_type' => 'บจก.',
                 'company_name' => 'บริษัท โซลูชั่น จำกัด',
-                'business_type' => 'เทคโนโลยีสารสนเทศ',
-                'work_occupation' => 'พนักงานออฟฟิศ',
-                'work_position' => 'เจ้าหน้าที่วิเคราะห์ระบบ',
+                'business_type' => 'บริการ',
+                'work_department' => 'ฝ่ายไอที',
                 'work_years' => 4,
                 'work_months' => 2,
-                'document_delivery' => 'E-mail',
-                'document_email' => 'natthaphong.demo@example.com',
+                'document_delivery' => 'ประสงค์รับทางอีเมล',
                 'loan_term' => 24,
                 'loan_amount_type' => 'custom',
                 'custom_loan_amount' => 120000,
                 'loan_purpose' => 'ปิดหนี้และรวมหนี้',
                 'bank_name' => 'ธนาคารกสิกรไทย',
-                'bank_branch' => 'บางนา',
                 'account_name' => 'ณัฐพงศ์ วัฒนศิริ',
                 'account_type' => 'ออมทรัพย์',
                 'account_number' => '123456789012',
+                'payment_method' => 'ชําระโดยการหักบัญชี',
+                'direct_debit_amount' => 5000,
+                'direct_debit_account_number' => '123456789012',
             ],
             [
                 'title' => 'นางสาว',
                 'name' => 'พรทิพย์ สดใส',
                 'name_en' => 'PORNTHIP SODSAI',
-                'gender' => 'หญิง',
-                'age' => 19,
+                'birthdate' => '2007-01-01',
                 'income' => 21000,
                 'has_other_debts' => 'ไม่มี',
                 'other_debt_installment' => 0,
@@ -139,8 +129,7 @@ class DatabaseSeeder extends Seeder
                 'title' => 'นาย',
                 'name' => 'วิชัย เกษม',
                 'name_en' => 'WICHAI KASEM',
-                'gender' => 'ชาย',
-                'age' => 51,
+                'birthdate' => '1975-01-01',
                 'income' => 27000,
                 'has_other_debts' => 'มี',
                 'other_debt_installment' => 7000,
@@ -149,21 +138,20 @@ class DatabaseSeeder extends Seeder
                 'title' => 'นาง',
                 'name' => 'ศิริพร เงินดี',
                 'name_en' => 'SIRIPORN NGERNDEE',
-                'gender' => 'หญิง',
-                'age' => 28,
+                'birthdate' => '1998-01-01',
                 'income' => 14999,
                 'has_other_debts' => 'ไม่มี',
                 'other_debt_installment' => 0,
                 'has_existing_loan' => 'ใช่',
-                'document_delivery' => 'E-mail',
-                'document_email' => 'siriporn.seed@example.com',
+                'existing_loan_institution_count' => 3,
+                'existing_loan_total_amount' => 250000,
+                'document_delivery' => 'ประสงค์รับทางอีเมล',
             ],
             [
                 'title' => 'นาย',
                 'name' => 'ประยูร ภูผา',
                 'name_en' => 'PRAYOON PUPHA',
-                'gender' => 'ชาย',
-                'age' => 40,
+                'birthdate' => '1986-01-01',
                 'income' => 24000,
                 'has_other_debts' => 'มี',
                 'other_debt_installment' => 12001,
@@ -174,27 +162,19 @@ class DatabaseSeeder extends Seeder
                 'title' => 'นาง',
                 'name' => 'สุดารัตน์ มั่นคง',
                 'name_en' => 'SUDARAT MANKONG',
-                'gender' => 'หญิง',
-                'age' => 38,
+                'birthdate' => '1988-01-01',
                 'marital_status' => 'สมรส',
                 'income' => 45000,
                 'has_other_debts' => 'มี',
                 'other_debt_installment' => 9000,
-                'spouse_title' => 'นาย',
-                'spouse_name' => 'ชาญชัย มั่นคง',
-                'spouse_phone' => '021234501',
-                'spouse_mobile' => '0891234501',
-                'spouse_education' => 'ปริญญาตรี',
-                'spouse_occupation' => 'พนักงานบริษัท',
-                'spouse_company' => 'Bright Future Co.,Ltd.',
-                'spouse_income' => 28000,
             ],
             [
                 'title' => 'นาย',
                 'name' => 'ธนา วิริยะ',
                 'name_en' => 'THANA WIRIYA',
-                'gender' => 'ชาย',
-                'age' => 20,
+                'id_card' => null,
+                'passport' => 'AA1234567',
+                'birthdate' => '2006-01-01',
                 'income' => 15000,
                 'has_other_debts' => 'ไม่มี',
                 'other_debt_installment' => 0,
@@ -202,13 +182,12 @@ class DatabaseSeeder extends Seeder
                 'work_years' => 0,
                 'work_months' => 8,
                 'previous_company_name' => 'Old Growth Ltd.',
-                'previous_business_type' => 'ค้าปลีก',
                 'previous_position' => 'พนักงานขาย',
                 'previous_income' => 22000,
-                'previous_work_years' => 2,
+                'previous_address' => '88 Old Road, Retail District, Bangkok 10110',
                 'previous_phone' => '026661234',
-                'document_delivery' => 'E-mail',
-                'document_email' => 'thana.seed@example.com',
+                'document_delivery' => 'ประสงค์รับทางอีเมล',
+                'birth_place_address' => '123 Main Street, New York, NY 10001, USA',
                 'loan_amount_type' => 'custom',
                 'custom_loan_amount' => 120000,
             ],
@@ -216,50 +195,38 @@ class DatabaseSeeder extends Seeder
                 'title' => 'อื่นๆ',
                 'name' => 'กมลชนก พัฒน์',
                 'name_en' => 'KAMONCHANOK PAT',
-                'gender' => 'หญิง',
-                'age' => 35,
+                'birthdate' => '1991-01-01',
                 'income' => 36000,
-                'occupation' => 'ที่ปรึกษาอิสระ',
+                'occupation' => 'อาชีพอิสระ',
+                'occupation_other' => 'ที่ปรึกษาอิสระ',
+                'career_field' => 'อื่นๆ',
+                'career_field_other' => 'ที่ปรึกษาด้านธุรกิจ',
                 'has_other_debts' => 'มี',
                 'other_debt_installment' => 4000,
-                'dwelling_type' => 'อาศัยอยู่กับผู้อื่น: บ้านญาติ',
-                'residence_status' => 'หอพักญาติ',
-                'company_type' => 'สตูดิโอส่วนตัว',
+                'residence_status' => 'บ้านญาติ/พี่น้อง/บุคคลอื่น',
             ],
             [
                 'title' => 'นาย',
                 'name' => 'ชัยวัฒน์ ทองแท้',
                 'name_en' => 'CHAIWAT THONGTAE',
-                'gender' => 'ชาย',
-                'age' => 30,
+                'birthdate' => '1996-01-01',
                 'income' => 28000,
                 'has_other_debts' => 'ไม่มี',
                 'other_debt_installment' => 0,
                 'has_existing_loan' => 'ไม่ใช่',
-                'residence_status' => 'เช่า/ผ่อนชำระ',
-                'residence_rent_amount' => 8500,
-                'average_monthly_income' => 5000,
-                'business_income' => 'ทองแท้การช่าง',
+                'residence_status' => 'เช่าอยู่',
+                'income_country' => 'ประเทศไทย',
             ],
             [
                 'title' => 'นางสาว',
                 'name' => 'ปิยะดา รุ่งเรือง',
                 'name_en' => 'PIYADA RUNGRUEANG',
-                'gender' => 'หญิง',
-                'age' => 50,
+                'birthdate' => '1976-01-01',
                 'marital_status' => 'สมรสไม่จดทะเบียน',
                 'income' => 52000,
                 'has_other_debts' => 'มี',
                 'other_debt_installment' => 26000,
-                'spouse_title' => 'นาย',
-                'spouse_name' => 'อนุชา รุ่งเรือง',
-                'spouse_phone' => '029876543',
-                'spouse_mobile' => '0819876543',
-                'spouse_education' => 'มัธยมปลาย',
-                'spouse_occupation' => 'เจ้าของกิจการ',
-                'spouse_company' => 'รุ่งเรืองโลจิสติกส์',
-                'spouse_income' => 35000,
-                'document_delivery' => 'ที่ทำงาน',
+                'document_delivery' => 'ประสงค์รับทางไปรษณีย์',
                 'loan_amount_type' => 'full',
             ],
         ];
@@ -277,34 +244,27 @@ class DatabaseSeeder extends Seeder
             'title' => 'นาย',
             'name' => 'ลูกค้าทดสอบ ' . $sequence,
             'name_en' => 'CUSTOMER TEST ' . $sequence,
-            'dob' => $date->copy()->subYears(30)->toDateString(),
+            'birthdate' => $date->copy()->subYears(30)->toDateString(),
             'id_card' => '1101700000' . str_pad((string) $sequence, 3, '0', STR_PAD_LEFT),
-            'gender' => 'ชาย',
-            'age' => 30,
             'nationality' => '',
             'marital_status' => 'โสด',
             'education' => 'ปริญญาตรี',
             'occupation' => 'พนักงานบริษัท',
+            'government_level' => null,
+            'occupation_other' => null,
+            'career_field' => 'พนักงานขาย',
+            'career_field_other' => null,
             'income' => 30000,
             'extra_income' => 3000,
-            'extra_income_source' => 'งานฟรีแลนซ์',
-            'business_income' => 'กิจการตัวอย่าง',
-            'average_monthly_income' => 7000,
+            'extra_income_source' => 'โบนัส',
+            'income_country' => 'ประเทศไทย',
             'has_other_debts' => 'ไม่มี',
             'other_debt_installment' => 0,
             'has_existing_loan' => null,
-            'spouse_title' => null,
-            'spouse_name' => null,
-            'spouse_phone' => null,
-            'spouse_mobile' => null,
-            'spouse_education' => null,
-            'spouse_occupation' => null,
-            'spouse_company' => null,
-            'spouse_income' => null,
-            'dwelling_type' => 'บ้านเดี่ยว',
-            'residence_status' => 'ปลอดภาระ',
-            'residence_rent_amount' => null,
-            'residence_years' => 5,
+            'existing_loan_institution_count' => null,
+            'existing_loan_total_amount' => null,
+            'residence_status' => 'บ้านตนเองปลอดภาระ',
+            'address_room' => null,
             'address_no' => (string) (100 + $sequence),
             'address_floor' => '1',
             'address_village' => (string) $sequence,
@@ -318,13 +278,11 @@ class DatabaseSeeder extends Seeder
             'phone_home' => '0211100' . str_pad((string) $sequence, 2, '0', STR_PAD_LEFT),
             'phone_mobile' => '0891111' . str_pad((string) $sequence, 3, '0', STR_PAD_LEFT),
             'email' => 'customer' . $sequence . '@example.com',
-            'line_id' => 'customer_line_' . $sequence,
+            'line_id' => null,
             'use_home_address' => false,
-            'company_type' => 'บจก.',
             'company_name' => 'บริษัทตัวอย่าง ' . $sequence,
             'business_type' => 'บริการ',
-            'work_occupation' => 'พนักงานออฟฟิศ',
-            'work_position' => 'เจ้าหน้าที่',
+            'work_department' => 'ฝ่ายขาย',
             'work_years' => 2,
             'work_months' => 6,
             'work_address_no' => '88/' . $sequence,
@@ -338,14 +296,16 @@ class DatabaseSeeder extends Seeder
             'work_address_province' => 'กรุงเทพมหานคร',
             'work_address_postal' => '10400',
             'work_phone' => '0212345' . str_pad((string) $sequence, 2, '0', STR_PAD_LEFT),
+            'document_address_text' => null,
+            'document_address_province' => null,
+            'document_address_postal' => null,
+            'birth_place_address' => null,
             'previous_company_name' => null,
-            'previous_business_type' => null,
             'previous_position' => null,
             'previous_income' => null,
-            'previous_work_years' => null,
+            'previous_address' => null,
             'previous_phone' => null,
-            'document_delivery' => 'ที่อยู่ปัจจุบัน',
-            'document_email' => null,
+            'document_delivery' => 'บริการแจ้งเตือนผ่าน SMS',
             'ref_name' => 'บุคคลอ้างอิง ' . $sequence,
             'ref_relation' => 'เพื่อน',
             'ref_address_no' => '9/' . $sequence,
@@ -360,17 +320,17 @@ class DatabaseSeeder extends Seeder
             'ref_address_postal' => '10800',
             'ref_phone_home' => '0222200' . str_pad((string) $sequence, 2, '0', STR_PAD_LEFT),
             'ref_phone_mobile' => '0862222' . str_pad((string) $sequence, 3, '0', STR_PAD_LEFT),
-            'ref_email' => 'ref' . $sequence . '@example.com',
-            'ref_line_id' => 'ref_line_' . $sequence,
             'loan_term' => 24,
             'loan_amount_type' => 'full',
             'custom_loan_amount' => null,
             'loan_purpose' => 'ใช้เป็นเงินทุนหมุนเวียน',
             'bank_name' => 'ธนาคารกสิกรไทย',
-            'bank_branch' => 'สำนักงานใหญ่',
             'account_name' => $attributes['name'] ?? ('ลูกค้าทดสอบ ' . $sequence),
             'account_type' => 'ออมทรัพย์',
             'account_number' => '123456789' . $sequence,
+            'payment_method' => 'ชําระด้วยเงินสด',
+            'direct_debit_amount' => null,
+            'direct_debit_account_number' => null,
             'signed' => true,
             'signed_at' => $date->copy()->setTime(10, 30),
             'signature_data' => $this->buildSignatureData($sequence),
@@ -417,7 +377,12 @@ class DatabaseSeeder extends Seeder
 
     private function determineStatus(array $payload): string
     {
-        $age = (int) ($payload['age'] ?? 0);
+        // Calculate age from birthdate
+        $age = 0;
+        if (!empty($payload['birthdate'])) {
+            $age = Carbon::parse($payload['birthdate'])->age;
+        }
+        
         $income = (float) ($payload['income'] ?? 0);
         $otherDebtInstallment = (float) ($payload['other_debt_installment'] ?? 0);
 
@@ -448,6 +413,7 @@ class DatabaseSeeder extends Seeder
                 'app_no' => $payload['app_no'] ?? null,
                 'officer_name' => $payload['officer_name'] ?? null,
                 'officer_phone' => $payload['officer_phone'] ?? null,
+                'document_delivery' => $payload['document_delivery'] ?? null,
                 'status' => $payload['status'] ?? 'pending',
                 'signed' => (bool) ($payload['signed'] ?? false),
                 'signed_at' => $payload['signed_at'] ?? null,
@@ -463,73 +429,47 @@ class DatabaseSeeder extends Seeder
             $hasOtherDebts = $hasOtherDebtsRaw === null ? null : ($hasOtherDebtsRaw === 'มี');
 
             $hasExistingLoanRaw = $payload['has_existing_loan'] ?? null;
-            $hasExistingLoan = $hasExistingLoanRaw === null ? null : ($hasExistingLoanRaw === 'มี');
+            $hasExistingLoan = $hasExistingLoanRaw === null ? null : ($hasExistingLoanRaw === 'ใช่');
 
             ConsentApplicant::create([
                 'application_id' => $application->id,
                 'title' => $payload['title'] ?? null,
                 'name' => $payload['name'] ?? '-',
                 'name_en' => $payload['name_en'] ?? null,
-                'dob' => $payload['dob'] ?? null,
+                'birthdate' => $payload['birthdate'] ?? null,
                 'id_card' => $payload['id_card'] ?? null,
-                'gender' => $payload['gender'] ?? null,
-                'age' => $payload['age'] ?? null,
+                'passport' => $payload['passport'] ?? null,
                 'nationality' => $payload['nationality'] ?? null,
                 'marital_status' => $payload['marital_status'] ?? null,
                 'education' => $payload['education'] ?? null,
                 'occupation' => $payload['occupation'] ?? null,
+                'government_level' => $payload['government_level'] ?? null,
+                'occupation_other' => $payload['occupation_other'] ?? null,
+                'career_field' => $payload['career_field'] ?? null,
+                'career_field_other' => $payload['career_field_other'] ?? null,
                 'income' => $payload['income'] ?? null,
                 'extra_income' => $payload['extra_income'] ?? null,
                 'extra_income_source' => $payload['extra_income_source'] ?? null,
-                'business_income' => $payload['business_income'] ?? null,
-                'average_monthly_income' => $payload['average_monthly_income'] ?? null,
+                'income_country' => $payload['income_country'] ?? null,
                 'has_other_debts' => $hasOtherDebts,
                 'other_debt_installment' => $payload['other_debt_installment'] ?? null,
                 'has_existing_loan' => $hasExistingLoan,
+                'existing_loan_institution_count' => $payload['existing_loan_institution_count'] ?? null,
+                'existing_loan_total_amount' => $payload['existing_loan_total_amount'] ?? null,
             ]);
-
-            $spousePayload = [
-                'application_id' => $application->id,
-                'spouse_title' => $payload['spouse_title'] ?? null,
-                'spouse_name' => $payload['spouse_name'] ?? null,
-                'spouse_phone' => $payload['spouse_phone'] ?? null,
-                'spouse_mobile' => $payload['spouse_mobile'] ?? null,
-                'spouse_education' => $payload['spouse_education'] ?? null,
-                'spouse_occupation' => $payload['spouse_occupation'] ?? null,
-                'spouse_company' => $payload['spouse_company'] ?? null,
-                'spouse_income' => $payload['spouse_income'] ?? null,
-            ];
-
-            $hasSpouseData = false;
-            foreach ($spousePayload as $key => $value) {
-                if ($key === 'application_id') {
-                    continue;
-                }
-                if ($value !== null && $value !== '') {
-                    $hasSpouseData = true;
-                    break;
-                }
-            }
-
-            if ($hasSpouseData) {
-                ConsentSpouse::create($spousePayload);
-            }
 
             ConsentContact::create([
                 'application_id' => $application->id,
                 'phone_home' => $payload['phone_home'] ?? null,
                 'phone_mobile' => $payload['phone_mobile'] ?? null,
                 'email' => $payload['email'] ?? null,
-                'line_id' => $payload['line_id'] ?? null,
             ]);
 
             ConsentAddress::create([
                 'application_id' => $application->id,
                 'kind' => 'home',
-                'dwelling_type' => $payload['dwelling_type'] ?? null,
                 'residence_status' => $payload['residence_status'] ?? null,
-                'residence_rent_amount' => $payload['residence_rent_amount'] ?? null,
-                'residence_years' => $payload['residence_years'] ?? null,
+                'address_room' => $payload['address_room'] ?? null,
                 'address_no' => $payload['address_no'] ?? null,
                 'address_floor' => $payload['address_floor'] ?? null,
                 'address_village' => $payload['address_village'] ?? null,
@@ -545,11 +485,9 @@ class DatabaseSeeder extends Seeder
             ConsentEmployment::create([
                 'application_id' => $application->id,
                 'use_home_address' => (bool) ($payload['use_home_address'] ?? false),
-                'company_type' => $payload['company_type'] ?? null,
                 'company_name' => $payload['company_name'] ?? null,
                 'business_type' => $payload['business_type'] ?? null,
-                'work_occupation' => $payload['work_occupation'] ?? null,
-                'work_position' => $payload['work_position'] ?? null,
+                'work_department' => $payload['work_department'] ?? null,
                 'work_years' => $payload['work_years'] ?? null,
                 'work_months' => $payload['work_months'] ?? null,
                 'work_phone' => $payload['work_phone'] ?? null,
@@ -570,20 +508,22 @@ class DatabaseSeeder extends Seeder
                 'address_postal' => $payload['work_address_postal'] ?? null,
             ]);
 
+            ConsentAddress::create([
+                'application_id' => $application->id,
+                'kind' => 'document',
+                'address_text' => $payload['document_address_text'] ?? null,
+                'address_province' => $payload['document_address_province'] ?? null,
+                'address_postal' => $payload['document_address_postal'] ?? null,
+                'birth_place_address' => $payload['birth_place_address'] ?? null,
+            ]);
+
             ConsentPreviousEmployment::create([
                 'application_id' => $application->id,
                 'previous_company_name' => $payload['previous_company_name'] ?? null,
-                'previous_business_type' => $payload['previous_business_type'] ?? null,
                 'previous_position' => $payload['previous_position'] ?? null,
                 'previous_income' => $payload['previous_income'] ?? null,
-                'previous_work_years' => $payload['previous_work_years'] ?? null,
+                'previous_address' => $payload['previous_address'] ?? null,
                 'previous_phone' => $payload['previous_phone'] ?? null,
-            ]);
-
-            ConsentDocumentDelivery::create([
-                'application_id' => $application->id,
-                'document_delivery' => $payload['document_delivery'] ?? null,
-                'document_email' => $payload['document_email'] ?? null,
             ]);
 
             ConsentReference::create([
@@ -592,8 +532,6 @@ class DatabaseSeeder extends Seeder
                 'ref_relation' => $payload['ref_relation'] ?? null,
                 'ref_phone_home' => $payload['ref_phone_home'] ?? null,
                 'ref_phone_mobile' => $payload['ref_phone_mobile'] ?? null,
-                'ref_email' => $payload['ref_email'] ?? null,
-                'ref_line_id' => $payload['ref_line_id'] ?? null,
             ]);
 
             ConsentAddress::create([
@@ -622,10 +560,12 @@ class DatabaseSeeder extends Seeder
             ConsentDisbursementAccount::create([
                 'application_id' => $application->id,
                 'bank_name' => $payload['bank_name'] ?? null,
-                'bank_branch' => $payload['bank_branch'] ?? null,
                 'account_name' => $payload['account_name'] ?? null,
                 'account_type' => $payload['account_type'] ?? null,
                 'account_number' => $payload['account_number'] ?? null,
+                'payment_method' => $payload['payment_method'] ?? null,
+                'direct_debit_amount' => $payload['direct_debit_amount'] ?? null,
+                'direct_debit_account_number' => $payload['direct_debit_account_number'] ?? null,
             ]);
         });
     }
