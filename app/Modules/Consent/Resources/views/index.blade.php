@@ -152,11 +152,10 @@
         const modalEndpoints = {
             form: @json(route('consent.modals.form')),
             view: @json(route('consent.modals.view')),
+            saveStep: @json(route('consent.save-step')),
         };
 
         const consentBaseUrl = @json(url('/consent'));
-        let modalStoreUrl = '';
-        let modalUpdateBaseUrl = '';
         let modalNextAppNo = '';
 
         let consentModalLoadPromise = null;
@@ -477,7 +476,6 @@
                     </table>
                 </div>
 
-                ${(customer.income && parseInt(customer.income) < 30000) ? `
                 <div style="margin-bottom: 1.5rem; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
                     <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">การชี้แจงการมีสินเชื่อบุคคล</h4>
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
@@ -500,7 +498,6 @@
                         ( หมายเหตุ กรณีกรอกข้อมูลไม่ถูกต้องไม่ครบถ้วน และ/หรือมีรายได้หรือกระเเสเงินสดหมุนเวียนเข้าในบัญชีเงินฝากสถาบันการเงินโดยเฉลี่ยน้อยกว่า 30,000 บาทต่อเดือน โดยมีวงเงินสินเชื่อส่วนบุคคลรวมตั้งแต่ 3 แห่งขึ้นไป บริษัทมีสิทธิปฏิเสธการให้สินเชื่อ หรือกรณีที่ทําสัญญาเงินกู้ ให้ถือว่าบริษัทมีสิทธิลดหรือยกเลิกวงเงินได้ทันที )
                     </div>
                 </div>
-                ` : ''}
 
                 <div style="margin-bottom: 1.5rem; background: #fce7f3; border: 1px solid #f472b6; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
                     <h4 style="color: #be185d; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #f472b6; padding-bottom: 0.35rem;">ข้อมูลที่อยู่</h4>
@@ -825,17 +822,186 @@
             const proceedToConsentBtn = document.getElementById('proceedToConsentModal');
             const consentForm = document.getElementById('consentForm');
             const consentModalTitle = document.getElementById('consentModalTitle');
-            const consentFormMethod = document.getElementById('consentFormMethod');
             const consentSubmitBtn = document.getElementById('consentSubmitBtn');
+            const nextStepBtn = document.getElementById('nextStepBtn');
+            const prevStepBtn = document.getElementById('prevStepBtn');
+            const wizardSteps = document.querySelectorAll('.wizard-step');
+            const stepContainers = document.querySelectorAll('.step-container');
+            
+            let currentStep = 1;
+            let maxStepReached = 1;
+
+            function updateWizardUI() {
+                wizardSteps.forEach(step => {
+                    const stepNum = parseInt(step.dataset.step);
+                    step.classList.toggle('active', stepNum === currentStep);
+                    step.classList.toggle('completed', stepNum < currentStep);
+                });
+
+                stepContainers.forEach(container => {
+                    const stepNum = parseInt(container.dataset.step);
+                    container.classList.toggle('active', stepNum === currentStep);
+                });
+
+                if (prevStepBtn) {
+                    prevStepBtn.classList.toggle('hidden', currentStep === 1);
+                }
+
+                if (nextStepBtn) {
+                    nextStepBtn.classList.toggle('hidden', currentStep === 7);
+                }
+
+                if (consentSubmitBtn) {
+                    consentSubmitBtn.classList.toggle('hidden', currentStep !== 7);
+                }
+
+                const modalBody = modal?.querySelector('.modal-body');
+                if (modalBody) modalBody.scrollTop = 0;
+
+                // Initialize/Resize signature pad when reaching step 7
+                if (currentStep === 7) {
+                    setTimeout(() => {
+                        initSignaturePad();
+                        if (signatureDataInput && signatureDataInput.value) {
+                            applySignatureData(signatureDataInput.value);
+                        }
+                    }, 100);
+                }
+            }
+
+            async function saveStepData(step) {
+                if (!consentForm) return { ok: false, message: 'Form not found' };
+
+                const formData = new FormData(consentForm);
+                formData.append('step', step);
+                
+                // Ensure _method is POST for save-step API regardless of edit mode
+                formData.set('_method', 'POST');
+                
+                // Add consent_id from hidden field if exists
+                const consentId = document.getElementById('consent_id')?.value;
+                if (consentId) {
+                    formData.set('consent_id', consentId);
+                }
+
+                try {
+                    console.log(`[Wizard] Saving step ${step}...`);
+                    const response = await fetch(modalEndpoints.saveStep, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')?.value ?? '',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const result = await response.json();
+                    
+                    if (response.ok && result.ok) {
+                        console.log(`[Wizard] Step ${step} saved. Consent ID: ${result.consent_id}`);
+                        if (result.consent_id) {
+                            const idField = document.getElementById('consent_id');
+                            if (idField) idField.value = result.consent_id;
+                            
+                            // Update form action for the final submit if needed
+                            if (consentForm) {
+                                consentForm.action = `${modalUpdateBaseUrl}/${result.consent_id}`;
+                            }
+                        }
+                        return { ok: true, data: result };
+                    } else {
+                        console.error(`[Wizard] Save failed for step ${step}:`, result.message || result.errors);
+                        return { 
+                            ok: false, 
+                            message: result.message || 'กรุณาตรวจสอบข้อมูลที่กรอก', 
+                            errors: result.errors 
+                        };
+                    }
+                } catch (error) {
+                    console.error(`[Wizard] Error in step ${step}:`, error);
+                    return { ok: false, message: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์' };
+                }
+            }
+
+            function clearValidationErrors() {
+                modal?.querySelectorAll('.form-error').forEach(el => el.remove());
+                modal?.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+            }
+
+            function showValidationErrors(errors) {
+                clearValidationErrors();
+                let errorMessages = [];
+
+                Object.entries(errors).forEach(([field, messages]) => {
+                    const input = consentForm?.querySelector(`[name="${field}"], [name="${field}[]"]`);
+                    if (input) {
+                        input.classList.add('input-error');
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'form-error';
+                        errorDiv.textContent = messages[0];
+                        input.closest('.form-group')?.appendChild(errorDiv);
+                        
+                        // Collect messages for alert
+                        errorMessages.push(messages[0]);
+                    }
+                });
+
+                if (errorMessages.length > 0) {
+                    alert('กรุณากรอกข้อมูลให้ครบถ้วน:\n- ' + errorMessages.join('\n- '));
+                }
+            }
+
+            if (nextStepBtn) {
+                nextStepBtn.addEventListener('click', async function() {
+                    this.disabled = true;
+                    this.textContent = 'กำลังบันทึก...';
+
+                    const result = await saveStepData(currentStep);
+
+                    if (result.ok) {
+                        currentStep++;
+                        if (currentStep > maxStepReached) maxStepReached = currentStep;
+                        updateWizardUI();
+                    } else {
+                        if (result.errors) {
+                            showValidationErrors(result.errors);
+                        } else {
+                            alert(result.message);
+                        }
+                    }
+
+                    this.disabled = false;
+                    this.textContent = 'ถัดไป';
+                });
+            }
+
+            if (prevStepBtn) {
+                prevStepBtn.addEventListener('click', function() {
+                    if (currentStep > 1) {
+                        currentStep--;
+                        updateWizardUI();
+                    }
+                });
+            }
+
+            wizardSteps.forEach(step => {
+                step.addEventListener('click', function() {
+                    const targetStep = parseInt(this.dataset.step);
+                    // Allow jump back always, allow jump forward only if reached
+                    if (targetStep < currentStep || targetStep <= maxStepReached) {
+                        currentStep = targetStep;
+                        updateWizardUI();
+                    }
+                });
+            });
+
             const appNoInput = document.getElementById('app_no');
             const appDateInput = document.getElementById('app_date');
             const signatureDataInput = document.getElementById('signatureData');
-            modalStoreUrl = modal?.dataset.storeUrl || '';
-            modalUpdateBaseUrl = modal?.dataset.updateBaseUrl || '';
             modalNextAppNo = modal?.dataset.nextAppNo || '';
             let signaturePad;
             let signatureInitSeq = 0;
-            let isSyncingConditionalSections = false;
 
             function disableFormAutofill(form) {
                 if (!form) return;
@@ -1419,34 +1585,29 @@
             }
 
             function syncConditionalSections() {
-                isSyncingConditionalSections = true;
-                try {
-                    [
-                        'title',
-                        'id_type',
-                        'marital_status',
-                        'occupation',
-                        'hasOtherDebts',
-                        'residence_status',
-                        'businessType',
-                        'documentDelivery',
-                        'loanAmountType',
-                        'paymentMethod'
-                    ].forEach(function(fieldName) {
-                        const field = consentForm?.querySelector(`[name="${fieldName}"]`);
-                        field?.dispatchEvent(new Event('change'));
-                    });
+                [
+                    'title',
+                    'id_type',
+                    'marital_status',
+                    'occupation',
+                    'hasOtherDebts',
+                    'residence_status',
+                    'businessType',
+                    'documentDelivery',
+                    'loanAmountType',
+                    'paymentMethod'
+                ].forEach(function(fieldName) {
+                    const field = consentForm?.querySelector(`[name="${fieldName}"]`);
+                    field?.dispatchEvent(new Event('change'));
+                });
 
-                    ['extraIncome', 'income', 'workYears', 'workMonths'].forEach(function(fieldName) {
-                        const field = consentForm?.querySelector(`[name="${fieldName}"]`);
-                        field?.dispatchEvent(new Event('input'));
-                    });
+                ['extraIncome', 'income', 'workYears', 'workMonths'].forEach(function(fieldName) {
+                    const field = consentForm?.querySelector(`[name="${fieldName}"]`);
+                    field?.dispatchEvent(new Event('input'));
+                });
 
-                    const useHomeAddressField = consentForm?.querySelector('[name="useHomeAddress"]');
-                    useHomeAddressField?.dispatchEvent(new Event('change'));
-                } finally {
-                    isSyncingConditionalSections = false;
-                }
+                const useHomeAddressField = consentForm?.querySelector('[name="useHomeAddress"]');
+                useHomeAddressField?.dispatchEvent(new Event('change'));
             }
 
             function applySignatureData(signatureData) {
@@ -1462,14 +1623,12 @@
             async function prepareCreateModal() {
                 consentForm?.reset();
                 setFieldValue('consent_id', '');
+                currentStep = 1;
+                maxStepReached = 1;
+                updateWizardUI();
+                clearValidationErrors();
                 resetIncomeDocumentsSelection();
                 renderIncomeDocumentsExisting(null);
-                if (consentForm) {
-                    consentForm.action = modalStoreUrl;
-                }
-                if (consentFormMethod) {
-                    consentFormMethod.value = 'POST';
-                }
                 if (consentModalTitle) {
                     consentModalTitle.textContent = 'สร้างใบยินยอมแบบละเอียด';
                 }
@@ -1499,16 +1658,16 @@
                 if (!consentForm) return;
 
                 consentForm.reset();
+                currentStep = 1;
+                maxStepReached = 7; // Allow jumping to any step in edit mode
+                updateWizardUI();
+                clearValidationErrors();
                 resetIncomeDocumentsSelection();
                 homeAddressController.reset();
                 workAddressController.reset();
                 documentAddressController.reset();
                 refAddressController.reset();
                 setFieldValue('consent_id', customer.id);
-                consentForm.action = `${modalUpdateBaseUrl}/${customer.id}`;
-                if (consentFormMethod) {
-                    consentFormMethod.value = 'PUT';
-                }
                 if (consentModalTitle) {
                     consentModalTitle.textContent = 'แก้ไขใบยินยอมแบบละเอียด';
                 }
@@ -2004,27 +2163,8 @@
                 directDebitAccountNumberInput?.addEventListener('input', syncDirectDebitText);
             }
 
-            // Handle Section 4 visibility (only when income < 30,000)
-            const incomeInput = document.getElementById('income');
             const section4Container = document.getElementById('section4_container');
-
-            function toggleSection4() {
-                const incomeValue = parseInt(incomeInput?.value) || 0;
-                const shouldShow = incomeValue < 30000;
-                
-                if (section4Container) {
-                    if (shouldShow) {
-                        section4Container.classList.remove('hidden');
-                    } else {
-                        section4Container.classList.add('hidden');
-                    }
-                }
-            }
-
-            if (incomeInput) {
-                incomeInput.addEventListener('input', toggleSection4);
-                toggleSection4();
-            }
+            section4Container?.classList.remove('hidden');
 
             // Restrict identity document input based on selected document type
             if (idCardInput) {
@@ -2151,78 +2291,8 @@
             if (closeViewBtn) closeViewBtn.addEventListener('click', closeViewModal);
             if (closeViewFooterBtn) closeViewFooterBtn.addEventListener('click', closeViewModal);
 
-            const hasServerErrors = @json($errors->any());
-            const oldConsentInput = @json(\Illuminate\Support\Arr::except(old(), ['_token', '_method']));
-
-            async function populateConsentFormFromOldInput(oldData) {
-                if (!oldData || typeof oldData !== 'object') return;
-
-                Object.entries(oldData).forEach(function([key, value]) {
-                    if (key === 'prevent_autofill') return;
-                    setFieldValue(key, value);
-                });
-
-                await homeAddressController.setValues({
-                    province: oldData.address_province,
-                    city: oldData.address_district,
-                    district: oldData.address_subdistrict,
-                    post_code: oldData.address_postal,
-                });
-
-                await workAddressController.setValues({
-                    province: oldData.useHomeAddress ? oldData.address_province : oldData.workAddressProvince,
-                    city: oldData.useHomeAddress ? oldData.address_district : oldData.workAddressDistrict,
-                    district: oldData.useHomeAddress ? oldData.address_subdistrict : oldData.workAddressSubdistrict,
-                    post_code: oldData.useHomeAddress ? oldData.address_postal : oldData.workAddressPostal,
-                });
-
-                syncConditionalSections();
-            }
-
-            async function openModalWithOldInput(oldData) {
-                const consentId = (oldData?.consent_id ?? '').toString().trim();
-                const isEdit = consentId !== '';
-
-                consentForm?.reset();
-                if (consentForm) {
-                    consentForm.action = isEdit ? `${modalUpdateBaseUrl}/${consentId}` : modalStoreUrl;
-                }
-                if (consentFormMethod) {
-                    consentFormMethod.value = isEdit ? 'PUT' : 'POST';
-                }
-                if (consentModalTitle) {
-                    consentModalTitle.textContent = isEdit ? 'แก้ไขใบยินยอมแบบละเอียด' : 'สร้างใบยินยอมแบบละเอียด';
-                }
-                if (consentSubmitBtn) {
-                    consentSubmitBtn.textContent = isEdit ? 'บันทึกการแก้ไข' : 'บันทึกข้อมูลใบสมัคร';
-                }
-                if (!isEdit && appNoInput) {
-                    appNoInput.value = modalNextAppNo;
-                }
-                if (!isEdit && appDateInput) {
-                    appDateInput.value = '{{ date('Y-m-d') }}';
-                }
-                if (signatureDataInput) {
-                    signatureDataInput.value = '';
-                }
-                if (signaturePad) {
-                    signaturePad.clear();
-                }
-
-                await homeAddressController.reset();
-                await workAddressController.reset();
-                syncConditionalSections();
-
-                await populateConsentFormFromOldInput(oldData);
-                openModal();
-                initializeFormSignature(signatureDataInput?.value || '');
-            }
-
             const urlParams = new URLSearchParams(window.location.search);
-            if (hasServerErrors) {
-                openModalWithOldInput(oldConsentInput);
-                window.history.replaceState({}, document.title, window.location.pathname);
-            } else if (urlParams.get('openCreate') === '1') {
+            if (urlParams.get('openCreate') === '1') {
                 openPdfModal();
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
@@ -2235,8 +2305,16 @@
                 // Set canvas size correctly for high DPI
                 const rect = canvas.getBoundingClientRect();
                 const ratio = window.devicePixelRatio || 1;
-                canvas.width = Math.max(1, rect.width * ratio);
-                canvas.height = Math.max(1, rect.height * ratio);
+                
+                // Only initialize if we have a valid width (visible)
+                if (rect.width === 0) return;
+
+                canvas.width = rect.width * ratio;
+                canvas.height = rect.height * ratio;
+                
+                if (signaturePad) {
+                    signaturePad.off(); // Remove old listeners
+                }
                 
                 signaturePad = new SignaturePad(canvas, {
                     backgroundColor: 'rgb(255, 255, 255)',
@@ -2249,9 +2327,18 @@
                 
                 // Save signature data to hidden input (as JSON)
                 signaturePad.addEventListener('endStroke', function() {
-                    document.getElementById('signatureData').value = JSON.stringify(signaturePad.toData());
-                });
-            }
+                    if (signatureDataInput) {
+                    signatureDataInput.value = JSON.stringify(signaturePad.toData());
+                }
+            });
+
+            // Handle resize to keep signature pad working
+            window.addEventListener('resize', () => {
+                if (currentStep === 7) {
+                    initSignaturePad();
+                }
+            });
+        }
             
             function clearSignature() {
                 if (signaturePad) {
@@ -2263,9 +2350,10 @@
             }
 
             if (consentForm && !consentForm.dataset.boundSubmit) {
-                consentForm.addEventListener('submit', function(event) {
+                consentForm.addEventListener('submit', async function(event) {
+                    event.preventDefault(); // Intercept all submits
+
                     if (!signaturePad || signaturePad.isEmpty()) {
-                        event.preventDefault();
                         window.alert('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนบันทึก');
                         return;
                     }
@@ -2273,18 +2361,27 @@
                     if (signatureDataInput) {
                         signatureDataInput.value = JSON.stringify(signaturePad.toData());
                     }
+
+                    // For the final step, we use saveStepData(7) which is Step 7
+                    const result = await saveStepData(7);
+                    
+                    if (result.ok) {
+                        // Success! Redirect to index or show success message
+                        window.location.href = "{{ route('consent.index') }}";
+                    } else {
+                        // Error! The alert is already shown inside saveStepData or showValidationErrors
+                        if (result.errors) {
+                            showValidationErrors(result.errors);
+                        } else {
+                            alert(result.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+                        }
+                    }
                 });
                 consentForm.dataset.boundSubmit = 'true';
             }
 
             // Close modals when clicking outside
             window.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    closeModal();
-                }
-                if (event.target === pdfModal) {
-                    closePdfModal();
-                }
                 if (event.target === viewModal) {
                     closeViewModal();
                 }

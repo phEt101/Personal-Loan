@@ -924,13 +924,13 @@ body {
     display: block;
 }
 
-.modal-footer {
+.wizard-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.modal-footer .wizard-actions {
+.wizard-footer .wizard-actions {
     display: flex;
     gap: 0.75rem;
 }
@@ -964,6 +964,14 @@ body {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     gap: 1rem;
+}
+
+.previous-work-section {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #c9d3ce;
+    border-radius: 0.75rem;
+    background: #f2f5f4;
 }
 
 .radio-group {
@@ -1275,13 +1283,15 @@ body {
 
     .modal-form-actions,
     .modal-footer,
-    .view-modal-footer {
+    .view-modal-footer,
+    .wizard-footer {
         flex-direction: column-reverse;
     }
 
     .modal-form-actions .action-btn,
     .modal-footer .action-btn,
-    .view-modal-footer .action-btn {
+    .view-modal-footer .action-btn,
+    .wizard-footer .action-btn {
         width: 100%;
     }
 }
@@ -1532,4 +1542,29 @@ body {
     width: 100%;
     height: 120px;
     cursor: crosshair;
+}
+
+/* Form Section Framing */
+.form-section-frame {
+    border: 1.5px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.form-section-frame:hover {
+    border-color: #10b981;
+}
+
+.previous-work-section.form-section-frame {
+    background: #fffbeb;
+    border-color: #fcd34d;
+}
+
+.previous-work-section.form-section-frame .note-box {
+    margin-bottom: 1rem;
+    color: #92400e;
+    font-weight: 600;
 }
