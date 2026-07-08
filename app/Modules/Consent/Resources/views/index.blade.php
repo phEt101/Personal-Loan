@@ -117,6 +117,35 @@
 
     <div id="modalMount"></div>
 
+    <!-- PDF Consent Modal -->
+    <div id="pdfConsentModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">ข้อมูลผลิตภัณฑ์และเงื่อนไขการสมัคร</h3>
+                <button type="button" class="close-btn" id="closePdfModal" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 0; overflow-y: auto; height: 75vh; background: #f3f4f6;">
+                <div style="padding: 1.5rem;">
+                    <h4 style="margin: 0 0 1rem 0; color: #10b981; font-size: 1.1rem;">1. Sale Sheet</h4>
+                    <div style="height: 70vh; margin-bottom: 2rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #ffffff;">
+                         <iframe src="{{ asset('file/Sale Sheet - BMPver. 2_Personal Loan_App - Eng.pdf') }}#toolbar=1&navpanes=0&view=FitH" width="100%" height="100%" style="border: none;"></iframe>
+                     </div>
+ 
+                     <h4 style="margin: 0 0 1rem 0; color: #10b981; font-size: 1.1rem;">2. เงื่อนไขและข้อตกลงการสมัคร</h4>
+                     <div style="height: 70vh; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #ffffff;">
+                         <iframe src="{{ asset('file/ใบสมัคร BMPver. 2_Personal Loan_App - Eng 4-5.pdf') }}#toolbar=1&navpanes=0&view=FitH" width="100%" height="100%" style="border: none;"></iframe>
+                     </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="form-actions modal-form-actions">
+                    <button type="button" class="action-btn outline" id="cancelPdfModal">ยกเลิก</button>
+                    <button type="button" class="action-btn" id="proceedToConsentModal">ยอมรับและดำเนินการต่อ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('js/signature_pad.umd.min.js') }}"></script>
 
     <script>
@@ -787,9 +816,13 @@
                 ensureViewConsentModalLoaded(),
             ]);
             const modal = document.getElementById('consentModal');
+            const pdfModal = document.getElementById('pdfConsentModal');
             const openBtn = document.getElementById('openConsentModal');
             const closeBtn = document.getElementById('closeConsentModal');
             const cancelBtn = document.getElementById('cancelConsentModal');
+            const closePdfBtn = document.getElementById('closePdfModal');
+            const cancelPdfBtn = document.getElementById('cancelPdfModal');
+            const proceedToConsentBtn = document.getElementById('proceedToConsentModal');
             const consentForm = document.getElementById('consentForm');
             const consentModalTitle = document.getElementById('consentModalTitle');
             const consentFormMethod = document.getElementById('consentFormMethod');
@@ -2034,6 +2067,21 @@
                 }, 300);
             }
 
+            function openPdfModal() {
+                pdfModal.style.display = 'flex';
+                const modalBody = pdfModal.querySelector('.modal-body');
+                if (modalBody) modalBody.scrollTop = 0;
+                pdfModal.offsetHeight;
+                pdfModal.classList.add('show');
+            }
+
+            function closePdfModal() {
+                pdfModal.classList.remove('show');
+                setTimeout(() => {
+                    pdfModal.style.display = 'none';
+                }, 300);
+            }
+
             function closeViewModal() {
                 viewModal.classList.remove('show');
                 setTimeout(() => {
@@ -2059,6 +2107,7 @@
             }
 
             function openCreateModal() {
+                closePdfModal();
                 prepareCreateModal();
                 openModal();
                 initializeFormSignature(signatureDataInput?.value || '');
@@ -2091,9 +2140,13 @@
                 });
             });
 
-            if (openBtn) openBtn.addEventListener('click', openCreateModal);
+            if (openBtn) openBtn.addEventListener('click', openPdfModal);
             if (closeBtn) closeBtn.addEventListener('click', closeModal);
             if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+            if (closePdfBtn) closePdfBtn.addEventListener('click', closePdfModal);
+            if (cancelPdfBtn) cancelPdfBtn.addEventListener('click', closePdfModal);
+            if (proceedToConsentBtn) proceedToConsentBtn.addEventListener('click', openCreateModal);
 
             if (closeViewBtn) closeViewBtn.addEventListener('click', closeViewModal);
             if (closeViewFooterBtn) closeViewFooterBtn.addEventListener('click', closeViewModal);
@@ -2170,7 +2223,7 @@
                 openModalWithOldInput(oldConsentInput);
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (urlParams.get('openCreate') === '1') {
-                openCreateModal();
+                openPdfModal();
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
 
@@ -2228,6 +2281,9 @@
             window.addEventListener('click', function(event) {
                 if (event.target === modal) {
                     closeModal();
+                }
+                if (event.target === pdfModal) {
+                    closePdfModal();
                 }
                 if (event.target === viewModal) {
                     closeViewModal();

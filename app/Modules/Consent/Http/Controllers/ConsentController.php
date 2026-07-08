@@ -346,6 +346,420 @@ class ConsentController extends Controller
             ->with('success', 'ลบใบยินยอมเลขที่ ' . ($appNo ?: '-') . ' ของ ' . $name . ' เรียบร้อยแล้ว');
     }
 
+    public function saveStep(Request $request)
+    {
+        $step = (int) $request->input('step', 1);
+        $consentId = $request->input('consent_id');
+        $consent = null;
+
+        if ($consentId) {
+            $consent = ConsentApplication::where('encrypted_id', $consentId)->first();
+        }
+
+        $rules = $this->getStepRules($step, $request);
+        $validated = $request->validate($rules);
+
+        return DB::transaction(function () use ($request, $step, $consent, $validated) {
+            if (!$consent && $step === 1) {
+                $consent = ConsentApplication::create([
+                    'app_date' => $validated['app_date'] ?? now(),
+                    'app_no' => $validated['app_no'] ?? null,
+                    'officer_name' => $validated['officer_name'] ?? null,
+                    'officer_phone' => $validated['officer_phone'] ?? null,
+                    'status' => 'draft',
+                ]);
+            } elseif ($consent) {
+                $this->updateConsentByStep($consent, $step, $validated, $request);
+            }
+
+            return response()->json([
+                'ok' => true,
+                'consent_id' => $consent?->encrypted_id,
+                'step' => $step,
+                'status' => $consent?->status,
+            ]);
+        });
+    }
+
+    private function getStepRules(int $step, Request $request): array
+    {
+        return match ($step) {
+            1 => [
+                'app_date' => ['nullable', 'date'],
+                'app_no' => ['nullable', 'string', 'max:13'],
+                'officer_name' => ['nullable', 'string', 'max:255'],
+                'officer_phone' => ['nullable', 'string', 'max:20'],
+            ],
+            2 => [
+                'title' => ['nullable', 'string', 'max:50'],
+                'title_other' => ['nullable', 'string', 'max:50'],
+                'name' => ['nullable', 'string', 'max:255'],
+                'name_en' => ['nullable', 'string', 'max:255'],
+                'birthdate' => ['nullable', 'date'],
+                'nationality' => ['nullable', 'string', 'max:50'],
+                'id_type' => ['required', 'in:id_card,passport'],
+                'id_card' => [
+                    'required', 'string', 'max:20',
+                    function ($attribute, $value, $fail) use ($request) {
+                        $documentType = $request->input('id_type', 'id_card');
+                        $normalizedValue = strtoupper(trim((string) $value));
+                        if ($documentType === 'passport') {
+                            if (!preg_match('/^[A-Z0-9]{6,20}$/', $normalizedValue)) {
+                                $fail('กรุณากรอกเลขหนังสือเดินทางเป็นตัวอักษรภาษาอังกฤษหรือตัวเลข 6-20 หลัก');
+                            }
+                            return;
+                        }
+                        if (!preg_match('/^\d{13}$/', $normalizedValue)) {
+                            $fail('กรุณากรอกเลขบัตรประจำตัวประชาชน 13 หลัก');
+                        }
+                    },
+                ],
+                'education' => ['nullable', 'string', 'max:50'],
+                'marital_status' => ['nullable', 'string', 'max:50'],
+            ],
+            3 => [
+                'residence_status' => ['nullable', 'string', 'max:255'],
+                'address_building' => ['nullable', 'string', 'max:255'],
+                'address_room' => ['nullable', 'string', 'max:255'],
+                'address_floor' => ['nullable', 'string', 'max:255'],
+                'address_no' => ['nullable', 'string', 'max:255'],
+                'address_village' => ['nullable', 'string', 'max:255'],
+                'address_soi' => ['nullable', 'string', 'max:255'],
+                'address_road' => ['nullable', 'string', 'max:255'],
+                'address_subdistrict' => ['nullable', 'string', 'max:255'],
+                'address_district' => ['nullable', 'string', 'max:255'],
+                'address_province' => ['nullable', 'string', 'max:255'],
+                'address_postal' => ['nullable', 'string', 'max:255'],
+                'phone_home' => ['nullable', 'string', 'max:255'],
+                'phone_mobile' => ['nullable', 'string', 'max:20', 'regex:/^\d{9,10}$/'],
+                'email' => ['nullable', 'email', 'max:255'],
+                'documentDelivery' => ['nullable', 'string', 'max:255'],
+                'documentAddressText' => ['nullable', 'string'],
+                'documentAddressProvince' => ['nullable', 'string', 'max:255'],
+                'documentAddressPostal' => ['nullable', 'string', 'max:255'],
+                'birthPlaceAddress' => ['nullable', 'string'],
+            ],
+            4 => [
+                'useHomeAddress' => ['nullable', 'boolean'],
+                'occupation' => ['nullable', 'string', 'max:100'],
+                'governmentLevel' => ['nullable', 'string', 'max:100'],
+                'occupationOther' => ['nullable', 'string', 'max:100'],
+                'careerField' => ['nullable', 'string', 'max:100'],
+                'careerFieldOther' => ['nullable', 'string', 'max:100'],
+                'companyName' => ['nullable', 'string', 'max:255'],
+                'businessType' => ['required', 'string', 'max:255'],
+                'businessTypeOther' => ['nullable', 'string', 'max:255'],
+                'workAddressBuilding' => ['nullable', 'string', 'max:255'],
+                'workAddressFloor' => ['nullable', 'string', 'max:255'],
+                'workDepartment' => ['nullable', 'string', 'max:255'],
+                'workAddressNo' => ['nullable', 'string', 'max:255'],
+                'workAddressVillage' => ['nullable', 'string', 'max:255'],
+                'workAddressSoi' => ['nullable', 'string', 'max:255'],
+                'workAddressRoad' => ['nullable', 'string', 'max:255'],
+                'workAddressSubdistrict' => ['nullable', 'string', 'max:255'],
+                'workAddressDistrict' => ['nullable', 'string', 'max:255'],
+                'workAddressProvince' => ['nullable', 'string', 'max:255'],
+                'workAddressPostal' => ['nullable', 'string', 'max:255'],
+                'workPhone' => ['nullable', 'string', 'max:255'],
+                'workYears' => ['nullable', 'integer', 'min:0'],
+                'workMonths' => ['nullable', 'integer', 'min:0', 'max:11'],
+                'previousCompanyName' => ['nullable', 'string', 'max:255'],
+                'previousPosition' => ['nullable', 'string', 'max:255'],
+                'previousIncome' => ['nullable', 'numeric'],
+                'previousWorkAddress' => ['nullable', 'string'],
+                'previousPhone' => ['nullable', 'string', 'max:255'],
+            ],
+            5 => [
+                'income' => ['required', 'numeric', 'min:0'],
+                'extraIncome' => ['nullable', 'numeric', 'min:0'],
+                'extraIncomeSource' => ['nullable', 'string', 'max:255'],
+                'extraIncomeSourceOther' => ['nullable', 'string', 'max:255'],
+                'incomeCountry' => ['nullable', 'string', 'max:100'],
+                'incomeDocuments' => ['nullable', 'array'],
+                'incomeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'hasOtherDebts' => ['required', 'string', 'max:10'],
+                'otherDebtInstallment' => ['nullable', 'required_if:hasOtherDebts,มี', 'numeric', 'min:0'],
+                'hasExistingLoan' => ['nullable', 'string', 'in:ใช่,ไม่ใช่'],
+                'existingLoanInstitutionCount' => ['nullable', 'required_if:hasExistingLoan,ใช่', 'integer', 'min:1'],
+                'existingLoanTotalAmount' => ['nullable', 'required_if:hasExistingLoan,ใช่', 'numeric', 'min:0'],
+            ],
+            6 => [
+                'refName' => ['nullable', 'string', 'max:255'],
+                'refRelation' => ['nullable', 'string', 'max:255'],
+                'refAddressNo' => ['nullable', 'string', 'max:255'],
+                'refAddressFloor' => ['nullable', 'string', 'max:255'],
+                'refAddressVillage' => ['nullable', 'string', 'max:255'],
+                'refAddressBuilding' => ['nullable', 'string', 'max:255'],
+                'refAddressSoi' => ['nullable', 'string', 'max:255'],
+                'refAddressRoad' => ['nullable', 'string', 'max:255'],
+                'refAddressSubdistrict' => ['nullable', 'string', 'max:255'],
+                'refAddressDistrict' => ['nullable', 'string', 'max:255'],
+                'refAddressProvince' => ['nullable', 'string', 'max:255'],
+                'refAddressPostal' => ['nullable', 'string', 'max:255'],
+                'refPhoneHome' => ['nullable', 'string', 'max:255'],
+                'refPhoneMobile' => ['nullable', 'string', 'max:255'],
+            ],
+            7 => [
+                'loanPurpose' => ['nullable', 'string', 'max:255'],
+                'loanTerm' => ['nullable', 'integer', 'in:4,6,12,18,24,36,48,60'],
+                'loanAmountType' => ['nullable', 'string', 'in:full,custom'],
+                'customLoanAmount' => ['nullable', 'numeric', 'min:0'],
+                'accountNumber' => ['nullable', 'string', 'max:255'],
+                'accountType' => ['nullable', 'string', 'max:255'],
+                'bankName' => ['nullable', 'string', 'max:255'],
+                'accountName' => ['nullable', 'string', 'max:255'],
+                'paymentMethod' => ['nullable', 'string', 'max:255'],
+                'directDebitAmount' => ['nullable', 'required_if:paymentMethod,ชําระโดยการหักบัญชี', 'numeric', 'min:0'],
+                'directDebitAccountNumber' => ['nullable', 'required_if:paymentMethod,ชําระโดยการหักบัญชี', 'string', 'max:50'],
+            ],
+            8 => [
+                'signatureData' => [
+                    'required', 'string',
+                    function ($attribute, $value, $fail) {
+                        $decoded = json_decode($value, true);
+                        if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded) || count($decoded) === 0) {
+                            $fail('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนบันทึก');
+                        }
+                    },
+                ],
+            ],
+            default => [],
+        };
+    }
+
+    private function updateConsentByStep(ConsentApplication $consent, int $step, array $validated, Request $request): void
+    {
+        switch ($step) {
+            case 1:
+                $consent->update([
+                    'app_date' => $validated['app_date'] ?? $consent->app_date,
+                    'app_no' => $validated['app_no'] ?? $consent->app_no,
+                    'officer_name' => $validated['officer_name'] ?? $consent->officer_name,
+                    'officer_phone' => $validated['officer_phone'] ?? $consent->officer_phone,
+                ]);
+                break;
+            case 2:
+                $title = $validated['title'] ?? null;
+                if ($title === 'อื่นๆ' && $request->filled('title_other')) {
+                    $title = $request->title_other;
+                }
+                ConsentApplicant::updateOrCreate(
+                    ['application_id' => $consent->id],
+                    [
+                        'title' => $title,
+                        'name' => $validated['name'],
+                        'name_en' => $validated['name_en'] ?? null,
+                        'birthdate' => $validated['birthdate'] ?? null,
+                        'nationality' => $validated['nationality'] ?? null,
+                        'id_card' => $validated['id_type'] === 'id_card' ? preg_replace('/\D+/', '', $validated['id_card']) : null,
+                        'passport' => $validated['id_type'] === 'passport' ? strtoupper(trim($validated['id_card'])) : null,
+                        'education' => $validated['education'] ?? null,
+                        'marital_status' => $validated['marital_status'] ?? null,
+                    ]
+                );
+                break;
+            case 3:
+                ConsentAddress::updateOrCreate(
+                    ['application_id' => $consent->id, 'kind' => 'home'],
+                    [
+                        'residence_status' => $validated['residence_status'] ?? null,
+                        'address_building' => $validated['address_building'] ?? null,
+                        'address_room' => $validated['address_room'] ?? null,
+                        'address_floor' => $validated['address_floor'] ?? null,
+                        'address_no' => $validated['address_no'] ?? null,
+                        'address_village' => $validated['address_village'] ?? null,
+                        'address_soi' => $validated['address_soi'] ?? null,
+                        'address_road' => $validated['address_road'] ?? null,
+                        'address_subdistrict' => $validated['address_subdistrict'] ?? null,
+                        'address_district' => $validated['address_district'] ?? null,
+                        'address_province' => $validated['address_province'] ?? null,
+                        'address_postal' => $validated['address_postal'] ?? null,
+                    ]
+                );
+                ConsentContact::updateOrCreate(
+                    ['application_id' => $consent->id],
+                    [
+                        'phone_home' => $validated['phone_home'] ?? null,
+                        'phone_mobile' => $validated['phone_mobile'] ?? null,
+                        'email' => $validated['email'] ?? null,
+                    ]
+                );
+                $consent->update(['document_delivery' => $validated['documentDelivery'] ?? null]);
+                ConsentAddress::updateOrCreate(
+                    ['application_id' => $consent->id, 'kind' => 'document'],
+                    [
+                        'address_text' => $validated['documentAddressText'] ?? null,
+                        'address_province' => $validated['documentAddressProvince'] ?? null,
+                        'address_postal' => $validated['documentAddressPostal'] ?? null,
+                        'birth_place_address' => $validated['birthPlaceAddress'] ?? null,
+                    ]
+                );
+                break;
+            case 4:
+                $occupation = $validated['occupation'] ?? null;
+                if ($occupation === 'อื่นๆ' && $request->filled('occupationOther')) {
+                    $occupation = $request->occupationOther;
+                }
+                $careerField = $validated['careerField'] ?? null;
+                if ($careerField === 'อื่นๆ' && $request->filled('careerFieldOther')) {
+                    $careerField = $request->careerFieldOther;
+                }
+                $businessType = $validated['businessType'] ?? null;
+                if ($businessType === 'อื่นๆ' && $request->filled('businessTypeOther')) {
+                    $businessType = $request->businessTypeOther;
+                }
+
+                $consent->applicant()->update([
+                    'occupation' => $occupation,
+                    'government_level' => $validated['governmentLevel'] ?? null,
+                    'career_field' => $careerField,
+                ]);
+
+                ConsentEmployment::updateOrCreate(
+                    ['application_id' => $consent->id],
+                    [
+                        'use_home_address' => (bool) ($validated['useHomeAddress'] ?? false),
+                        'company_name' => $validated['companyName'] ?? null,
+                        'business_type' => $businessType,
+                        'work_department' => $validated['workDepartment'] ?? null,
+                        'work_phone' => $validated['workPhone'] ?? null,
+                        'work_years' => $validated['workYears'] ?? null,
+                        'work_months' => $validated['workMonths'] ?? null,
+                    ]
+                );
+                ConsentAddress::updateOrCreate(
+                    ['application_id' => $consent->id, 'kind' => 'work'],
+                    [
+                        'address_building' => $validated['workAddressBuilding'] ?? null,
+                        'address_floor' => $validated['workAddressFloor'] ?? null,
+                        'address_no' => $validated['workAddressNo'] ?? null,
+                        'address_village' => $validated['workAddressVillage'] ?? null,
+                        'address_soi' => $validated['workAddressSoi'] ?? null,
+                        'address_road' => $validated['workAddressRoad'] ?? null,
+                        'address_subdistrict' => $validated['workAddressSubdistrict'] ?? null,
+                        'address_district' => $validated['workAddressDistrict'] ?? null,
+                        'address_province' => $validated['workAddressProvince'] ?? null,
+                        'address_postal' => $validated['workAddressPostal'] ?? null,
+                    ]
+                );
+                ConsentPreviousEmployment::updateOrCreate(
+                    ['application_id' => $consent->id],
+                    [
+                        'previous_company_name' => $validated['previousCompanyName'] ?? null,
+                        'previous_position' => $validated['previousPosition'] ?? null,
+                        'previous_income' => $validated['previousIncome'] ?? null,
+                        'previous_address' => $validated['previousWorkAddress'] ?? null,
+                        'previous_phone' => $validated['previousPhone'] ?? null,
+                    ]
+                );
+                break;
+            case 5:
+                $extraIncomeSource = $validated['extraIncomeSource'] ?? null;
+                if ($extraIncomeSource === 'อื่นๆ' && $request->filled('extraIncomeSourceOther')) {
+                    $extraIncomeSource = $request->extraIncomeSourceOther;
+                }
+                $hasOtherDebts = $validated['hasOtherDebts'] === 'มี';
+                $hasExistingLoan = $validated['hasExistingLoan'] === 'ใช่';
+
+                $consent->applicant()->update([
+                    'income' => $validated['income'],
+                    'extra_income' => $validated['extraIncome'] ?? null,
+                    'extra_income_source' => $extraIncomeSource,
+                    'income_country' => $validated['incomeCountry'] ?? null,
+                    'has_other_debts' => $hasOtherDebts,
+                    'other_debt_installment' => $hasOtherDebts ? $validated['otherDebtInstallment'] : 0,
+                    'has_existing_loan' => $hasExistingLoan,
+                    'existing_loan_institution_count' => $hasExistingLoan ? $validated['existingLoanInstitutionCount'] : null,
+                    'existing_loan_total_amount' => $hasExistingLoan ? $validated['existingLoanTotalAmount'] : null,
+                ]);
+
+                if ($request->hasFile('incomeDocuments')) {
+                    foreach ((array) $request->file('incomeDocuments', []) as $file) {
+                        if ($file) {
+                            $disk = 'local';
+                            $path = $file->store('consent/' . $consent->id . '/income-documents', $disk);
+                            ConsentIncomeDocument::create([
+                                'application_id' => $consent->id,
+                                'disk' => $disk,
+                                'path' => $path,
+                                'original_name' => $file->getClientOriginalName(),
+                                'mime_type' => $file->getClientMimeType(),
+                                'size' => $file->getSize(),
+                            ]);
+                        }
+                    }
+                }
+                break;
+            case 6:
+                ConsentReference::updateOrCreate(
+                    ['application_id' => $consent->id],
+                    [
+                        'ref_name' => $validated['refName'] ?? null,
+                        'ref_relation' => $validated['refRelation'] ?? null,
+                        'ref_phone_home' => $validated['refPhoneHome'] ?? null,
+                        'ref_phone_mobile' => $validated['refPhoneMobile'] ?? null,
+                    ]
+                );
+                ConsentAddress::updateOrCreate(
+                    ['application_id' => $consent->id, 'kind' => 'reference'],
+                    [
+                        'address_no' => $validated['refAddressNo'] ?? null,
+                        'address_floor' => $validated['refAddressFloor'] ?? null,
+                        'address_village' => $validated['refAddressVillage'] ?? null,
+                        'address_building' => $validated['refAddressBuilding'] ?? null,
+                        'address_soi' => $validated['refAddressSoi'] ?? null,
+                        'address_road' => $validated['refAddressRoad'] ?? null,
+                        'address_subdistrict' => $validated['refAddressSubdistrict'] ?? null,
+                        'address_district' => $validated['refAddressDistrict'] ?? null,
+                        'address_province' => $validated['refAddressProvince'] ?? null,
+                        'address_postal' => $validated['refAddressPostal'] ?? null,
+                    ]
+                );
+                break;
+            case 7:
+                ConsentLoanRequest::updateOrCreate(
+                    ['application_id' => $consent->id],
+                    [
+                        'loan_purpose' => $validated['loanPurpose'] ?? null,
+                        'loan_term' => $validated['loanTerm'] ?? null,
+                        'loan_amount_type' => $validated['loanAmountType'] ?? null,
+                        'custom_loan_amount' => $validated['customLoanAmount'] ?? null,
+                    ]
+                );
+                ConsentDisbursementAccount::updateOrCreate(
+                    ['application_id' => $consent->id],
+                    [
+                        'account_number' => $validated['accountNumber'] ?? null,
+                        'account_type' => $validated['accountType'] ?? null,
+                        'bank_name' => $validated['bankName'] ?? null,
+                        'account_name' => $validated['accountName'] ?? null,
+                        'payment_method' => $validated['paymentMethod'] ?? null,
+                        'direct_debit_amount' => $validated['directDebitAmount'] ?? null,
+                        'direct_debit_account_number' => $validated['directDebitAccountNumber'] ?? null,
+                    ]
+                );
+                break;
+            case 8:
+                $applicant = $consent->applicant;
+                $age = $applicant?->birthdate ? Carbon::parse($applicant->birthdate)->age : 0;
+                $income = (float) ($applicant?->income ?? 0);
+                $otherDebtInstallment = (float) ($applicant?->other_debt_installment ?? 0);
+
+                $status = 'approved';
+                if ($age < 20 || $age > 50 || $income < 15000 || ($income > 0 && $otherDebtInstallment > ($income / 2))) {
+                    $status = 'rejected';
+                }
+
+                $consent->update([
+                    'signature_data' => $validated['signatureData'],
+                    'signed' => true,
+                    'signed_at' => now(),
+                    'status' => $status,
+                ]);
+                break;
+        }
+    }
+
     private function saveConsent(Request $request, ?ConsentApplication $consent = null): ConsentApplication
     {
         $validated = $request->validate([

@@ -10,7 +10,7 @@ class PostCodeSeeder extends Seeder
 {
     public function run(): void
     {
-        $csvPath = base_path('resources/MS_Post code_R2.csv');
+        $csvPath = public_path('file/MS_Post code_R2.csv');
 
         if (!is_file($csvPath)) {
             return;

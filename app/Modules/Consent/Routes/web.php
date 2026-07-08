@@ -6,6 +6,7 @@ use App\Modules\Consent\Http\Controllers\ConsentController;
 Route::middleware('web')->group(function () {
     Route::get('/consent', [ConsentController::class, 'index'])->name('consent.index');
     Route::post('/consent', [ConsentController::class, 'store'])->name('consent.store');
+    Route::post('/consent/save-step', [ConsentController::class, 'saveStep'])->name('consent.save-step');
     Route::put('/consent/{consent}', [ConsentController::class, 'update'])->name('consent.update');
     Route::delete('/consent/{consent}', [ConsentController::class, 'destroy'])->name('consent.destroy');
 
