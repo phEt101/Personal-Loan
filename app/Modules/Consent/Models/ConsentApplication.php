@@ -74,7 +74,7 @@ class ConsentApplication extends Model
 
     public function incomeDocuments(): HasMany
     {
-        return $this->hasMany(ConsentIncomeDocument::class, 'application_id');
+        return $this->hasMany(ConsentDocumentFile::class, 'application_id');
     }
 
     public function homeAddress(): HasOne

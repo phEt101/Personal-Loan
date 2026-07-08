@@ -224,7 +224,7 @@
             const customerId = customer?.id;
             if (customerId) {
                 try {
-                    const baseUrl = modalUpdateBaseUrl || consentBaseUrl;
+                    const baseUrl = consentBaseUrl;
                     const response = await fetch(`${baseUrl}/${customerId}/data`, { headers: { 'Accept': 'application/json' } });
                     if (response.ok) {
                         fullCustomer = await response.json();
@@ -848,11 +848,11 @@
                 }
 
                 if (nextStepBtn) {
-                    nextStepBtn.classList.toggle('hidden', currentStep === 7);
+                    nextStepBtn.classList.toggle('hidden', currentStep === 8);
                 }
 
                 if (consentSubmitBtn) {
-                    consentSubmitBtn.classList.toggle('hidden', currentStep !== 7);
+                    consentSubmitBtn.classList.toggle('hidden', currentStep !== 8);
                 }
 
                 const modalBody = modal?.querySelector('.modal-body');
@@ -903,11 +903,6 @@
                         if (result.consent_id) {
                             const idField = document.getElementById('consent_id');
                             if (idField) idField.value = result.consent_id;
-                            
-                            // Update form action for the final submit if needed
-                            if (consentForm) {
-                                consentForm.action = `${modalUpdateBaseUrl}/${result.consent_id}`;
-                            }
                         }
                         return { ok: true, data: result };
                     } else {
@@ -957,6 +952,20 @@
                     this.disabled = true;
                     this.textContent = 'กำลังบันทึก...';
 
+                    // Special handling for Step 7 (Signature)
+                    if (currentStep === 7) {
+                        if (signaturePad && !signaturePad.isEmpty()) {
+                            if (signatureDataInput) {
+                                signatureDataInput.value = JSON.stringify(signaturePad.toData());
+                            }
+                        } else {
+                            alert('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนไปขั้นตอนถัดไป');
+                            this.disabled = false;
+                            this.textContent = 'ถัดไป';
+                            return;
+                        }
+                    }
+
                     const result = await saveStepData(currentStep);
 
                     if (result.ok) {
@@ -1002,6 +1011,7 @@
             modalNextAppNo = modal?.dataset.nextAppNo || '';
             let signaturePad;
             let signatureInitSeq = 0;
+            let isSyncingConditionalSections = false;
 
             function disableFormAutofill(form) {
                 if (!form) return;
@@ -1445,12 +1455,13 @@
                     .map(function(document) {
                         const url = document?.downloadUrl ?? '#';
                         const name = document?.originalName ?? 'ไฟล์แนบ';
+                        const typeLabel = document?.documentTypeLabel || 'ไฟล์แนบ';
                         const destroyUrl = document?.destroyUrl ?? '';
                         const deleteButton = destroyUrl
                             ? `<button type="button" class="file-remove-btn" data-destroy-url="${escapeHtml(destroyUrl)}">ลบ</button>`
                             : '';
                         return `<div class="file-attachment-row">
-                            <a href="${escapeHtml(url)}" target="_blank" rel="noopener">📄 ${escapeHtml(name)}</a>
+                            <a href="${escapeHtml(url)}" target="_blank" rel="noopener">📄 ${escapeHtml(typeLabel)}: ${escapeHtml(name)}</a>
                             ${deleteButton}
                         </div>`;
                     })
@@ -1461,7 +1472,11 @@
             const incomeDocumentsSelectedWrapper = document.getElementById('incomeDocumentsSelectedWrapper');
             const incomeDocumentsSelectedList = document.getElementById('incomeDocumentsSelectedList');
             const incomeDocumentsExistingList = document.getElementById('incomeDocumentsExistingList');
+            const identityDocumentsInput = document.getElementById('identityDocuments');
+            const identityDocumentsSelectedWrapper = document.getElementById('identityDocumentsSelectedWrapper');
+            const identityDocumentsSelectedList = document.getElementById('identityDocumentsSelectedList');
             let incomeDocumentsTransfer = null;
+            let identityDocumentsTransfer = null;
             let objectUrls = [];
 
             function clearObjectUrls() {
@@ -1480,6 +1495,20 @@
                 }
                 if (incomeDocumentsSelectedList) {
                     incomeDocumentsSelectedList.innerHTML = '';
+                }
+            }
+
+            function resetIdentityDocumentsSelection() {
+                clearObjectUrls();
+                if (identityDocumentsInput) {
+                    identityDocumentsInput.value = '';
+                }
+                identityDocumentsTransfer = null;
+                if (identityDocumentsSelectedWrapper) {
+                    identityDocumentsSelectedWrapper.classList.add('hidden');
+                }
+                if (identityDocumentsSelectedList) {
+                    identityDocumentsSelectedList.innerHTML = '';
                 }
             }
 
@@ -1509,6 +1538,32 @@
                     .join('');
             }
 
+            function renderIdentityDocumentsSelection() {
+                if (!identityDocumentsInput || !identityDocumentsSelectedWrapper || !identityDocumentsSelectedList) {
+                    return;
+                }
+
+                clearObjectUrls();
+                const files = Array.from(identityDocumentsInput.files || []);
+                if (!files.length) {
+                    identityDocumentsSelectedWrapper.classList.add('hidden');
+                    identityDocumentsSelectedList.innerHTML = '';
+                    return;
+                }
+
+                identityDocumentsSelectedWrapper.classList.remove('hidden');
+                identityDocumentsSelectedList.innerHTML = files
+                    .map(function(file, index) {
+                        const url = URL.createObjectURL(file);
+                        objectUrls.push(url);
+                        return `<div class="file-attachment-row">
+                            <a href="${url}" target="_blank" rel="noopener">📄 ${escapeHtml(file.name)}</a>
+                            <button type="button" class="file-remove-btn" data-remove-identity-index="${index}">ลบ</button>
+                        </div>`;
+                    })
+                    .join('');
+            }
+
             if (incomeDocumentsInput && incomeDocumentsSelectedWrapper && incomeDocumentsSelectedList) {
                 incomeDocumentsInput.addEventListener('change', function() {
                     const previousFiles = incomeDocumentsTransfer ? Array.from(incomeDocumentsTransfer.files) : [];
@@ -1531,6 +1586,28 @@
                 });
             }
 
+            if (identityDocumentsInput && identityDocumentsSelectedWrapper && identityDocumentsSelectedList) {
+                identityDocumentsInput.addEventListener('change', function() {
+                    const previousFiles = identityDocumentsTransfer ? Array.from(identityDocumentsTransfer.files) : [];
+                    const newFiles = Array.from(identityDocumentsInput.files || []);
+                    const nextTransfer = new DataTransfer();
+                    const seen = new Set();
+
+                    [...previousFiles, ...newFiles].forEach(function(file) {
+                        const key = [file.name, file.size, file.lastModified].join('|');
+                        if (seen.has(key)) {
+                            return;
+                        }
+                        seen.add(key);
+                        nextTransfer.items.add(file);
+                    });
+
+                    identityDocumentsTransfer = nextTransfer;
+                    identityDocumentsInput.files = nextTransfer.files;
+                    renderIdentityDocumentsSelection();
+                });
+            }
+
             if (incomeDocumentsSelectedList && incomeDocumentsInput) {
                 incomeDocumentsSelectedList.addEventListener('click', function(event) {
                     const button = event.target.closest('[data-remove-index]');
@@ -1550,6 +1627,28 @@
                     incomeDocumentsTransfer = nextTransfer;
                     incomeDocumentsInput.files = nextTransfer.files;
                     renderIncomeDocumentsSelection();
+                });
+            }
+
+            if (identityDocumentsSelectedList && identityDocumentsInput) {
+                identityDocumentsSelectedList.addEventListener('click', function(event) {
+                    const button = event.target.closest('[data-remove-identity-index]');
+                    if (!button) return;
+                    const removeIndex = Number(button.dataset.removeIdentityIndex);
+                    const files = Array.from(identityDocumentsInput.files || []);
+                    if (!Number.isFinite(removeIndex) || removeIndex < 0 || removeIndex >= files.length) {
+                        return;
+                    }
+
+                    const nextTransfer = new DataTransfer();
+                    files.forEach(function(file, index) {
+                        if (index !== removeIndex) {
+                            nextTransfer.items.add(file);
+                        }
+                    });
+                    identityDocumentsTransfer = nextTransfer;
+                    identityDocumentsInput.files = nextTransfer.files;
+                    renderIdentityDocumentsSelection();
                 });
             }
 
@@ -1585,29 +1684,34 @@
             }
 
             function syncConditionalSections() {
-                [
-                    'title',
-                    'id_type',
-                    'marital_status',
-                    'occupation',
-                    'hasOtherDebts',
-                    'residence_status',
-                    'businessType',
-                    'documentDelivery',
-                    'loanAmountType',
-                    'paymentMethod'
-                ].forEach(function(fieldName) {
-                    const field = consentForm?.querySelector(`[name="${fieldName}"]`);
-                    field?.dispatchEvent(new Event('change'));
-                });
+                isSyncingConditionalSections = true;
+                try {
+                    [
+                        'title',
+                        'id_type',
+                        'marital_status',
+                        'occupation',
+                        'hasOtherDebts',
+                        'residence_status',
+                        'businessType',
+                        'documentDelivery',
+                        'loanAmountType',
+                        'paymentMethod'
+                    ].forEach(function(fieldName) {
+                        const field = consentForm?.querySelector(`[name="${fieldName}"]`);
+                        field?.dispatchEvent(new Event('change'));
+                    });
 
-                ['extraIncome', 'income', 'workYears', 'workMonths'].forEach(function(fieldName) {
-                    const field = consentForm?.querySelector(`[name="${fieldName}"]`);
-                    field?.dispatchEvent(new Event('input'));
-                });
+                    ['extraIncome', 'income', 'workYears', 'workMonths'].forEach(function(fieldName) {
+                        const field = consentForm?.querySelector(`[name="${fieldName}"]`);
+                        field?.dispatchEvent(new Event('input'));
+                    });
 
-                const useHomeAddressField = consentForm?.querySelector('[name="useHomeAddress"]');
-                useHomeAddressField?.dispatchEvent(new Event('change'));
+                    const useHomeAddressField = consentForm?.querySelector('[name="useHomeAddress"]');
+                    useHomeAddressField?.dispatchEvent(new Event('change'));
+                } finally {
+                    isSyncingConditionalSections = false;
+                }
             }
 
             function applySignatureData(signatureData) {
@@ -1628,6 +1732,8 @@
                 updateWizardUI();
                 clearValidationErrors();
                 resetIncomeDocumentsSelection();
+                resetIdentityDocumentsSelection();
+                resetIdentityDocumentsSelection();
                 renderIncomeDocumentsExisting(null);
                 if (consentModalTitle) {
                     consentModalTitle.textContent = 'สร้างใบยินยอมแบบละเอียด';
@@ -1659,7 +1765,7 @@
 
                 consentForm.reset();
                 currentStep = 1;
-                maxStepReached = 7; // Allow jumping to any step in edit mode
+                maxStepReached = 8; // Allow jumping to any step in edit mode
                 updateWizardUI();
                 clearValidationErrors();
                 resetIncomeDocumentsSelection();
@@ -2258,7 +2364,8 @@
                 const customerId = customer?.id;
                 if (customerId) {
                     try {
-                        const response = await fetch(`${modalUpdateBaseUrl}/${customerId}/data`, { headers: { 'Accept': 'application/json' } });
+                        const baseUrl = consentBaseUrl;
+                        const response = await fetch(`${baseUrl}/${customerId}/data`, { headers: { 'Accept': 'application/json' } });
                         if (response.ok) {
                             fullCustomer = await response.json();
                         }
@@ -2353,17 +2460,8 @@
                 consentForm.addEventListener('submit', async function(event) {
                     event.preventDefault(); // Intercept all submits
 
-                    if (!signaturePad || signaturePad.isEmpty()) {
-                        window.alert('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนบันทึก');
-                        return;
-                    }
-
-                    if (signatureDataInput) {
-                        signatureDataInput.value = JSON.stringify(signaturePad.toData());
-                    }
-
-                    // For the final step, we use saveStepData(7) which is Step 7
-                    const result = await saveStepData(7);
+                    // For the final step, we use saveStepData(8)
+                    const result = await saveStepData(8);
                     
                     if (result.ok) {
                         // Success! Redirect to index or show success message
@@ -2382,6 +2480,12 @@
 
             // Close modals when clicking outside
             window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+                if (event.target === pdfModal) {
+                    closePdfModal();
+                }
                 if (event.target === viewModal) {
                     closeViewModal();
                 }

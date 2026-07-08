@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
         if (Schema::hasTable('consent_requests')) {
             Schema::disableForeignKeyConstraints();
             foreach ([
-                'consent_income_documents',
+                'consent_documents_file',
                 'consent_disbursement_accounts',
                 'consent_loan_requests',
                 'consent_references',

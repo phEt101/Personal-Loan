@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('consent_documents', function (Blueprint $table) {
+        Schema::create('consent_documents_file', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
             $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete();
             $table->string('document_type', 50)->nullable()->comment('ประเภทเอกสาร');
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('consent_documents');
+        Schema::dropIfExists('consent_documents_file');
     }
 };

@@ -41,6 +41,10 @@
                         <div class="wizard-step-icon">7</div>
                         <div class="wizard-step-label">ยินยอม</div>
                     </div>
+                    <div class="wizard-step" data-step="8">
+                        <div class="wizard-step-icon">8</div>
+                        <div class="wizard-step-label">แนบไฟล์</div>
+                    </div>
                 </div>
 
                 <div class="hidden-accessible" aria-hidden="true">
@@ -523,26 +527,6 @@
                             <input type="text" id="incomeCountry" name="incomeCountry" placeholder="ประเทศที่มาของรายได้">
                         </div>
 
-                        <div class="form-group col-12">
-                            <label>แนบไฟล์หลักฐานการเงิน (PDF/JPG/PNG)</label>
-                            <label for="incomeDocuments" class="custom-file-upload">
-                                <i>📁</i>
-                                <span>คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</span>
-                                <p>รองรับไฟล์ PDF, JPG, PNG (แนบได้หลายไฟล์)</p>
-                            </label>
-                            <input type="file" id="incomeDocuments" name="incomeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                        </div>
-
-                        <div class="form-group col-12 hidden" id="incomeDocumentsSelectedWrapper">
-                            <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
-                            <div id="incomeDocumentsSelectedList"></div>
-                        </div>
-
-                        <div class="form-group col-12 hidden" id="incomeDocumentsExistingWrapper">
-                            <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
-                            <div id="incomeDocumentsExistingList"></div>
-                        </div>
-
                         <div class="form-group col-6">
                             <label for="hasOtherDebts">ภาระหนี้อื่นๆ ในปัจจุบัน <span class="required-asterisk">*</span></label>
                             <select id="hasOtherDebts" name="hasOtherDebts" required>
@@ -816,6 +800,61 @@
                             </div>
                             <input type="hidden" id="signatureData" name="signatureData">
                             <p class="signature-date">วันที่เซ็น: {{ date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 8: แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน -->
+                <div class="step-container" data-step="8">
+                    <div class="form-grid">
+                        <div class="form-section-title form-section-title--no-top-margin">
+                            <span class="form-section-title-icon">📁</span> แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
+                        </div>
+
+                        <div class="form-group col-12">
+                            <label>แนบไฟล์หลักฐานการเงิน (PDF/JPG/PNG) <span class="required-asterisk">*</span></label>
+                            <label for="incomeDocuments" class="custom-file-upload">
+                                <i>📁</i>
+                                <span>คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</span>
+                                <p>รองรับไฟล์ PDF, JPG, PNG (แนบได้หลายไฟล์)</p>
+                            </label>
+                            <input type="file" id="incomeDocuments" name="incomeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                        </div>
+
+                        <div class="form-group col-12 hidden" id="incomeDocumentsSelectedWrapper">
+                            <label class="uploaded-files-title">ไฟล์หลักฐานการเงินที่เลือก</label>
+                            <div id="incomeDocumentsSelectedList"></div>
+                        </div>
+
+                        <div class="form-group col-12">
+                            <label for="identityDocumentType">ประเภทเอกสารแสดงตัวตน</label>
+                            <select id="identityDocumentType" name="documentType">
+                                <option value="id_card">สำเนาบัตรประชาชนที่ยังไม่หมดอายุ</option>
+                                <option value="passport">หนังสือเดินทาง</option>
+                                <option value="house_registration">สำเนาทะเบียนบ้าน</option>
+                                <option value="work_permit">ใบอนุญาตทำงาน</option>
+                                <option value="name_change">สำเนาเปลี่ยนชื่อ - นามสกุล</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-12">
+                            <label>แนบไฟล์เอกสารแสดงตัวตน (PDF/JPG/PNG)</label>
+                            <label for="identityDocuments" class="custom-file-upload">
+                                <i>📁</i>
+                                <span>คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</span>
+                                <p>รองรับไฟล์ PDF, JPG, PNG (แนบได้หลายไฟล์)</p>
+                            </label>
+                            <input type="file" id="identityDocuments" name="identityDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                        </div>
+
+                        <div class="form-group col-12 hidden" id="identityDocumentsSelectedWrapper">
+                            <label class="uploaded-files-title">เอกสารแสดงตัวตนที่เลือก</label>
+                            <div id="identityDocumentsSelectedList"></div>
+                        </div>
+
+                        <div class="form-group col-12 hidden" id="incomeDocumentsExistingWrapper">
+                            <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                            <div id="incomeDocumentsExistingList"></div>
                         </div>
                     </div>
                 </div>

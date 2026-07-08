@@ -8,7 +8,7 @@ use App\Modules\Consent\Models\ConsentApplication;
 use App\Modules\Consent\Models\ConsentContact;
 use App\Modules\Consent\Models\ConsentDisbursementAccount;
 use App\Modules\Consent\Models\ConsentEmployment;
-use App\Modules\Consent\Models\ConsentIncomeDocument;
+use App\Modules\Consent\Models\ConsentDocumentFile;
 use App\Modules\Consent\Models\ConsentLoanRequest;
 use App\Modules\Consent\Models\ConsentPreviousEmployment;
 use App\Modules\Consent\Models\ConsentReference;
@@ -138,7 +138,9 @@ class ConsentController extends Controller
         $approved = ConsentApplication::where('status', 'approved')->count();
         $rejected = ConsentApplication::where('status', 'rejected')->count();
 
-        return view('consent::index', compact('customers', 'total', 'approved', 'rejected'));
+        $nextAppNo = $this->getNextAppNo();
+
+        return view('consent::index', compact('customers', 'total', 'approved', 'rejected', 'nextAppNo'));
     }
 
     public function data(ConsentApplication $consent)
@@ -161,7 +163,7 @@ class ConsentController extends Controller
         return response()->json((object) $this->toFrontendData($consent));
     }
 
-    public function downloadIncomeDocument(ConsentApplication $consent, ConsentIncomeDocument $document)
+    public function downloadIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document)
     {
         if ((int) $document->application_id !== (int) $consent->id) {
             abort(404);
@@ -192,7 +194,7 @@ class ConsentController extends Controller
         ]);
     }
 
-    public function destroyIncomeDocument(ConsentApplication $consent, ConsentIncomeDocument $document)
+    public function destroyIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document)
     {
         if ((int) $document->application_id !== (int) $consent->id) {
             abort(404);
@@ -470,8 +472,6 @@ class ConsentController extends Controller
                 'extraIncomeSource' => ['required', 'string', 'max:255'],
                 'extraIncomeSourceOther' => ['nullable', 'required_if:extraIncomeSource,อื่นๆ', 'string', 'max:255'],
                 'incomeCountry' => ['nullable', 'string', 'max:100'],
-                'incomeDocuments' => ['nullable', 'array'],
-                'incomeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
                 'hasOtherDebts' => ['required', 'string', 'max:10'],
                 'otherDebtInstallment' => ['nullable', 'required_if:hasOtherDebts,มี', 'numeric', 'min:0'],
                 'hasExistingLoan' => ['required', 'string', 'in:ใช่,ไม่ใช่'],
@@ -520,6 +520,30 @@ class ConsentController extends Controller
                         }
                     },
                 ],
+            ],
+            8 => [
+                // แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
+                'incomeDocuments' => [
+                    function ($attribute, $value, $fail) use ($request) {
+                        $consentId = $request->input('consent_id');
+                        $consent = null;
+                        if ($consentId) {
+                            $consent = ConsentApplication::where('encrypted_id', $consentId)->first();
+                        }
+
+                        $hasExistingFiles = $consent ? $consent->incomeDocuments()->exists() : false;
+                        $hasNewFiles = $request->hasFile('incomeDocuments');
+                        $hasIdentityFiles = $request->hasFile('identityDocuments');
+
+                        if (!$hasExistingFiles && !$hasNewFiles && !$hasIdentityFiles) {
+                            $fail('กรุณาแนบไฟล์หลักฐานการเงินหรือเอกสารแสดงตัวตนอย่างน้อย 1 ไฟล์');
+                        }
+                    },
+                ],
+                'incomeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'identityDocuments' => ['nullable', 'array'],
+                'identityDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'documentType' => ['nullable', 'in:id_card,passport,house_registration,work_permit,name_change'],
             ],
             default => [],
         };
@@ -694,24 +718,6 @@ class ConsentController extends Controller
                     'existing_loan_total_amount' => $hasExistingLoan ? $validated['existingLoanTotalAmount'] : 0,
                 ]);
 
-                if ($request->hasFile('incomeDocuments')) {
-                    $files = (array) $request->file('incomeDocuments', []);
-                    Log::debug("Consent updateConsentByStep: Processing " . count($files) . " income documents");
-                    foreach ($files as $file) {
-                        if ($file) {
-                            $disk = 'local';
-                            $path = $file->store('consent/' . $consent->id . '/income-documents', $disk);
-                            ConsentIncomeDocument::create([
-                                'application_id' => $consent->id,
-                                'disk' => $disk,
-                                'path' => $path,
-                                'original_name' => $file->getClientOriginalName(),
-                                'mime_type' => $file->getClientMimeType(),
-                                'size' => $file->getSize(),
-                            ]);
-                        }
-                    }
-                }
                 Log::debug("Consent updateConsentByStep: Step 4 applicant data updated", [
                     'income' => $validated['income'],
                     'has_existing_loan' => $hasExistingLoan
@@ -780,6 +786,38 @@ class ConsentController extends Controller
                 break;
 
             case 7:
+                $consent->update([
+                    'signature_data' => $validated['signatureData'],
+                    'signed' => true,
+                    'signed_at' => now(),
+                ]);
+                Log::info("Consent updateConsentByStep: Step 7 completed (Signature saved)", ['id' => $consent->id]);
+                break;
+
+            case 8:
+                if ($request->hasFile('incomeDocuments')) {
+                    $files = (array) $request->file('incomeDocuments', []);
+                    Log::debug("Consent updateConsentByStep: Processing " . count($files) . " income documents");
+                    foreach ($files as $file) {
+                        if ($file) {
+                            $this->storeUploadedDocument($consent, $file, 'income_proof');
+                        }
+                    }
+                }
+
+                if ($request->hasFile('identityDocuments')) {
+                    $files = (array) $request->file('identityDocuments', []);
+                    $documentType = $request->input('documentType', 'id_card');
+                    Log::debug("Consent updateConsentByStep: Processing " . count($files) . " identity documents", [
+                        'document_type' => $documentType,
+                    ]);
+                    foreach ($files as $file) {
+                        if ($file) {
+                            $this->storeUploadedDocument($consent, $file, $documentType);
+                        }
+                    }
+                }
+
                 $applicant = $consent->applicant;
                 $age = $applicant?->birthdate ? Carbon::parse($applicant->birthdate)->age : 0;
                 $income = (float) ($applicant?->income ?? 0);
@@ -790,13 +828,8 @@ class ConsentController extends Controller
                     $status = 'rejected';
                 }
 
-                $consent->update([
-                    'signature_data' => $validated['signatureData'],
-                    'signed' => true,
-                    'signed_at' => now(),
-                    'status' => $status,
-                ]);
-                Log::info("Consent updateConsentByStep: Step 7 completed. Final status: {$status}", ['id' => $consent->id]);
+                $consent->update(['status' => $status]);
+                Log::info("Consent updateConsentByStep: Step 8 completed. Final status: {$status}", ['id' => $consent->id]);
                 break;
         }
     }
@@ -825,10 +858,12 @@ class ConsentController extends Controller
             ->incomeDocuments()
             ->orderBy('id')
             ->get()
-            ->map(function (ConsentIncomeDocument $document) use ($consent) {
+            ->map(function (ConsentDocumentFile $document) use ($consent) {
                 return [
                     'id' => $document->id,
                     'originalName' => $document->original_name,
+                    'documentType' => $document->document_type,
+                    'documentTypeLabel' => $this->getDocumentTypeLabel($document->document_type),
                     'mimeType' => $document->mime_type,
                     'size' => $document->size,
                     'downloadUrl' => route('consent.income-documents.download', [
@@ -967,8 +1002,38 @@ class ConsentController extends Controller
             'directDebitAccountNumber' => $account?->direct_debit_account_number,
 
             // 12. ลายเซ็น
+            'signature_data' => $consent->signature_data,
             'signatureData' => $consent->signature_data,
         ]);
+    }
+
+    private function storeUploadedDocument(ConsentApplication $consent, mixed $file, string $documentType): void
+    {
+        $disk = 'local';
+        $path = $file->store('consent/' . $consent->id . '/documents', $disk);
+
+        ConsentDocumentFile::create([
+            'application_id' => $consent->id,
+            'document_type' => $documentType,
+            'disk' => $disk,
+            'path' => $path,
+            'original_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getClientMimeType(),
+            'size' => $file->getSize(),
+        ]);
+    }
+
+    private function getDocumentTypeLabel(?string $documentType): string
+    {
+        return match ($documentType) {
+            'id_card' => 'สำเนาบัตรประชาชน',
+            'passport' => 'หนังสือเดินทาง',
+            'house_registration' => 'สำเนาทะเบียนบ้าน',
+            'work_permit' => 'ใบอนุญาตทำงาน',
+            'name_change' => 'สำเนาเปลี่ยนชื่อ-นามสกุล',
+            'income_proof' => 'หลักฐานการเงิน',
+            default => 'เอกสารแนบ',
+        };
     }
 
     private function getNextAppNo(bool $lock = false): string
