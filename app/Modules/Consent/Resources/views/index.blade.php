@@ -267,7 +267,7 @@
                     .map(function(document) {
                         const url = document?.downloadUrl ?? '#';
                         const name = document?.originalName ?? 'ไฟล์แนบ';
-                        return `<div style="margin-bottom: 0.35rem;"><a href="${url}" target="_blank" rel="noopener" style="color: #10b981; text-decoration: none;">📄 ${escapeHtml(name)}</a></div>`;
+                        return `<div style="margin-bottom: 0.35rem;"><a href="${url}" target="_blank" rel="noopener" style="color: #10b981; text-decoration: none;">${escapeHtml(name)}</a></div>`;
                     })
                     .join('')
                 : '-';
@@ -1438,250 +1438,336 @@
                 }
             }
 
+            const documentUploadGroups = [
+                {
+                    key: 'incomeSalarySlipDocuments',
+                    documentType: 'income_salary_slip',
+                    acceptedDocumentTypes: ['income_salary_slip', 'income_salary', 'income_proof'],
+                    defaultTypeLabel: 'สลิปเงินเดือนล่าสุด',
+                },
+                {
+                    key: 'incomeSalaryCertificateDocuments',
+                    documentType: 'income_salary_certificate',
+                    defaultTypeLabel: 'หนังสือรับรองเงินเดือน',
+                },
+                {
+                    key: 'incomeSalary50TawiDocuments',
+                    documentType: 'income_salary_50tawi',
+                    defaultTypeLabel: 'เอกสาร 50 ทวิ',
+                },
+                {
+                    key: 'incomeSalaryStatement6mDocuments',
+                    documentType: 'income_salary_statement_6m',
+                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 6 เดือน (เงินเดือน)',
+                },
+                {
+                    key: 'incomeSupplementarySlipDocuments',
+                    documentType: 'income_supplementary_slip',
+                    acceptedDocumentTypes: ['income_supplementary_slip', 'income_salary_supplement'],
+                    defaultTypeLabel: 'สลิปเงินเดือน/คอมมิชชัน/ค่าล่วงเวลา',
+                },
+                {
+                    key: 'incomeSupplementaryStatement6mDocuments',
+                    documentType: 'income_supplementary_statement_6m',
+                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 6 เดือน (รายได้เสริม)',
+                },
+                {
+                    key: 'incomeRegisteredCertDocuments',
+                    documentType: 'income_registered_corporate_cert',
+                    acceptedDocumentTypes: ['income_registered_corporate_cert', 'income_business_registered'],
+                    defaultTypeLabel: 'หนังสือรับรองการจดทะเบียนนิติบุคคล',
+                },
+                {
+                    key: 'incomeRegisteredShareholderDocuments',
+                    documentType: 'income_registered_shareholder_list',
+                    defaultTypeLabel: 'สำเนารายชื่อผู้ถือหุ้น',
+                },
+                {
+                    key: 'incomeRegisteredTradeDocuments',
+                    documentType: 'income_registered_trade_registration',
+                    defaultTypeLabel: 'ใบทะเบียนการค้า',
+                },
+                {
+                    key: 'incomeRegisteredStatement1yDocuments',
+                    documentType: 'income_registered_statement_1y',
+                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 1 ปี (จดทะเบียน)',
+                },
+                {
+                    key: 'incomeUnregisteredLeaseDocuments',
+                    documentType: 'income_unregistered_lease',
+                    acceptedDocumentTypes: ['income_unregistered_lease', 'income_business_unregistered'],
+                    defaultTypeLabel: 'สัญญาเช่า',
+                },
+                {
+                    key: 'incomeUnregisteredTaxDocuments',
+                    documentType: 'income_unregistered_tax',
+                    defaultTypeLabel: 'เอกสารการเสียภาษี (ไม่จดทะเบียน)',
+                },
+                {
+                    key: 'incomeUnregisteredStatement1yDocuments',
+                    documentType: 'income_unregistered_statement_1y',
+                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 1 ปี (ไม่จดทะเบียน)',
+                },
+                {
+                    key: 'incomeUnregisteredInvoiceDocuments',
+                    documentType: 'income_unregistered_invoice',
+                    defaultTypeLabel: 'บิลซื้อ/บิลขาย (ไม่จดทะเบียน)',
+                },
+                {
+                    key: 'incomeUnregisteredBusinessPhotoDocuments',
+                    documentType: 'income_unregistered_business_photo',
+                    defaultTypeLabel: 'รูปถ่ายกิจการ (ไม่จดทะเบียน)',
+                },
+                {
+                    key: 'incomeSelfIndividualTax50Documents',
+                    documentType: 'income_self_individual_tax',
+                    acceptedDocumentTypes: ['income_self_individual_tax', 'income_self_employed_individual'],
+                    defaultTypeLabel: 'เอกสารการเสียภาษี/50 ทวิ (บุคคลธรรมดา)',
+                },
+                {
+                    key: 'incomeSelfIndividualPndDocuments',
+                    documentType: 'income_self_individual_pnd',
+                    defaultTypeLabel: 'แบบยื่นภาษี ภ.ง.ด. 90/91/94',
+                },
+                {
+                    key: 'incomeSelfIndividualStatement1yDocuments',
+                    documentType: 'income_self_individual_statement_1y',
+                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 1 ปี (บุคคลธรรมดา)',
+                },
+                {
+                    key: 'incomeSelfBusinessTaxDocuments',
+                    documentType: 'income_self_business_tax',
+                    acceptedDocumentTypes: ['income_self_business_tax', 'income_self_employed_business'],
+                    defaultTypeLabel: 'เอกสารการเสียภาษี (ผู้ประกอบการ)',
+                },
+                {
+                    key: 'incomeSelfBusinessStatement1yDocuments',
+                    documentType: 'income_self_business_statement_1y',
+                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 1 ปี (ผู้ประกอบการ)',
+                },
+                {
+                    key: 'incomeSelfBusinessInvoiceDocuments',
+                    documentType: 'income_self_business_invoice',
+                    defaultTypeLabel: 'บิลซื้อ/บิลขาย (ผู้ประกอบการ)',
+                },
+                {
+                    key: 'incomeSelfBusinessPhotoDocuments',
+                    documentType: 'income_self_business_photo',
+                    defaultTypeLabel: 'รูปถ่ายกิจการ (ผู้ประกอบการ)',
+                },
+                {
+                    key: 'identityIdCardDocuments',
+                    documentType: 'id_card',
+                    defaultTypeLabel: 'สำเนาบัตรประชาชน',
+                },
+                {
+                    key: 'identityPassportDocuments',
+                    documentType: 'passport',
+                    defaultTypeLabel: 'หนังสือเดินทาง',
+                },
+                {
+                    key: 'identityHouseRegistrationDocuments',
+                    documentType: 'house_registration',
+                    defaultTypeLabel: 'สำเนาทะเบียนบ้าน',
+                },
+                {
+                    key: 'identityWorkPermitDocuments',
+                    documentType: 'work_permit',
+                    defaultTypeLabel: 'ใบอนุญาตทำงาน',
+                },
+                {
+                    key: 'identityNameChangeDocuments',
+                    documentType: 'name_change',
+                    defaultTypeLabel: 'สำเนาเปลี่ยนชื่อ-นามสกุล',
+                },
+            ];
+
+            const documentUploadStates = documentUploadGroups.map(function(group) {
+                return {
+                    ...group,
+                    input: document.getElementById(group.key),
+                    selectedWrapper: document.getElementById(`${group.key}SelectedWrapper`),
+                    selectedList: document.getElementById(`${group.key}SelectedList`),
+                    existingWrapper: document.getElementById(`${group.key}ExistingWrapper`),
+                    existingList: document.getElementById(`${group.key}ExistingList`),
+                    transfer: null,
+                    objectUrls: [],
+                };
+            });
+
+            function revokeGroupObjectUrls(groupState) {
+                groupState.objectUrls.forEach(function(url) {
+                    URL.revokeObjectURL(url);
+                });
+                groupState.objectUrls = [];
+            }
+
+            function resetGroupSelection(groupState) {
+                revokeGroupObjectUrls(groupState);
+                if (groupState.input) {
+                    groupState.input.value = '';
+                }
+                groupState.transfer = null;
+                if (groupState.selectedWrapper) {
+                    groupState.selectedWrapper.classList.add('hidden');
+                }
+                if (groupState.selectedList) {
+                    groupState.selectedList.innerHTML = '';
+                }
+            }
+
+            function resetAllDocumentSelections() {
+                documentUploadStates.forEach(function(groupState) {
+                    resetGroupSelection(groupState);
+                });
+            }
+
             function renderIncomeDocumentsExisting(customer) {
-                const wrapper = document.getElementById('incomeDocumentsExistingWrapper');
-                const list = document.getElementById('incomeDocumentsExistingList');
-                if (!wrapper || !list) return;
-
                 const documents = Array.isArray(customer?.incomeDocuments) ? customer.incomeDocuments : [];
-                if (!documents.length) {
-                    wrapper.classList.add('hidden');
-                    list.innerHTML = '';
+                documentUploadStates.forEach(function(groupState) {
+                    if (!groupState.existingWrapper || !groupState.existingList) {
+                        return;
+                    }
+
+                    const groupedDocuments = documents.filter(function(document) {
+                        const documentType = document?.documentType ?? '';
+                        const acceptedTypes = groupState.acceptedDocumentTypes || [groupState.documentType];
+                        return acceptedTypes.includes(documentType);
+                    });
+
+                    if (!groupedDocuments.length) {
+                        groupState.existingWrapper.classList.add('hidden');
+                        groupState.existingList.innerHTML = '';
+                        return;
+                    }
+
+                    groupState.existingWrapper.classList.remove('hidden');
+                    groupState.existingList.innerHTML = groupedDocuments
+                        .map(function(document) {
+                            const url = document?.downloadUrl ?? '#';
+                            const name = document?.originalName ?? 'ไฟล์แนบ';
+                            const destroyUrl = document?.destroyUrl ?? '';
+                            const deleteButton = destroyUrl
+                                ? `<button type="button" class="file-remove-btn" data-destroy-url="${escapeHtml(destroyUrl)}">ลบ</button>`
+                                : '';
+                            return `<div class="file-attachment-row">
+                                <a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)}</a>
+                                ${deleteButton}
+                            </div>`;
+                        })
+                        .join('');
+                });
+            }
+
+            function renderSelectedFiles(groupState) {
+                if (!groupState.input || !groupState.selectedWrapper || !groupState.selectedList) {
                     return;
                 }
 
-                wrapper.classList.remove('hidden');
-                list.innerHTML = documents
-                    .map(function(document) {
-                        const url = document?.downloadUrl ?? '#';
-                        const name = document?.originalName ?? 'ไฟล์แนบ';
-                        const typeLabel = document?.documentTypeLabel || 'ไฟล์แนบ';
-                        const destroyUrl = document?.destroyUrl ?? '';
-                        const deleteButton = destroyUrl
-                            ? `<button type="button" class="file-remove-btn" data-destroy-url="${escapeHtml(destroyUrl)}">ลบ</button>`
-                            : '';
-                        return `<div class="file-attachment-row">
-                            <a href="${escapeHtml(url)}" target="_blank" rel="noopener">📄 ${escapeHtml(typeLabel)}: ${escapeHtml(name)}</a>
-                            ${deleteButton}
-                        </div>`;
-                    })
-                    .join('');
-            }
-
-            const incomeDocumentsInput = document.getElementById('incomeDocuments');
-            const incomeDocumentsSelectedWrapper = document.getElementById('incomeDocumentsSelectedWrapper');
-            const incomeDocumentsSelectedList = document.getElementById('incomeDocumentsSelectedList');
-            const incomeDocumentsExistingList = document.getElementById('incomeDocumentsExistingList');
-            const identityDocumentsInput = document.getElementById('identityDocuments');
-            const identityDocumentsSelectedWrapper = document.getElementById('identityDocumentsSelectedWrapper');
-            const identityDocumentsSelectedList = document.getElementById('identityDocumentsSelectedList');
-            let incomeDocumentsTransfer = null;
-            let identityDocumentsTransfer = null;
-            let objectUrls = [];
-
-            function clearObjectUrls() {
-                objectUrls.forEach(url => URL.revokeObjectURL(url));
-                objectUrls = [];
-            }
-
-            function resetIncomeDocumentsSelection() {
-                clearObjectUrls();
-                if (incomeDocumentsInput) {
-                    incomeDocumentsInput.value = '';
-                }
-                incomeDocumentsTransfer = null;
-                if (incomeDocumentsSelectedWrapper) {
-                    incomeDocumentsSelectedWrapper.classList.add('hidden');
-                }
-                if (incomeDocumentsSelectedList) {
-                    incomeDocumentsSelectedList.innerHTML = '';
-                }
-            }
-
-            function resetIdentityDocumentsSelection() {
-                clearObjectUrls();
-                if (identityDocumentsInput) {
-                    identityDocumentsInput.value = '';
-                }
-                identityDocumentsTransfer = null;
-                if (identityDocumentsSelectedWrapper) {
-                    identityDocumentsSelectedWrapper.classList.add('hidden');
-                }
-                if (identityDocumentsSelectedList) {
-                    identityDocumentsSelectedList.innerHTML = '';
-                }
-            }
-
-            function renderIncomeDocumentsSelection() {
-                if (!incomeDocumentsInput || !incomeDocumentsSelectedWrapper || !incomeDocumentsSelectedList) {
-                    return;
-                }
-
-                clearObjectUrls();
-                const files = Array.from(incomeDocumentsInput.files || []);
+                revokeGroupObjectUrls(groupState);
+                const files = Array.from(groupState.input.files || []);
                 if (!files.length) {
-                    incomeDocumentsSelectedWrapper.classList.add('hidden');
-                    incomeDocumentsSelectedList.innerHTML = '';
+                    groupState.selectedWrapper.classList.add('hidden');
+                    groupState.selectedList.innerHTML = '';
                     return;
                 }
 
-                incomeDocumentsSelectedWrapper.classList.remove('hidden');
-                incomeDocumentsSelectedList.innerHTML = files
+                groupState.selectedWrapper.classList.remove('hidden');
+                groupState.selectedList.innerHTML = files
                     .map(function(file, index) {
                         const url = URL.createObjectURL(file);
-                        objectUrls.push(url);
+                        groupState.objectUrls.push(url);
                         return `<div class="file-attachment-row">
-                            <a href="${url}" target="_blank" rel="noopener">📄 ${escapeHtml(file.name)}</a>
+                            <a href="${url}" target="_blank" rel="noopener">${escapeHtml(file.name)}</a>
                             <button type="button" class="file-remove-btn" data-remove-index="${index}">ลบ</button>
                         </div>`;
                     })
                     .join('');
             }
 
-            function renderIdentityDocumentsSelection() {
-                if (!identityDocumentsInput || !identityDocumentsSelectedWrapper || !identityDocumentsSelectedList) {
-                    return;
-                }
+            function mergeUniqueFiles(existingFiles, incomingFiles) {
+                const nextTransfer = new DataTransfer();
+                const seen = new Set();
 
-                clearObjectUrls();
-                const files = Array.from(identityDocumentsInput.files || []);
-                if (!files.length) {
-                    identityDocumentsSelectedWrapper.classList.add('hidden');
-                    identityDocumentsSelectedList.innerHTML = '';
-                    return;
-                }
+                [...existingFiles, ...incomingFiles].forEach(function(file) {
+                    const key = [file.name, file.size, file.lastModified].join('|');
+                    if (seen.has(key)) {
+                        return;
+                    }
+                    seen.add(key);
+                    nextTransfer.items.add(file);
+                });
 
-                identityDocumentsSelectedWrapper.classList.remove('hidden');
-                identityDocumentsSelectedList.innerHTML = files
-                    .map(function(file, index) {
-                        const url = URL.createObjectURL(file);
-                        objectUrls.push(url);
-                        return `<div class="file-attachment-row">
-                            <a href="${url}" target="_blank" rel="noopener">📄 ${escapeHtml(file.name)}</a>
-                            <button type="button" class="file-remove-btn" data-remove-identity-index="${index}">ลบ</button>
-                        </div>`;
-                    })
-                    .join('');
+                return nextTransfer;
             }
 
-            if (incomeDocumentsInput && incomeDocumentsSelectedWrapper && incomeDocumentsSelectedList) {
-                incomeDocumentsInput.addEventListener('change', function() {
-                    const previousFiles = incomeDocumentsTransfer ? Array.from(incomeDocumentsTransfer.files) : [];
-                    const newFiles = Array.from(incomeDocumentsInput.files || []);
-                    const nextTransfer = new DataTransfer();
-                    const seen = new Set();
+            documentUploadStates.forEach(function(groupState) {
+                if (groupState.input && groupState.selectedWrapper && groupState.selectedList) {
+                    groupState.input.addEventListener('change', function() {
+                        const previousFiles = groupState.transfer ? Array.from(groupState.transfer.files) : [];
+                        const newFiles = Array.from(groupState.input.files || []);
+                        const nextTransfer = mergeUniqueFiles(previousFiles, newFiles);
 
-                    [...previousFiles, ...newFiles].forEach(function(file) {
-                        const key = [file.name, file.size, file.lastModified].join('|');
-                        if (seen.has(key)) {
+                        groupState.transfer = nextTransfer;
+                        groupState.input.files = nextTransfer.files;
+                        renderSelectedFiles(groupState);
+                    });
+
+                    groupState.selectedList.addEventListener('click', function(event) {
+                        const button = event.target.closest('[data-remove-index]');
+                        if (!button) return;
+
+                        const removeIndex = Number(button.dataset.removeIndex);
+                        const files = Array.from(groupState.input.files || []);
+                        if (!Number.isFinite(removeIndex) || removeIndex < 0 || removeIndex >= files.length) {
                             return;
                         }
-                        seen.add(key);
-                        nextTransfer.items.add(file);
+
+                        const nextTransfer = new DataTransfer();
+                        files.forEach(function(file, index) {
+                            if (index !== removeIndex) {
+                                nextTransfer.items.add(file);
+                            }
+                        });
+
+                        groupState.transfer = nextTransfer;
+                        groupState.input.files = nextTransfer.files;
+                        renderSelectedFiles(groupState);
                     });
+                }
 
-                    incomeDocumentsTransfer = nextTransfer;
-                    incomeDocumentsInput.files = nextTransfer.files;
-                    renderIncomeDocumentsSelection();
-                });
-            }
+                if (groupState.existingList && groupState.existingWrapper) {
+                    groupState.existingList.addEventListener('click', async function(event) {
+                        const button = event.target.closest('[data-destroy-url]');
+                        if (!button) return;
 
-            if (identityDocumentsInput && identityDocumentsSelectedWrapper && identityDocumentsSelectedList) {
-                identityDocumentsInput.addEventListener('change', function() {
-                    const previousFiles = identityDocumentsTransfer ? Array.from(identityDocumentsTransfer.files) : [];
-                    const newFiles = Array.from(identityDocumentsInput.files || []);
-                    const nextTransfer = new DataTransfer();
-                    const seen = new Set();
+                        const destroyUrl = button.dataset.destroyUrl;
+                        if (!destroyUrl) return;
+                        if (!confirm('ต้องการลบไฟล์นี้ใช่ไหม?')) return;
 
-                    [...previousFiles, ...newFiles].forEach(function(file) {
-                        const key = [file.name, file.size, file.lastModified].join('|');
-                        if (seen.has(key)) {
+                        const token = document.querySelector('input[name="_token"]')?.value ?? '';
+                        const response = await fetch(destroyUrl, {
+                            method: 'DELETE',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': token,
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+
+                        if (!response.ok) {
+                            alert('ลบไฟล์ไม่สำเร็จ');
                             return;
                         }
-                        seen.add(key);
-                        nextTransfer.items.add(file);
-                    });
 
-                    identityDocumentsTransfer = nextTransfer;
-                    identityDocumentsInput.files = nextTransfer.files;
-                    renderIdentityDocumentsSelection();
-                });
-            }
-
-            if (incomeDocumentsSelectedList && incomeDocumentsInput) {
-                incomeDocumentsSelectedList.addEventListener('click', function(event) {
-                    const button = event.target.closest('[data-remove-index]');
-                    if (!button) return;
-                    const removeIndex = Number(button.dataset.removeIndex);
-                    const files = Array.from(incomeDocumentsInput.files || []);
-                    if (!Number.isFinite(removeIndex) || removeIndex < 0 || removeIndex >= files.length) {
-                        return;
-                    }
-
-                    const nextTransfer = new DataTransfer();
-                    files.forEach(function(file, index) {
-                        if (index !== removeIndex) {
-                            nextTransfer.items.add(file);
+                        button.closest('.file-attachment-row')?.remove();
+                        if (!groupState.existingList.querySelector('.file-attachment-row')) {
+                            groupState.existingWrapper.classList.add('hidden');
+                            groupState.existingList.innerHTML = '';
                         }
                     });
-                    incomeDocumentsTransfer = nextTransfer;
-                    incomeDocumentsInput.files = nextTransfer.files;
-                    renderIncomeDocumentsSelection();
-                });
-            }
-
-            if (identityDocumentsSelectedList && identityDocumentsInput) {
-                identityDocumentsSelectedList.addEventListener('click', function(event) {
-                    const button = event.target.closest('[data-remove-identity-index]');
-                    if (!button) return;
-                    const removeIndex = Number(button.dataset.removeIdentityIndex);
-                    const files = Array.from(identityDocumentsInput.files || []);
-                    if (!Number.isFinite(removeIndex) || removeIndex < 0 || removeIndex >= files.length) {
-                        return;
-                    }
-
-                    const nextTransfer = new DataTransfer();
-                    files.forEach(function(file, index) {
-                        if (index !== removeIndex) {
-                            nextTransfer.items.add(file);
-                        }
-                    });
-                    identityDocumentsTransfer = nextTransfer;
-                    identityDocumentsInput.files = nextTransfer.files;
-                    renderIdentityDocumentsSelection();
-                });
-            }
-
-            if (incomeDocumentsExistingList) {
-                incomeDocumentsExistingList.addEventListener('click', async function(event) {
-                    const button = event.target.closest('[data-destroy-url]');
-                    if (!button) return;
-                    const destroyUrl = button.dataset.destroyUrl;
-                    if (!destroyUrl) return;
-                    if (!confirm('ต้องการลบไฟล์นี้ใช่ไหม?')) return;
-
-                    const token = document.querySelector('input[name="_token"]')?.value ?? '';
-                    const response = await fetch(destroyUrl, {
-                        method: 'DELETE',
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': token,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    });
-                    if (!response.ok) {
-                        alert('ลบไฟล์ไม่สำเร็จ');
-                        return;
-                    }
-
-                    const row = button.closest('.file-attachment-row');
-                    row?.remove();
-                    if (!incomeDocumentsExistingList.querySelector('.file-attachment-row')) {
-                        document.getElementById('incomeDocumentsExistingWrapper')?.classList.add('hidden');
-                        incomeDocumentsExistingList.innerHTML = '';
-                    }
-                });
-            }
+                }
+            });
 
             function syncConditionalSections() {
                 isSyncingConditionalSections = true;
@@ -1731,9 +1817,7 @@
                 maxStepReached = 1;
                 updateWizardUI();
                 clearValidationErrors();
-                resetIncomeDocumentsSelection();
-                resetIdentityDocumentsSelection();
-                resetIdentityDocumentsSelection();
+                resetAllDocumentSelections();
                 renderIncomeDocumentsExisting(null);
                 if (consentModalTitle) {
                     consentModalTitle.textContent = 'สร้างใบยินยอมแบบละเอียด';
@@ -1768,7 +1852,7 @@
                 maxStepReached = 8; // Allow jumping to any step in edit mode
                 updateWizardUI();
                 clearValidationErrors();
-                resetIncomeDocumentsSelection();
+                resetAllDocumentSelections();
                 homeAddressController.reset();
                 workAddressController.reset();
                 documentAddressController.reset();

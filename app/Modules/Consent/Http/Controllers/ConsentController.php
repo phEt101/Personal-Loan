@@ -291,7 +291,37 @@ class ConsentController extends Controller
             Log::warning("Consent saveStep: Validation failed for step {$step}", [
                 'consent_id' => $consentId,
                 'errors' => $e->errors(),
-                'input' => $request->except(['_token', 'signatureData', 'incomeDocuments']),
+                'input' => $request->except([
+                    '_token',
+                    'signatureData',
+                    'incomeSalarySlipDocuments',
+                    'incomeSalaryCertificateDocuments',
+                    'incomeSalary50TawiDocuments',
+                    'incomeSalaryStatement6mDocuments',
+                    'incomeSupplementarySlipDocuments',
+                    'incomeSupplementaryStatement6mDocuments',
+                    'incomeRegisteredCertDocuments',
+                    'incomeRegisteredShareholderDocuments',
+                    'incomeRegisteredTradeDocuments',
+                    'incomeRegisteredStatement1yDocuments',
+                    'incomeUnregisteredLeaseDocuments',
+                    'incomeUnregisteredTaxDocuments',
+                    'incomeUnregisteredStatement1yDocuments',
+                    'incomeUnregisteredInvoiceDocuments',
+                    'incomeUnregisteredBusinessPhotoDocuments',
+                    'incomeSelfIndividualTax50Documents',
+                    'incomeSelfIndividualPndDocuments',
+                    'incomeSelfIndividualStatement1yDocuments',
+                    'incomeSelfBusinessTaxDocuments',
+                    'incomeSelfBusinessStatement1yDocuments',
+                    'incomeSelfBusinessInvoiceDocuments',
+                    'incomeSelfBusinessPhotoDocuments',
+                    'identityIdCardDocuments',
+                    'identityPassportDocuments',
+                    'identityHouseRegistrationDocuments',
+                    'identityWorkPermitDocuments',
+                    'identityNameChangeDocuments',
+                ]),
             ]);
             throw $e;
         } catch (\Exception $e) {
@@ -322,6 +352,7 @@ class ConsentController extends Controller
             'max' => ':attribute ต้องไม่เกิน :max ตัวอักษร',
             'min' => ':attribute ต้องไม่น้อยกว่า :min',
             'mimes' => ':attribute ต้องเป็นไฟล์ประเภท :values เท่านั้น',
+            'uploaded' => ':attribute อัปโหลดไม่สำเร็จ กรุณาลองใหม่ หรือเลือกไฟล์ขนาดเล็กลง',
             'regex' => ':attribute รูปแบบไม่ถูกต้อง',
         ];
     }
@@ -523,27 +554,60 @@ class ConsentController extends Controller
             ],
             8 => [
                 // แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
-                'incomeDocuments' => [
-                    function ($attribute, $value, $fail) use ($request) {
-                        $consentId = $request->input('consent_id');
-                        $consent = null;
-                        if ($consentId) {
-                            $consent = ConsentApplication::where('encrypted_id', $consentId)->first();
-                        }
-
-                        $hasExistingFiles = $consent ? $consent->incomeDocuments()->exists() : false;
-                        $hasNewFiles = $request->hasFile('incomeDocuments');
-                        $hasIdentityFiles = $request->hasFile('identityDocuments');
-
-                        if (!$hasExistingFiles && !$hasNewFiles && !$hasIdentityFiles) {
-                            $fail('กรุณาแนบไฟล์หลักฐานการเงินหรือเอกสารแสดงตัวตนอย่างน้อย 1 ไฟล์');
-                        }
-                    },
-                ],
-                'incomeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
-                'identityDocuments' => ['nullable', 'array'],
-                'identityDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
-                'documentType' => ['nullable', 'in:id_card,passport,house_registration,work_permit,name_change'],
+                'incomeSalarySlipDocuments' => ['nullable', 'array'],
+                'incomeSalarySlipDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSalaryCertificateDocuments' => ['nullable', 'array'],
+                'incomeSalaryCertificateDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSalary50TawiDocuments' => ['nullable', 'array'],
+                'incomeSalary50TawiDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSalaryStatement6mDocuments' => ['nullable', 'array'],
+                'incomeSalaryStatement6mDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSupplementarySlipDocuments' => ['nullable', 'array'],
+                'incomeSupplementarySlipDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSupplementaryStatement6mDocuments' => ['nullable', 'array'],
+                'incomeSupplementaryStatement6mDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeRegisteredCertDocuments' => ['nullable', 'array'],
+                'incomeRegisteredCertDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeRegisteredShareholderDocuments' => ['nullable', 'array'],
+                'incomeRegisteredShareholderDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeRegisteredTradeDocuments' => ['nullable', 'array'],
+                'incomeRegisteredTradeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeRegisteredStatement1yDocuments' => ['nullable', 'array'],
+                'incomeRegisteredStatement1yDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeUnregisteredLeaseDocuments' => ['nullable', 'array'],
+                'incomeUnregisteredLeaseDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeUnregisteredTaxDocuments' => ['nullable', 'array'],
+                'incomeUnregisteredTaxDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeUnregisteredStatement1yDocuments' => ['nullable', 'array'],
+                'incomeUnregisteredStatement1yDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeUnregisteredInvoiceDocuments' => ['nullable', 'array'],
+                'incomeUnregisteredInvoiceDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeUnregisteredBusinessPhotoDocuments' => ['nullable', 'array'],
+                'incomeUnregisteredBusinessPhotoDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSelfIndividualTax50Documents' => ['nullable', 'array'],
+                'incomeSelfIndividualTax50Documents.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSelfIndividualPndDocuments' => ['nullable', 'array'],
+                'incomeSelfIndividualPndDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSelfIndividualStatement1yDocuments' => ['nullable', 'array'],
+                'incomeSelfIndividualStatement1yDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSelfBusinessTaxDocuments' => ['nullable', 'array'],
+                'incomeSelfBusinessTaxDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSelfBusinessStatement1yDocuments' => ['nullable', 'array'],
+                'incomeSelfBusinessStatement1yDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSelfBusinessInvoiceDocuments' => ['nullable', 'array'],
+                'incomeSelfBusinessInvoiceDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'incomeSelfBusinessPhotoDocuments' => ['nullable', 'array'],
+                'incomeSelfBusinessPhotoDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'identityIdCardDocuments' => ['nullable', 'array'],
+                'identityIdCardDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'identityPassportDocuments' => ['nullable', 'array'],
+                'identityPassportDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'identityHouseRegistrationDocuments' => ['nullable', 'array'],
+                'identityHouseRegistrationDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'identityWorkPermitDocuments' => ['nullable', 'array'],
+                'identityWorkPermitDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+                'identityNameChangeDocuments' => ['nullable', 'array'],
+                'identityNameChangeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
             ],
             default => [],
         };
@@ -795,22 +859,47 @@ class ConsentController extends Controller
                 break;
 
             case 8:
-                if ($request->hasFile('incomeDocuments')) {
-                    $files = (array) $request->file('incomeDocuments', []);
-                    Log::debug("Consent updateConsentByStep: Processing " . count($files) . " income documents");
-                    foreach ($files as $file) {
-                        if ($file) {
-                            $this->storeUploadedDocument($consent, $file, 'income_proof');
-                        }
-                    }
-                }
+                $uploadFields = [
+                    'incomeSalarySlipDocuments' => 'income_salary_slip',
+                    'incomeSalaryCertificateDocuments' => 'income_salary_certificate',
+                    'incomeSalary50TawiDocuments' => 'income_salary_50tawi',
+                    'incomeSalaryStatement6mDocuments' => 'income_salary_statement_6m',
+                    'incomeSupplementarySlipDocuments' => 'income_supplementary_slip',
+                    'incomeSupplementaryStatement6mDocuments' => 'income_supplementary_statement_6m',
+                    'incomeRegisteredCertDocuments' => 'income_registered_corporate_cert',
+                    'incomeRegisteredShareholderDocuments' => 'income_registered_shareholder_list',
+                    'incomeRegisteredTradeDocuments' => 'income_registered_trade_registration',
+                    'incomeRegisteredStatement1yDocuments' => 'income_registered_statement_1y',
+                    'incomeUnregisteredLeaseDocuments' => 'income_unregistered_lease',
+                    'incomeUnregisteredTaxDocuments' => 'income_unregistered_tax',
+                    'incomeUnregisteredStatement1yDocuments' => 'income_unregistered_statement_1y',
+                    'incomeUnregisteredInvoiceDocuments' => 'income_unregistered_invoice',
+                    'incomeUnregisteredBusinessPhotoDocuments' => 'income_unregistered_business_photo',
+                    'incomeSelfIndividualTax50Documents' => 'income_self_individual_tax',
+                    'incomeSelfIndividualPndDocuments' => 'income_self_individual_pnd',
+                    'incomeSelfIndividualStatement1yDocuments' => 'income_self_individual_statement_1y',
+                    'incomeSelfBusinessTaxDocuments' => 'income_self_business_tax',
+                    'incomeSelfBusinessStatement1yDocuments' => 'income_self_business_statement_1y',
+                    'incomeSelfBusinessInvoiceDocuments' => 'income_self_business_invoice',
+                    'incomeSelfBusinessPhotoDocuments' => 'income_self_business_photo',
+                    'identityIdCardDocuments' => 'id_card',
+                    'identityPassportDocuments' => 'passport',
+                    'identityHouseRegistrationDocuments' => 'house_registration',
+                    'identityWorkPermitDocuments' => 'work_permit',
+                    'identityNameChangeDocuments' => 'name_change',
+                ];
 
-                if ($request->hasFile('identityDocuments')) {
-                    $files = (array) $request->file('identityDocuments', []);
-                    $documentType = $request->input('documentType', 'id_card');
-                    Log::debug("Consent updateConsentByStep: Processing " . count($files) . " identity documents", [
+                foreach ($uploadFields as $fieldName => $documentType) {
+                    if (!$request->hasFile($fieldName)) {
+                        continue;
+                    }
+
+                    $files = (array) $request->file($fieldName, []);
+                    Log::debug("Consent updateConsentByStep: Processing " . count($files) . " documents", [
+                        'field' => $fieldName,
                         'document_type' => $documentType,
                     ]);
+
                     foreach ($files as $file) {
                         if ($file) {
                             $this->storeUploadedDocument($consent, $file, $documentType);
@@ -1031,6 +1120,34 @@ class ConsentController extends Controller
             'house_registration' => 'สำเนาทะเบียนบ้าน',
             'work_permit' => 'ใบอนุญาตทำงาน',
             'name_change' => 'สำเนาเปลี่ยนชื่อ-นามสกุล',
+            'income_salary_slip' => 'สลิปเงินเดือนล่าสุด',
+            'income_salary_certificate' => 'หนังสือรับรองเงินเดือน',
+            'income_salary_50tawi' => 'เอกสาร 50 ทวิ',
+            'income_salary_statement_6m' => 'รายการเดินบัญชีย้อนหลัง 6 เดือน (เงินเดือน)',
+            'income_supplementary_slip' => 'สลิปเงินเดือน/คอมมิชชัน/ค่าล่วงเวลา',
+            'income_supplementary_statement_6m' => 'รายการเดินบัญชีย้อนหลัง 6 เดือน (รายได้เสริม)',
+            'income_registered_corporate_cert' => 'หนังสือรับรองการจดทะเบียนนิติบุคคล',
+            'income_registered_shareholder_list' => 'สำเนารายชื่อผู้ถือหุ้น',
+            'income_registered_trade_registration' => 'ใบทะเบียนการค้า',
+            'income_registered_statement_1y' => 'รายการเดินบัญชีย้อนหลัง 1 ปี (จดทะเบียน)',
+            'income_unregistered_lease' => 'สัญญาเช่า',
+            'income_unregistered_tax' => 'เอกสารการเสียภาษี (ไม่จดทะเบียน)',
+            'income_unregistered_statement_1y' => 'รายการเดินบัญชีย้อนหลัง 1 ปี (ไม่จดทะเบียน)',
+            'income_unregistered_invoice' => 'บิลซื้อ/บิลขาย (ไม่จดทะเบียน)',
+            'income_unregistered_business_photo' => 'รูปถ่ายกิจการ (ไม่จดทะเบียน)',
+            'income_self_individual_tax' => 'เอกสารการเสียภาษี/50 ทวิ (บุคคลธรรมดา)',
+            'income_self_individual_pnd' => 'แบบยื่นภาษี ภ.ง.ด. 90/91/94',
+            'income_self_individual_statement_1y' => 'รายการเดินบัญชีย้อนหลัง 1 ปี (บุคคลธรรมดา)',
+            'income_self_business_tax' => 'เอกสารการเสียภาษี (ผู้ประกอบการ)',
+            'income_self_business_statement_1y' => 'รายการเดินบัญชีย้อนหลัง 1 ปี (ผู้ประกอบการ)',
+            'income_self_business_invoice' => 'บิลซื้อ/บิลขาย (ผู้ประกอบการ)',
+            'income_self_business_photo' => 'รูปถ่ายกิจการ (ผู้ประกอบการ)',
+            'income_salary' => 'ผู้มีรายได้ประจำ',
+            'income_salary_supplement' => 'รายได้เสริมกรณีเงินเดือนไม่ถึงเกณฑ์',
+            'income_business_registered' => 'เจ้าของกิจการ / กรณีจดทะเบียน',
+            'income_business_unregistered' => 'กรณีไม่จดทะเบียน',
+            'income_self_employed_individual' => 'เจ้าของกิจการ/อาชีพอิสระ (บุคคลธรรมดา)',
+            'income_self_employed_business' => 'เจ้าของกิจการ/อาชีพอิสระ (ผู้ประกอบการ)',
             'income_proof' => 'หลักฐานการเงิน',
             default => 'เอกสารแนบ',
         };

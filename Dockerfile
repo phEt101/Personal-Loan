@@ -21,6 +21,13 @@ RUN apt-get update && apt-get install -y \
         echo 'opcache.validate_timestamps=1'; \
         echo 'opcache.revalidate_freq=0'; \
       } > /usr/local/etc/php/conf.d/opcache-recommended.ini \
+        && { \
+                echo 'upload_max_filesize=20M'; \
+                echo 'post_max_size=100M'; \
+                echo 'max_file_uploads=100'; \
+                echo 'max_input_time=300'; \
+                echo 'max_execution_time=300'; \
+            } > /usr/local/etc/php/conf.d/uploads.ini \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

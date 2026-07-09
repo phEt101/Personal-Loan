@@ -55,7 +55,7 @@
                 <div class="step-container active" data-step="1">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">📅</span> ข้อมูลใบคำขอ
+                            ข้อมูลใบคำขอ
                         </div>
 
                         <div class="form-group col-6">
@@ -64,12 +64,12 @@
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="app_no">App No. (เลขที่ใบคำขอ 13 หลัก)</label>
+                            <label for="app_no">เลขที่ใบคำขอ</label>
                             <input type="text" id="app_no" name="app_no" value="{{ $nextAppNo }}" maxlength="13" readonly class="input-readonly">
                         </div>
 
                         <div class="form-section-title">
-                            <span class="form-section-title-icon">💼</span> สำหรับเจ้าหน้าที่บริษัท
+                            สำหรับเจ้าหน้าที่บริษัท
                         </div>
 
                         <div class="form-group col-6">
@@ -83,7 +83,7 @@
                         </div>
 
                         <div class="form-section-title">
-                            <span class="form-section-title-icon">👤</span> ข้อมูลส่วนตัวผู้ขอสินเชื่อ
+                            ข้อมูลส่วนตัวผู้ขอสินเชื่อ
                         </div>
 
                         <div class="form-group col-3" id="titleGroup">
@@ -102,7 +102,7 @@
                         </div>
 
                         <div class="form-group col-9" id="nameGroup">
-                            <label for="name">ชื่อ - สกุล (ภาษาไทย) <span class="required-asterisk">*</span></label>
+                            <label for="name">ชื่อ - สกุล (ภาษาไทย)</label>
                             <input type="text" id="name" name="name" placeholder="ชื่อ และ นามสกุลภาษาไทย" required>
                         </div>
 
@@ -165,7 +165,7 @@
                 <div class="step-container" data-step="2">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">📍</span> ที่อยู่ปัจจุบัน
+                            ที่อยู่ปัจจุบัน
                         </div>
 
                         <div class="form-group col-12">
@@ -293,7 +293,7 @@
                 <div class="step-container" data-step="3">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">🏢</span> ข้อมูลอาชีพ/สถานที่ทำงาน
+                            ข้อมูลอาชีพ/สถานที่ทำงาน
                             <div class="checkbox-group">
                                 <input type="checkbox" id="useHomeAddress" name="useHomeAddress">
                                 <label for="useHomeAddress">ใช้งานที่อยู่เดียวกันกับ ข้อมูลที่อยู่</label>
@@ -353,12 +353,12 @@
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="businessType">ประเภทธุรกิจ / Type of business <span class="required-asterisk">*</span></label>
+                            <label for="businessType">ประเภทธุรกิจ <span class="required-asterisk">*</span></label>
                             <select id="businessType" name="businessType" required>
                                 <option value="">เลือกประเภทธุรกิจ</option>
                                 <option value="การศึกษา">การศึกษา</option>
                                 <option value="รับเหมาก่อสร้าง">รับเหมาก่อสร้าง</option>
-                                <option value="วัสดุก่อสร้าง / Construction materials">วัสดุก่อสร้าง / Construction materials</option>
+                                <option value="วัสดุก่อสร้าง">วัสดุก่อสร้าง</option>
                                 <option value="บริการ">บริการ</option>
                                 <option value="ฟอร์นิเจอร์/โรงเลื่อย">ฟอร์นิเจอร์/โรงเลื่อย</option>
                                 <option value="สิ่งทอ">สิ่งทอ</option>
@@ -492,7 +492,7 @@
                 <div class="step-container" data-step="4">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">💰</span> รายได้
+                            รายได้
                         </div>
 
                         <div class="form-group col-6">
@@ -578,7 +578,7 @@
                 <div class="step-container" data-step="5">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">👥</span> ข้อมูลบุคคลอ้างอิง
+                            ข้อมูลบุคคลอ้างอิง
                         </div>
 
                         <div class="form-group col-12">
@@ -665,7 +665,7 @@
                 <div class="step-container" data-step="6">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">💰</span> ความประสงค์ในการสมัครใช้สินเชื่อ
+                            ความประสงค์ในการสมัครใช้สินเชื่อ
                         </div>
 
                         <div class="form-group col-12">
@@ -707,7 +707,7 @@
                         </div>
 
                         <div class="form-section-title">
-                            <span class="form-section-title-icon">🏦</span> ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก
+                            ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก
                         </div>
 
                         <div class="form-group col-12">
@@ -737,7 +737,7 @@
                         </div>
 
                         <div class="form-section-title">
-                            <span class="form-section-title-icon">💳</span> วิธีการชําระเงิน
+                            วิธีการชําระเงิน
                         </div>
 
                         <div class="form-group col-12">
@@ -773,7 +773,7 @@
                 <div class="step-container" data-step="7">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">📝</span> ข้อความยินยอม
+                            ข้อความยินยอม
                         </div>
 
                         <div class="form-group col-12">
@@ -808,53 +808,428 @@
                 <div class="step-container" data-step="8">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            <span class="form-section-title-icon">📁</span> แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
+                            แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
                         </div>
+                        <div class="col-12">
+                            <div class="document-upload-table-wrap">
+                                <table class="document-upload-table">
+                                    <thead>
+                                        <tr>
+                                            <th>เอกสารแสดงตน</th>
+                                            <th>เอกสารของผู้กู้</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="document-upload-label-cell">สำเนาบัตรประชาชนที่ยังไม่หมดอายุ</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="identityIdCardDocuments" class="custom-file-upload compact">
+                                                        <span>อัพโหลด</span>
+                                                        <p>PDF, JPG, PNG</p>
+                                                    </label>
+                                                    <input type="file" id="identityIdCardDocuments" name="identityIdCardDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
-                        <div class="form-group col-12">
-                            <label>แนบไฟล์หลักฐานการเงิน (PDF/JPG/PNG) <span class="required-asterisk">*</span></label>
-                            <label for="incomeDocuments" class="custom-file-upload">
-                                <i>📁</i>
-                                <span>คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</span>
-                                <p>รองรับไฟล์ PDF, JPG, PNG (แนบได้หลายไฟล์)</p>
-                            </label>
-                            <input type="file" id="incomeDocuments" name="incomeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                        </div>
+                                                    <div class="hidden" id="identityIdCardDocumentsSelectedWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <div id="identityIdCardDocumentsSelectedList"></div>
+                                                    </div>
 
-                        <div class="form-group col-12 hidden" id="incomeDocumentsSelectedWrapper">
-                            <label class="uploaded-files-title">ไฟล์หลักฐานการเงินที่เลือก</label>
-                            <div id="incomeDocumentsSelectedList"></div>
-                        </div>
+                                                    <div class="hidden" id="identityIdCardDocumentsExistingWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <div id="identityIdCardDocumentsExistingList"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
 
-                        <div class="form-group col-12">
-                            <label for="identityDocumentType">ประเภทเอกสารแสดงตัวตน</label>
-                            <select id="identityDocumentType" name="documentType">
-                                <option value="id_card">สำเนาบัตรประชาชนที่ยังไม่หมดอายุ</option>
-                                <option value="passport">หนังสือเดินทาง</option>
-                                <option value="house_registration">สำเนาทะเบียนบ้าน</option>
-                                <option value="work_permit">ใบอนุญาตทำงาน</option>
-                                <option value="name_change">สำเนาเปลี่ยนชื่อ - นามสกุล</option>
-                            </select>
-                        </div>
+                                        <tr>
+                                            <td class="document-upload-label-cell">หนังสือเดินทาง</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="identityPassportDocuments" class="custom-file-upload compact">
+                                                        <span>อัพโหลด</span>
+                                                        <p>PDF, JPG, PNG</p>
+                                                    </label>
+                                                    <input type="file" id="identityPassportDocuments" name="identityPassportDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
-                        <div class="form-group col-12">
-                            <label>แนบไฟล์เอกสารแสดงตัวตน (PDF/JPG/PNG)</label>
-                            <label for="identityDocuments" class="custom-file-upload">
-                                <i>📁</i>
-                                <span>คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</span>
-                                <p>รองรับไฟล์ PDF, JPG, PNG (แนบได้หลายไฟล์)</p>
-                            </label>
-                            <input type="file" id="identityDocuments" name="identityDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                        </div>
+                                                    <div class="hidden" id="identityPassportDocumentsSelectedWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <div id="identityPassportDocumentsSelectedList"></div>
+                                                    </div>
 
-                        <div class="form-group col-12 hidden" id="identityDocumentsSelectedWrapper">
-                            <label class="uploaded-files-title">เอกสารแสดงตัวตนที่เลือก</label>
-                            <div id="identityDocumentsSelectedList"></div>
-                        </div>
+                                                    <div class="hidden" id="identityPassportDocumentsExistingWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <div id="identityPassportDocumentsExistingList"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
 
-                        <div class="form-group col-12 hidden" id="incomeDocumentsExistingWrapper">
-                            <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
-                            <div id="incomeDocumentsExistingList"></div>
+                                        <tr>
+                                            <td class="document-upload-label-cell">สำเนาทะเบียนบ้าน</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="identityHouseRegistrationDocuments" class="custom-file-upload compact">
+                                                        <span>อัพโหลด</span>
+                                                        <p>PDF, JPG, PNG</p>
+                                                    </label>
+                                                    <input type="file" id="identityHouseRegistrationDocuments" name="identityHouseRegistrationDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+
+                                                    <div class="hidden" id="identityHouseRegistrationDocumentsSelectedWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <div id="identityHouseRegistrationDocumentsSelectedList"></div>
+                                                    </div>
+
+                                                    <div class="hidden" id="identityHouseRegistrationDocumentsExistingWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <div id="identityHouseRegistrationDocumentsExistingList"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">ใบอนุญาตทำงาน</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="identityWorkPermitDocuments" class="custom-file-upload compact">
+                                                        <span>อัพโหลด</span>
+                                                        <p>PDF, JPG, PNG</p>
+                                                    </label>
+                                                    <input type="file" id="identityWorkPermitDocuments" name="identityWorkPermitDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+
+                                                    <div class="hidden" id="identityWorkPermitDocumentsSelectedWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <div id="identityWorkPermitDocumentsSelectedList"></div>
+                                                    </div>
+
+                                                    <div class="hidden" id="identityWorkPermitDocumentsExistingWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <div id="identityWorkPermitDocumentsExistingList"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">สำเนาเปลี่ยนชื่อ - นามสกุล (ถ้ามี)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="identityNameChangeDocuments" class="custom-file-upload compact">
+                                                        <span>อัพโหลด</span>
+                                                        <p>PDF, JPG, PNG</p>
+                                                    </label>
+                                                    <input type="file" id="identityNameChangeDocuments" name="identityNameChangeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+
+                                                    <div class="hidden" id="identityNameChangeDocumentsSelectedWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <div id="identityNameChangeDocumentsSelectedList"></div>
+                                                    </div>
+
+                                                    <div class="hidden" id="identityNameChangeDocumentsExistingWrapper">
+                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <div id="identityNameChangeDocumentsExistingList"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="document-upload-section-row">
+                                            <th>เอกสารแสดงรายได้</th>
+                                            <th>เอกสารของผู้กู้</th>
+                                        </tr>
+
+                                        <tr class="document-income-subsection-row">
+                                            <th colspan="2">ผู้มีรายได้ประจำ</th>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">สลิปเงินเดือนล่าสุด (เอกสารไม่เกิน 3 เดือน)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSalarySlipDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSalarySlipDocuments" name="incomeSalarySlipDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSalarySlipDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSalarySlipDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSalarySlipDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSalarySlipDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">หนังสือรับรองเงินเดือน (เอกสารไม่เกิน 3 เดือน)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSalaryCertificateDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSalaryCertificateDocuments" name="incomeSalaryCertificateDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSalaryCertificateDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSalaryCertificateDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSalaryCertificateDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSalaryCertificateDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">เอกสาร 50 ทวิ ปีล่าสุด หรือกรณี 50 ทวิ แบบรายเดือนใช้ย้อนหลัง 6 เดือน</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSalary50TawiDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSalary50TawiDocuments" name="incomeSalary50TawiDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSalary50TawiDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSalary50TawiDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSalary50TawiDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSalary50TawiDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 6 เดือน (ที่รับเงินเดือน)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSalaryStatement6mDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSalaryStatement6mDocuments" name="incomeSalaryStatement6mDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSalaryStatement6mDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSalaryStatement6mDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSalaryStatement6mDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSalaryStatement6mDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="document-income-subsection-row">
+                                            <th colspan="2">กรณีเงินเดือนน้อยกว่าเกณฑ์รายได้ขั้นต่ำ สามารถรวมรายได้อื่นๆ เพิ่มเติมได้ เช่น ค่าคอมมิชชัน ค่าล่วงเวลา เป็นต้น</th>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">สลิปเงินเดือน, สลิปค่าคอมมิชชัน, สลิปค่าล่วงเวลา (เอกสารไม่เกิน 3 เดือน)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSupplementarySlipDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSupplementarySlipDocuments" name="incomeSupplementarySlipDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSupplementarySlipDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSupplementarySlipDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSupplementarySlipDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSupplementarySlipDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 6 เดือน (ที่รับเงินเดือน)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSupplementaryStatement6mDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSupplementaryStatement6mDocuments" name="incomeSupplementaryStatement6mDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSupplementaryStatement6mDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSupplementaryStatement6mDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSupplementaryStatement6mDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSupplementaryStatement6mDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="document-income-subsection-row">
+                                            <th colspan="2">เจ้าของกิจการ / กรณีจดทะเบียน</th>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">หนังสือรับรองการจดทะเบียนนิติบุคคล</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeRegisteredCertDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeRegisteredCertDocuments" name="incomeRegisteredCertDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeRegisteredCertDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeRegisteredCertDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredCertDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeRegisteredCertDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">สำเนารายชื่อผู้ถือหุ้น</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeRegisteredShareholderDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeRegisteredShareholderDocuments" name="incomeRegisteredShareholderDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeRegisteredShareholderDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeRegisteredShareholderDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredShareholderDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeRegisteredShareholderDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">ใบทะเบียนการค้า</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeRegisteredTradeDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeRegisteredTradeDocuments" name="incomeRegisteredTradeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeRegisteredTradeDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeRegisteredTradeDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredTradeDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeRegisteredTradeDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 1 ปี</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeRegisteredStatement1yDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeRegisteredStatement1yDocuments" name="incomeRegisteredStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeRegisteredStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeRegisteredStatement1yDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeRegisteredStatement1yDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="document-income-subsection-row">
+                                            <th colspan="2">กรณีไม่จดทะเบียน</th>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">สัญญาเช่า (ถ้ามี)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeUnregisteredLeaseDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeUnregisteredLeaseDocuments" name="incomeUnregisteredLeaseDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeUnregisteredLeaseDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredLeaseDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredLeaseDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredLeaseDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">เอกสารการเสียภาษี</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeUnregisteredTaxDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeUnregisteredTaxDocuments" name="incomeUnregisteredTaxDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeUnregisteredTaxDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredTaxDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredTaxDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredTaxDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 1 ปี</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeUnregisteredStatement1yDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeUnregisteredStatement1yDocuments" name="incomeUnregisteredStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeUnregisteredStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredStatement1yDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredStatement1yDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">บิลซื้อ, บิลขาย (ถ้ามี)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeUnregisteredInvoiceDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeUnregisteredInvoiceDocuments" name="incomeUnregisteredInvoiceDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeUnregisteredInvoiceDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredInvoiceDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredInvoiceDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredInvoiceDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">รูปถ่ายกิจการ</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeUnregisteredBusinessPhotoDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeUnregisteredBusinessPhotoDocuments" name="incomeUnregisteredBusinessPhotoDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeUnregisteredBusinessPhotoDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredBusinessPhotoDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredBusinessPhotoDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredBusinessPhotoDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="document-income-subsection-row">
+                                            <th colspan="2">เจ้าของกิจการ/ผู้ประกอบอาชีพอิสระ - กรณีบุคคลธรรมดา</th>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">เอกสารการเสียภาษี เช่น 50 ทวิ ล่าสุด หรือกรณี 50 ทวิ แบบรายเดือนใช้ย้อนหลัง 6 เดือน (ต้องมีตราประทับพร้อมลายเซ็นผู้จ่ายเงิน)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSelfIndividualTax50Documents" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSelfIndividualTax50Documents" name="incomeSelfIndividualTax50Documents[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSelfIndividualTax50DocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfIndividualTax50DocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualTax50DocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfIndividualTax50DocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">แบบยื่นภาษี ภ.ง.ด. 90, 91, 94</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSelfIndividualPndDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSelfIndividualPndDocuments" name="incomeSelfIndividualPndDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSelfIndividualPndDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfIndividualPndDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualPndDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfIndividualPndDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 1 ปี</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSelfIndividualStatement1yDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSelfIndividualStatement1yDocuments" name="incomeSelfIndividualStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSelfIndividualStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfIndividualStatement1yDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfIndividualStatement1yDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="document-income-subsection-row">
+                                            <th colspan="2">เจ้าของกิจการ/ผู้ประกอบอาชีพอิสระ - กรณีผู้ประกอบการ</th>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">เอกสารการเสียภาษี</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSelfBusinessTaxDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSelfBusinessTaxDocuments" name="incomeSelfBusinessTaxDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSelfBusinessTaxDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfBusinessTaxDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessTaxDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfBusinessTaxDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 1 ปี</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSelfBusinessStatement1yDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSelfBusinessStatement1yDocuments" name="incomeSelfBusinessStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSelfBusinessStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfBusinessStatement1yDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfBusinessStatement1yDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">บิลซื้อ, บิลขาย (ถ้ามี)</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSelfBusinessInvoiceDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSelfBusinessInvoiceDocuments" name="incomeSelfBusinessInvoiceDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSelfBusinessInvoiceDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfBusinessInvoiceDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessInvoiceDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfBusinessInvoiceDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="document-upload-label-cell">รูปถ่ายกิจการ</td>
+                                            <td class="document-upload-input-cell">
+                                                <div class="upload-stack">
+                                                    <label for="incomeSelfBusinessPhotoDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <input type="file" id="incomeSelfBusinessPhotoDocuments" name="incomeSelfBusinessPhotoDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <div class="hidden" id="incomeSelfBusinessPhotoDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfBusinessPhotoDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessPhotoDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfBusinessPhotoDocumentsExistingList"></div></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
