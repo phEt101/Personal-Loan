@@ -127,12 +127,41 @@ class ConsentController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $customers = ConsentApplication::query()
-            ->with(['applicant:id,application_id,name'])
-            ->orderByDesc('id')
-            ->paginate(10);
+        $query = ConsentApplication::query()
+            ->with(['applicant:id,application_id,name']);
+
+        if ($request->filled('q')) {
+            $q = $request->input('q');
+            $query->where(function ($sub) use ($q) {
+                $sub->where('app_no', 'like', '%' . $q . '%')
+                    ->orWhereHas('applicant', function ($appQuery) use ($q) {
+                        $appQuery->where('name', 'like', '%' . $q . '%')
+                            ->orWhere('id_card', 'like', '%' . $q . '%')
+                            ->orWhere('passport', 'like', '%' . $q . '%');
+                    })
+                    ->orWhereHas('contact', function ($contactQuery) use ($q) {
+                        $contactQuery->where('phone_mobile', 'like', '%' . $q . '%')
+                            ->orWhere('phone_home', 'like', '%' . $q . '%');
+                    });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->input('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->input('date_to'));
+        }
+
+        $customers = $query->orderByDesc('id')
+            ->paginate(10)
+            ->withQueryString();
 
         $total = ConsentApplication::count();
         $approved = ConsentApplication::where('status', 'approved')->count();
@@ -217,6 +246,13 @@ class ConsentController extends Controller
         $appNo = $consent->app_no;
 
         $consent->delete();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'ลบใบยินยอมเลขที่ ' . ($appNo ?: '-') . ' ของ ' . $name . ' เรียบร้อยแล้ว'
+            ]);
+        }
 
         return redirect()
             ->route('consent.index')

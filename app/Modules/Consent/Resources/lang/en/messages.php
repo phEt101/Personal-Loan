@@ -10,6 +10,15 @@ return [
         'summary_total' => 'Total Customers',
         'summary_approved' => 'Approved',
         'summary_rejected' => 'Rejected',
+        'search' => [
+            'label' => 'Search',
+            'placeholder' => 'Search by Name, App No, ID Card/Passport, Phone',
+            'status_select' => 'All Status',
+            'date_from' => 'From Date',
+            'date_to' => 'To Date',
+            'submit' => 'Search',
+            'reset' => 'Reset',
+        ],
         'table' => [
             'code' => 'Code',
             'name' => 'Name',
@@ -21,6 +30,7 @@ return [
             'approved' => 'Approved',
             'rejected' => 'Rejected',
             'pending' => 'Pending',
+            'draft' => 'Draft',
         ],
         'actions' => [
             'view' => 'View',

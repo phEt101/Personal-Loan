@@ -756,7 +756,9 @@ body {
 }
 
 @media (max-width: 900px) {
-    .summary-cards { grid-template-columns: 1fr; }
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
 }
 
 .footer {
@@ -777,8 +779,8 @@ body {
     pointer-events: none;
 }
 
-.sidebar.open + .sidebar-overlay,
-.sidebar.open ~ .sidebar-overlay {
+.sidebar.open+.sidebar-overlay,
+.sidebar.open~.sidebar-overlay {
     display: block;
     opacity: 1;
     pointer-events: auto;
@@ -929,14 +931,37 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.col-12 { grid-column: span 12; }
-.col-10 { grid-column: span 10; }
-.col-9 { grid-column: span 9; }
-.col-8 { grid-column: span 8; }
-.col-6 { grid-column: span 6; }
-.col-4 { grid-column: span 4; }
-.col-3 { grid-column: span 3; }
-.col-2 { grid-column: span 2; }
+.col-12 {
+    grid-column: span 12;
+}
+
+.col-10 {
+    grid-column: span 10;
+}
+
+.col-9 {
+    grid-column: span 9;
+}
+
+.col-8 {
+    grid-column: span 8;
+}
+
+.col-6 {
+    grid-column: span 6;
+}
+
+.col-4 {
+    grid-column: span 4;
+}
+
+.col-3 {
+    grid-column: span 3;
+}
+
+.col-2 {
+    grid-column: span 2;
+}
 
 .form-section-title {
     grid-column: span 12;
@@ -1500,7 +1525,13 @@ body {
 }
 
 @media (max-width: 768px) {
-    .col-9, .col-8, .col-6, .col-4, .col-3, .col-2 {
+
+    .col-9,
+    .col-8,
+    .col-6,
+    .col-4,
+    .col-3,
+    .col-2 {
         grid-column: span 12;
     }
 
@@ -1807,7 +1838,7 @@ body {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 0.75rem;
     flex-wrap: wrap;
     padding: 0.85rem 1rem;

@@ -36,6 +36,14 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::query()->firstOrCreate(
+            ['email' => 'test1@example.com'],
+            [
+                'name' => 'Test User1',
+                'password' => Hash::make('password'),
+            ]
+        );
+
         if (Schema::hasTable('consent_requests')) {
             Schema::disableForeignKeyConstraints();
             foreach ([

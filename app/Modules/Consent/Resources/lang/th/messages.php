@@ -10,6 +10,15 @@ return [
         'summary_total' => 'ลูกค้าทั้งหมด',
         'summary_approved' => 'ผ่านเกณฑ์',
         'summary_rejected' => 'ไม่ผ่านเกณฑ์',
+        'search' => [
+            'label' => 'ค้นหา',
+            'placeholder' => 'ค้นหาจากชื่อ, เลขที่ใบคำขอ, เลขบัตรประชาชน/พาสปอร์ต, เบอร์โทร',
+            'status_select' => 'สถานะทั้งหมด',
+            'date_from' => 'ตั้งแต่วันที่',
+            'date_to' => 'ถึงวันที่',
+            'submit' => 'ค้นหา',
+            'reset' => 'ล้างตัวกรอง',
+        ],
         'table' => [
             'code' => 'รหัส',
             'name' => 'ชื่อ',
@@ -21,6 +30,7 @@ return [
             'approved' => 'ผ่าน',
             'rejected' => 'ไม่ผ่าน',
             'pending' => 'รอดำเนินการ',
+            'draft' => 'ฉบับร่าง',
         ],
         'actions' => [
             'view' => 'ดูเอกสาร',

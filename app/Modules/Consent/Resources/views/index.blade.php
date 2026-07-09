@@ -42,7 +42,171 @@
             </div>
         </section>
 
-        <div class="card">
+        <style>
+            .search-filter-card {
+                margin-bottom: 1.5rem;
+                padding: 1.5rem;
+                background: #ffffff;
+                border-radius: 1rem;
+                border: 1px solid rgba(16, 185, 129, 0.12);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            }
+            .search-filter-form {
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr 1fr auto;
+                gap: 1rem;
+                align-items: flex-end;
+            }
+            @media (max-width: 1024px) {
+                .search-filter-form {
+                    grid-template-columns: 1fr 1fr;
+                }
+                .search-actions-group {
+                    grid-column: span 2;
+                    justify-content: flex-end;
+                }
+            }
+            @media (max-width: 640px) {
+                .search-filter-form {
+                    grid-template-columns: 1fr;
+                }
+                .search-actions-group {
+                    grid-column: span 1;
+                }
+            }
+            .filter-label {
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: #4b5563;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+            .filter-input {
+                width: 100%;
+                padding: 0.65rem 0.85rem;
+                border-radius: 0.5rem;
+                border: 1px solid #d1d5db;
+                background-color: #f9fafb;
+                color: #1f2937;
+                font-size: 0.875rem;
+                outline: none;
+                transition: all 0.2s ease;
+                height: 42px;
+                box-sizing: border-box;
+            }
+            .filter-input:focus {
+                border-color: #10b981;
+                background-color: #ffffff;
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            }
+            .search-actions-group {
+                display: flex;
+                gap: 0.5rem;
+                height: 42px;
+                align-items: center;
+            }
+            .search-actions-group .btn {
+                padding: 0.65rem 1.25rem;
+                border-radius: 0.5rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid transparent;
+                height: 100%;
+                text-decoration: none;
+                box-sizing: border-box;
+            }
+            .btn-search {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: #ffffff;
+            }
+            .btn-search:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+            }
+            .btn-reset {
+                background: #f3f4f6;
+                color: #4b5563;
+                border-color: #d1d5db;
+            }
+            .btn-reset:hover {
+                background: #e5e7eb;
+                color: #1f2937;
+            }
+            .table-loading-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                border-radius: 1rem;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                pointer-events: none;
+            }
+            .table-loading-overlay.active {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #10b981;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+
+        <!-- Search & Filter Section -->
+        <div class="search-filter-card">
+            <form method="GET" action="{{ route('consent.index') }}" class="search-filter-form">
+                <div>
+                    <label class="filter-label" for="search_q">{{ __('consent::messages.index.search.label') }}</label>
+                    <input type="text" id="search_q" name="q" value="{{ request('q') }}" class="filter-input" placeholder="{{ __('consent::messages.index.search.placeholder') }}">
+                </div>
+                <div>
+                    <label class="filter-label" for="search_status">{{ __('consent::messages.index.table.status') }}</label>
+                    <select id="search_status" name="status" class="filter-input">
+                        <option value="">{{ __('consent::messages.index.search.status_select') }}</option>
+                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>{{ __('consent::messages.index.status.approved') }}</option>
+                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>{{ __('consent::messages.index.status.rejected') }}</option>
+                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>{{ __('consent::messages.index.status.pending') }}</option>
+                        <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>{{ __('consent::messages.index.status.draft') }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="filter-label" for="search_date_from">{{ __('consent::messages.index.search.date_from') }}</label>
+                    <input type="date" id="search_date_from" name="date_from" value="{{ request('date_from') }}" class="filter-input">
+                </div>
+                <div>
+                    <label class="filter-label" for="search_date_to">{{ __('consent::messages.index.search.date_to') }}</label>
+                    <input type="date" id="search_date_to" name="date_to" value="{{ request('date_to') }}" class="filter-input">
+                </div>
+                <div class="search-actions-group">
+                    <button type="submit" class="btn btn-search">{{ __('consent::messages.index.search.submit') }}</button>
+                    <a href="{{ route('consent.index') }}" class="btn btn-reset">{{ __('consent::messages.index.search.reset') }}</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="card" style="position: relative;">
+            <div id="tableLoadingOverlay" class="table-loading-overlay">
+                <div class="loading-spinner"></div>
+            </div>
             <div class="consent-table">
                 <table>
                     <thead>
@@ -2452,10 +2616,15 @@
             }
 
             function closeModal() {
+                const consentIdField = document.getElementById('consent_id');
+                const hadData = consentIdField && consentIdField.value;
                 modal.classList.remove('show');
                 setTimeout(() => {
                     modal.style.display = 'none';
                 }, 300);
+                if (hadData) {
+                    updateDashboard(window.location.href);
+                }
             }
 
             function openPdfModal() {
@@ -2523,13 +2692,158 @@
                 initializeFormSignature(signatureDataInput?.value || '');
             };
 
-            document.querySelectorAll('.delete-consent-form').forEach(function(form) {
-                form.addEventListener('submit', function(event) {
-                    const customerName = this.dataset.name || 'รายการนี้';
-                    if (!window.confirm(`ยืนยันการลบใบยินยอมของ ${customerName} ?`)) {
-                        event.preventDefault();
+            // AJAX Dashboard Updates
+            async function updateDashboard(url) {
+                const tableEl = document.querySelector('.consent-table');
+                const summaryEl = document.querySelector('.summary-cards');
+                const paginationEl = document.querySelector('.pagination-container');
+                const loadingOverlay = document.getElementById('tableLoadingOverlay');
+                
+                if (loadingOverlay) loadingOverlay.classList.add('active');
+                if (tableEl) tableEl.style.opacity = '0.5';
+                if (summaryEl) summaryEl.style.opacity = '0.5';
+                if (paginationEl) paginationEl.style.opacity = '0.5';
+
+                try {
+                    const response = await fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const html = await response.text();
+                    
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const newSummary = doc.querySelector('.summary-cards');
+                    if (newSummary && summaryEl) {
+                        summaryEl.innerHTML = newSummary.innerHTML;
                     }
+                    
+                    const newTable = doc.querySelector('.consent-table');
+                    if (newTable && tableEl) {
+                        tableEl.innerHTML = newTable.innerHTML;
+                    }
+
+                    const newPagination = doc.querySelector('.pagination-container');
+                    if (paginationEl) {
+                        if (newPagination) {
+                            paginationEl.innerHTML = newPagination.innerHTML;
+                            paginationEl.style.display = '';
+                        } else {
+                            paginationEl.style.display = 'none';
+                        }
+                    } else if (newPagination) {
+                        const tableCard = document.querySelector('.card');
+                        const pagContainer = document.createElement('div');
+                        pagContainer.className = 'pagination-container';
+                        pagContainer.innerHTML = newPagination.innerHTML;
+                        tableCard.parentNode.insertBefore(pagContainer, tableCard.nextSibling);
+                    }
+                    
+                    window.history.pushState({}, '', url);
+                    bindDeleteForms();
+                } catch (error) {
+                    console.error('Error loading page:', error);
+                } finally {
+                    if (loadingOverlay) loadingOverlay.classList.remove('active');
+                    if (tableEl) tableEl.style.opacity = '1';
+                    if (summaryEl) summaryEl.style.opacity = '1';
+                    if (paginationEl) paginationEl.style.opacity = '1';
+                }
+            }
+
+            function bindDeleteForms() {
+                document.querySelectorAll('.delete-consent-form').forEach(function(form) {
+                    if (form.dataset.ajaxBound) return;
+                    form.dataset.ajaxBound = 'true';
+
+                    form.addEventListener('submit', async function(event) {
+                        event.preventDefault();
+                        const customerName = this.dataset.name || 'รายการนี้';
+                        if (!window.confirm(`ยืนยันการลบใบยินยอมของ ${customerName} ?`)) {
+                            return;
+                        }
+
+                        try {
+                            const url = this.action;
+                            const formData = new FormData(this);
+                            form.style.opacity = '0.5';
+
+                            const response = await fetch(url, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
+                                }
+                            });
+
+                            if (response.ok) {
+                                updateDashboard(window.location.href);
+                            } else {
+                                const errData = await response.json();
+                                alert(errData.message || 'เกิดข้อผิดพลาดในการลบข้อมูล');
+                            }
+                        } catch (error) {
+                            console.error('Delete error:', error);
+                            alert('เกิดข้อผิดพลาดในการลบข้อมูล');
+                        } finally {
+                            form.style.opacity = '1';
+                        }
+                    });
                 });
+            }
+
+            // Bind delete forms on load
+            bindDeleteForms();
+
+            // Intercept Search Form Submission
+            const searchForm = document.querySelector('.search-filter-form');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const url = new URL(this.action);
+                    const formData = new FormData(this);
+                    for (const [key, value] of formData.entries()) {
+                        if (value) {
+                            url.searchParams.set(key, value);
+                        } else {
+                            url.searchParams.delete(key);
+                        }
+                    }
+                    updateDashboard(url.toString());
+                });
+            }
+
+            // Intercept Search Form Reset
+            const resetBtn = document.querySelector('.btn-reset');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const qInput = document.getElementById('search_q');
+                    if (qInput) qInput.value = '';
+                    const statusSelect = document.getElementById('search_status');
+                    if (statusSelect) statusSelect.value = '';
+                    const fromInput = document.getElementById('search_date_from');
+                    if (fromInput) fromInput.value = '';
+                    const toInput = document.getElementById('search_date_to');
+                    if (toInput) toInput.value = '';
+                    updateDashboard(this.getAttribute('href'));
+                });
+            }
+
+            // Intercept Pagination Clicks
+            document.addEventListener('click', function(e) {
+                const paginationLink = e.target.closest('.pagination-container a');
+                if (paginationLink) {
+                    e.preventDefault();
+                    const url = paginationLink.getAttribute('href');
+                    if (url && url !== '#') {
+                        updateDashboard(url);
+                    }
+                }
             });
 
             if (openBtn) openBtn.addEventListener('click', openPdfModal);
@@ -2609,8 +2923,8 @@
                     const result = await saveStepData(8);
                     
                     if (result.ok) {
-                        // Success! Redirect to index or show success message
-                        window.location.href = "{{ route('consent.index') }}";
+                        closeModal();
+                        updateDashboard(window.location.href);
                     } else {
                         // Error! The alert is already shown inside saveStepData or showValidationErrors
                         if (result.errors) {
@@ -2625,12 +2939,7 @@
 
             // Close modals when clicking outside
             window.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    closeModal();
-                }
-                if (event.target === pdfModal) {
-                    closePdfModal();
-                }
+               
                 if (event.target === viewModal) {
                     closeViewModal();
                 }
