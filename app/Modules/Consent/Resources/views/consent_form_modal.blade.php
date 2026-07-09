@@ -6,7 +6,7 @@
             <input type="hidden" name="consent_id" id="consent_id" value="">
             
             <div class="modal-header">
-                <h3 id="consentModalTitle">สร้างใบยินยอมแบบละเอียด</h3>
+                <h3 id="consentModalTitle">{{ __('consent::messages.modal.form.create_title') }}</h3>
                 <button type="button" class="close-btn" id="closeConsentModal" aria-label="Close modal">&times;</button>
             </div>
             
@@ -15,35 +15,35 @@
                 <div class="wizard-steps" id="wizardSteps">
                     <div class="wizard-step active" data-step="1">
                         <div class="wizard-step-icon">1</div>
-                        <div class="wizard-step-label">ข้อมูลส่วนตัว</div>
+                        <div class="wizard-step-label">{{ __('consent::messages.modal.form.steps.personal') }}</div>
                     </div>
                     <div class="wizard-step" data-step="2">
                         <div class="wizard-step-icon">2</div>
-                        <div class="wizard-step-label">ที่อยู่</div>
+                        <div class="wizard-step-label">{{ __('consent::messages.modal.form.steps.address') }}</div>
                     </div>
                     <div class="wizard-step" data-step="3">
                         <div class="wizard-step-icon">3</div>
-                        <div class="wizard-step-label">ข้อมูลอาชีพ</div>
+                        <div class="wizard-step-label">{{ __('consent::messages.modal.form.steps.occupation') }}</div>
                     </div>
                     <div class="wizard-step" data-step="4">
                         <div class="wizard-step-icon">4</div>
-                        <div class="wizard-step-label">รายได้</div>
+                        <div class="wizard-step-label">{{ __('consent::messages.modal.form.steps.income') }}</div>
                     </div>
                     <div class="wizard-step" data-step="5">
                         <div class="wizard-step-icon">5</div>
-                        <div class="wizard-step-label">บุคคลอ้างอิง</div>
+                        <div class="wizard-step-label">{{ __('consent::messages.modal.form.steps.reference') }}</div>
                     </div>
                     <div class="wizard-step" data-step="6">
                         <div class="wizard-step-icon">6</div>
-                        <div class="wizard-step-label">กู้/ชำระเงิน</div>
+                        <div class="wizard-step-label">{{ __('consent::messages.modal.form.steps.loan') }}</div>
                     </div>
                     <div class="wizard-step" data-step="7">
                         <div class="wizard-step-icon">7</div>
-                        <div class="wizard-step-label">ยินยอม</div>
+                        <div class="wizard-step-label">{{ __('consent::messages.modal.form.steps.consent') }}</div>
                     </div>
                     <div class="wizard-step" data-step="8">
                         <div class="wizard-step-icon">8</div>
-                        <div class="wizard-step-label">แนบไฟล์</div>
+                        <div class="wizard-step-label">{{ __('consent::messages.modal.form.steps.attachments') }}</div>
                     </div>
                 </div>
 
@@ -51,202 +51,202 @@
                     <input type="text" name="prevent_autofill" tabindex="-1" autocomplete="off">
                 </div>
 
-                <!-- Step 1: ข้อมูลใบคำขอ + สำหรับเจ้าหน้าที่บริษัท + ข้อมูลส่วนตัว -->
+                <!-- Step 1: Application + Officer + Personal Info -->
                 <div class="step-container active" data-step="1">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            ข้อมูลใบคำขอ
+                            {{ __('consent::messages.modal.form.step1.sections.application') }}
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="app_date">วันที่เขียนคำขอ</label>
+                            <label for="app_date">{{ __('consent::messages.modal.form.step1.fields.app_date') }}</label>
                             <input type="date" id="app_date" name="app_date" value="{{ date('Y-m-d') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="app_no">เลขที่ใบคำขอ</label>
+                            <label for="app_no">{{ __('consent::messages.modal.form.step1.fields.app_no') }}</label>
                             <input type="text" id="app_no" name="app_no" value="{{ $nextAppNo }}" maxlength="13" readonly class="input-readonly">
                         </div>
 
                         <div class="form-section-title">
-                            สำหรับเจ้าหน้าที่บริษัท
+                            {{ __('consent::messages.modal.form.step1.sections.company_officer') }}
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="officer_name">เจ้าหน้าที่สินเชื่อ</label>
-                            <input type="text" id="officer_name" name="officer_name" placeholder="ระบุชื่อเจ้าหน้าที่สินเชื่อ">
+                            <label for="officer_name">{{ __('consent::messages.modal.form.step1.fields.officer_name') }}</label>
+                            <input type="text" id="officer_name" name="officer_name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.officer_name') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="officer_phone">เบอร์ติดต่อ</label>
-                            <input type="text" id="officer_phone" name="officer_phone" placeholder="ระบุเบอร์ติดต่อเจ้าหน้าที่">
+                            <label for="officer_phone">{{ __('consent::messages.modal.form.step1.fields.officer_phone') }}</label>
+                            <input type="text" id="officer_phone" name="officer_phone" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.officer_phone') }}">
                         </div>
 
                         <div class="form-section-title">
-                            ข้อมูลส่วนตัวผู้ขอสินเชื่อ
+                            {{ __('consent::messages.modal.form.step1.sections.personal_info') }}
                         </div>
 
                         <div class="form-group col-3" id="titleGroup">
-                            <label for="title">คำนำหน้านาม <span class="required-asterisk">*</span></label>
+                            <label for="title">{{ __('consent::messages.modal.form.step1.fields.title') }} <span class="required-asterisk">*</span></label>
                             <select id="title" name="title" required>
-                                <option value="นาย">นาย / Mr.</option>
-                                <option value="นาง">นาง / Mrs.</option>
-                                <option value="นางสาว">นางสาว / Ms.</option>
-                                <option value="อื่นๆ">อื่นๆ / Other</option>
+                                <option value="นาย">{{ __('consent::messages.modal.form.step1.options.title_mr') }}</option>
+                                <option value="นาง">{{ __('consent::messages.modal.form.step1.options.title_mrs') }}</option>
+                                <option value="นางสาว">{{ __('consent::messages.modal.form.step1.options.title_ms') }}</option>
+                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step1.options.title_other') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-3 hidden" id="title_other_wrapper">
-                            <label for="title_other">ระบุคำนำหน้านามอื่นๆ</label>
-                            <input type="text" id="title_other" name="title_other" placeholder="เช่น ดร. / นพ.">
+                            <label for="title_other">{{ __('consent::messages.modal.form.step1.fields.title_other') }}</label>
+                            <input type="text" id="title_other" name="title_other" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.title_other') }}">
                         </div>
 
                         <div class="form-group col-9" id="nameGroup">
-                            <label for="name">ชื่อ - สกุล (ภาษาไทย)</label>
-                            <input type="text" id="name" name="name" placeholder="ชื่อ และ นามสกุลภาษาไทย" required>
+                            <label for="name">{{ __('consent::messages.modal.form.step1.fields.name_th') }}</label>
+                            <input type="text" id="name" name="name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.name_th') }}" required>
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="name_en">ชื่อ - สกุล (ภาษาอังกฤษ)</label>
-                            <input type="text" id="name_en" name="name_en" placeholder="NAME - SURNAME IN ENGLISH (UPPERCASE)">
+                            <label for="name_en">{{ __('consent::messages.modal.form.step1.fields.name_en') }}</label>
+                            <input type="text" id="name_en" name="name_en" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.name_en') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="birthdate">วัน / เดือน / ปีเกิด <span class="required-asterisk">*</span></label>
+                            <label for="birthdate">{{ __('consent::messages.modal.form.step1.fields.birthdate') }} <span class="required-asterisk">*</span></label>
                             <input type="date" id="birthdate" name="birthdate" required>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="nationality">สัญชาติ <span class="required-asterisk">*</span></label>
-                            <input type="text" id="nationality" name="nationality" placeholder="สัญชาติ" required>
+                            <label for="nationality">{{ __('consent::messages.modal.form.step1.fields.nationality') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="nationality" name="nationality" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.nationality') }}" required>
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="id_type">เอกสารระบุตัวตน <span class="required-asterisk">*</span></label>
+                            <label for="id_type">{{ __('consent::messages.modal.form.step1.fields.id_type') }} <span class="required-asterisk">*</span></label>
                             <select id="id_type" name="id_type" required>
-                                <option value="id_card">บัตรประจำตัวประชาชน</option>
-                                <option value="passport">หนังสือเดินทาง (Passport)</option>
+                                <option value="id_card">{{ __('consent::messages.modal.form.step1.options.id_card') }}</option>
+                                <option value="passport">{{ __('consent::messages.modal.form.step1.options.passport') }}</option>
                             </select>
                         </div>
                         
                         <div class="form-group col-9" id="idNumberGroup">
-                            <label for="id_card" id="idNumberLabel">เลขบัตรประจำตัวประชาชน <span class="required-asterisk">*</span></label>
-                            <input type="text" id="id_card" name="id_card" placeholder="เลข 13 หลัก" maxlength="13" required>
+                            <label for="id_card" id="idNumberLabel">{{ __('consent::messages.modal.form.step1.fields.id_card_number') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="id_card" name="id_card" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.id_card_number') }}" maxlength="13" required>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="education">การศึกษา <span class="required-asterisk">*</span></label>
+                            <label for="education">{{ __('consent::messages.modal.form.step1.fields.education') }} <span class="required-asterisk">*</span></label>
                             <select id="education" name="education" required>
-                                <option value="">เลือกระดับการศึกษา</option>
-                                <option value="มัธยมต้น">มัธยมต้น</option>
-                                <option value="มัธยมปลาย">มัธยมปลาย</option>
-                                <option value="อุดมศึกษา">อุดมศึกษา</option>
-                                <option value="ปริญญาตรี">ปริญญาตรี</option>
-                                <option value="ปริญญาโท">ปริญญาโท</option>
-                                <option value="ปริญญาเอก">ปริญญาเอก</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
+                                <option value="">{{ __('consent::messages.modal.form.step1.options.education_prompt') }}</option>
+                                <option value="มัธยมต้น">{{ __('consent::messages.modal.form.step1.options.education_lower_secondary') }}</option>
+                                <option value="มัธยมปลาย">{{ __('consent::messages.modal.form.step1.options.education_upper_secondary') }}</option>
+                                <option value="อุดมศึกษา">{{ __('consent::messages.modal.form.step1.options.education_higher') }}</option>
+                                <option value="ปริญญาตรี">{{ __('consent::messages.modal.form.step1.options.education_bachelor') }}</option>
+                                <option value="ปริญญาโท">{{ __('consent::messages.modal.form.step1.options.education_master') }}</option>
+                                <option value="ปริญญาเอก">{{ __('consent::messages.modal.form.step1.options.education_doctorate') }}</option>
+                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step1.options.education_other') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="marital_status">สถานภาพสมรส <span class="required-asterisk">*</span></label>
+                            <label for="marital_status">{{ __('consent::messages.modal.form.step1.fields.marital_status') }} <span class="required-asterisk">*</span></label>
                             <select id="marital_status" name="marital_status" required>
-                                <option value="โสด">โสด</option>
-                                <option value="สมรส">สมรส</option>
-                                <option value="สมรสไม่จดทะเบียน">สมรสไม่จดทะเบียน</option>
-                                <option value="หย่า">หย่า</option>
-                                <option value="หม้าย">หม้าย</option>
+                                <option value="โสด">{{ __('consent::messages.modal.form.step1.options.marital_single') }}</option>
+                                <option value="สมรส">{{ __('consent::messages.modal.form.step1.options.marital_married') }}</option>
+                                <option value="สมรสไม่จดทะเบียน">{{ __('consent::messages.modal.form.step1.options.marital_common_law') }}</option>
+                                <option value="หย่า">{{ __('consent::messages.modal.form.step1.options.marital_divorced') }}</option>
+                                <option value="หม้าย">{{ __('consent::messages.modal.form.step1.options.marital_widowed') }}</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 2: ที่อยู่ปัจจุบัน -->
+                <!-- Step 2: Current Address -->
                 <div class="step-container" data-step="2">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            ที่อยู่ปัจจุบัน
+                            {{ __('consent::messages.modal.form.step2.sections.current_address') }}
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="residence_status">สถานะของการอยู่อาศัย <span class="required-asterisk">*</span></label>
+                            <label for="residence_status">{{ __('consent::messages.modal.form.step2.fields.residence_status') }} <span class="required-asterisk">*</span></label>
                             <select id="residence_status" name="residence_status" required>
-                                <option value="">เลือกสถานะของการอยู่อาศัย</option>
-                                <option value="บ้านตนเองปลอดภาระ">บ้านตนเองปลอดภาระ</option>
-                                <option value="บ้านตนเองกำลังผ่อน">บ้านตนเองกําลังผ่อน</option>
-                                <option value="บ้านบิดา/มารดา">บ้านบิดา/มารดา</option>
-                                <option value="บ้านญาติ/พี่น้อง/บุคคลอื่น">บ้านญาติ/พี่น้อง/บุคคลอื่น</option>
-                                <option value="สวัสดิการ">สวัสดิการ</option>
-                                <option value="เช่าอยู่">เช่าอยู่</option>
+                                <option value="">{{ __('consent::messages.modal.form.step2.options.residence_prompt') }}</option>
+                                <option value="บ้านตนเองปลอดภาระ">{{ __('consent::messages.modal.form.step2.options.residence_own_paid') }}</option>
+                                <option value="บ้านตนเองกำลังผ่อน">{{ __('consent::messages.modal.form.step2.options.residence_own_installment') }}</option>
+                                <option value="บ้านบิดา/มารดา">{{ __('consent::messages.modal.form.step2.options.residence_parents') }}</option>
+                                <option value="บ้านญาติ/พี่น้อง/บุคคลอื่น">{{ __('consent::messages.modal.form.step2.options.residence_relatives') }}</option>
+                                <option value="สวัสดิการ">{{ __('consent::messages.modal.form.step2.options.residence_welfare') }}</option>
+                                <option value="เช่าอยู่">{{ __('consent::messages.modal.form.step2.options.residence_rent') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="address_building">ชื่อหมู่บ้าน/อาคาร</label>
-                            <input type="text" id="address_building" name="address_building" placeholder="ชื่อหมู่บ้าน/อาคาร">
+                            <label for="address_building">{{ __('consent::messages.modal.form.step2.fields.address_building') }}</label>
+                            <input type="text" id="address_building" name="address_building" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.address_building') }}">
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="address_room">เลขที่ห้อง</label>
-                            <input type="text" id="address_room" name="address_room" placeholder="เลขที่ห้อง">
+                            <label for="address_room">{{ __('consent::messages.modal.form.step2.fields.address_room') }}</label>
+                            <input type="text" id="address_room" name="address_room" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.address_room') }}">
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="address_floor">ชั้น</label>
-                            <input type="text" id="address_floor" name="address_floor" placeholder="ชั้น">
+                            <label for="address_floor">{{ __('consent::messages.modal.form.step2.fields.address_floor') }}</label>
+                            <input type="text" id="address_floor" name="address_floor" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.address_floor') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="address_no">บ้านเลขที่</label>
-                            <input type="text" id="address_no" name="address_no" placeholder="บ้านเลขที่">
+                            <label for="address_no">{{ __('consent::messages.modal.form.step2.fields.address_no') }}</label>
+                            <input type="text" id="address_no" name="address_no" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.address_no') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="address_village">หมู่</label>
-                            <input type="text" id="address_village" name="address_village" placeholder="หมู่">
+                            <label for="address_village">{{ __('consent::messages.modal.form.step2.fields.address_village') }}</label>
+                            <input type="text" id="address_village" name="address_village" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.address_village') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="address_soi">ซอย</label>
-                            <input type="text" id="address_soi" name="address_soi" placeholder="ซอย">
+                            <label for="address_soi">{{ __('consent::messages.modal.form.step2.fields.address_soi') }}</label>
+                            <input type="text" id="address_soi" name="address_soi" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.address_soi') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="address_road">ถนน</label>
-                            <input type="text" id="address_road" name="address_road" placeholder="ถนน">
+                            <label for="address_road">{{ __('consent::messages.modal.form.step2.fields.address_road') }}</label>
+                            <input type="text" id="address_road" name="address_road" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.address_road') }}">
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="address_subdistrict">แขวง/ตำบล</label>
-                            <input type="text" id="address_subdistrict" name="address_subdistrict" placeholder="พิมพ์ค้นหา/เลือก แขวง/ตำบล" autocomplete="off">
+                            <label for="address_subdistrict">{{ __('consent::messages.modal.form.step2.fields.address_subdistrict') }}</label>
+                            <input type="text" id="address_subdistrict" name="address_subdistrict" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.search_subdistrict') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="address_subdistrict_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="address_district">เขต / อำเภอ</label>
-                            <input type="text" id="address_district" name="address_district" placeholder="พิมพ์ค้นหา/เลือก เขต / อำเภอ" autocomplete="off">
+                            <label for="address_district">{{ __('consent::messages.modal.form.step2.fields.address_district') }}</label>
+                            <input type="text" id="address_district" name="address_district" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.search_district') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="address_district_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="address_province">จังหวัด</label>
-                            <input type="text" id="address_province" name="address_province" placeholder="พิมพ์ค้นหา/เลือก จังหวัด" autocomplete="off">
+                            <label for="address_province">{{ __('consent::messages.modal.form.step2.fields.address_province') }}</label>
+                            <input type="text" id="address_province" name="address_province" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.search_province') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="address_province_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="address_postal">รหัสไปรษณีย์</label>
-                            <input type="text" id="address_postal" name="address_postal" placeholder="พิมพ์ค้นหา/เลือก รหัสไปรษณีย์" autocomplete="off" inputmode="numeric">
+                            <label for="address_postal">{{ __('consent::messages.modal.form.step2.fields.address_postal') }}</label>
+                            <input type="text" id="address_postal" name="address_postal" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.search_postal') }}" autocomplete="off" inputmode="numeric">
                             <div class="address-search-dropdown hidden" id="address_postal_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="phone_home">หมายเลขโทรศัพท์บ้าน</label>
-                            <input type="text" id="phone_home" name="phone_home" placeholder="หมายเลขโทรศัพท์บ้าน">
+                            <label for="phone_home">{{ __('consent::messages.modal.form.step2.fields.phone_home') }}</label>
+                            <input type="text" id="phone_home" name="phone_home" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.phone_home') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="phone_mobile">หมายเลขโทรศัพท์มือถือ</label>
+                            <label for="phone_mobile">{{ __('consent::messages.modal.form.step2.fields.phone_mobile') }}</label>
                             <input type="text" id="phone_mobile" name="phone_mobile" placeholder="0XXXXXXXXX">
                         </div>
 
@@ -256,550 +256,550 @@
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="documentDelivery">ช่องทางการรับเอกสาร <span class="required-asterisk">*</span></label>
+                            <label for="documentDelivery">{{ __('consent::messages.modal.form.step2.fields.document_delivery') }} <span class="required-asterisk">*</span></label>
                             <select id="documentDelivery" name="documentDelivery" required>
-                                <option value="">เลือกช่องทางการรับเอกสาร</option>
-                                <option value="ประสงค์รับทางอีเมล">ประสงค์รับทางอีเมล</option>
-                                <option value="ประสงค์รับทางไปรษณีย์">ประสงค์รับทางไปรษณีย์</option>
-                                <option value="บริการแจ้งเตือนผ่าน SMS">บริการแจ้งเตือนผ่าน SMS</option>
+                                <option value="">{{ __('consent::messages.modal.form.step2.options.document_delivery_prompt') }}</option>
+                                <option value="ประสงค์รับทางอีเมล">{{ __('consent::messages.modal.form.step2.options.document_delivery_email') }}</option>
+                                <option value="ประสงค์รับทางไปรษณีย์">{{ __('consent::messages.modal.form.step2.options.document_delivery_post') }}</option>
+                                <option value="บริการแจ้งเตือนผ่าน SMS">{{ __('consent::messages.modal.form.step2.options.document_delivery_sms') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="documentAddressText">ที่อยู่ตามเอกสารสําคัญ (หากไม่เหมือนที่อยู่ปัจจุบันกรุณากรอก)</label>
-                            <textarea id="documentAddressText" name="documentAddressText" rows="3" placeholder="กรอกที่อยู่ตามเอกสารสําคัญ"></textarea>
+                            <label for="documentAddressText">{{ __('consent::messages.modal.form.step2.fields.document_address_text') }}</label>
+                            <textarea id="documentAddressText" name="documentAddressText" rows="3" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.document_address_text') }}"></textarea>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="documentAddressProvince">จังหวัด</label>
-                            <input type="text" id="documentAddressProvince" name="documentAddressProvince" placeholder="พิมพ์ค้นหา/เลือก จังหวัด" autocomplete="off">
+                            <label for="documentAddressProvince">{{ __('consent::messages.modal.form.step2.fields.document_address_province') }}</label>
+                            <input type="text" id="documentAddressProvince" name="documentAddressProvince" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.search_province') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="documentAddressProvince_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="documentAddressPostal">รหัสไปรษณีย์</label>
-                            <input type="text" id="documentAddressPostal" name="documentAddressPostal" placeholder="พิมพ์ค้นหา/เลือก รหัสไปรษณีย์" autocomplete="off" inputmode="numeric">
+                            <label for="documentAddressPostal">{{ __('consent::messages.modal.form.step2.fields.document_address_postal') }}</label>
+                            <input type="text" id="documentAddressPostal" name="documentAddressPostal" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.search_postal') }}" autocomplete="off" inputmode="numeric">
                             <div class="address-search-dropdown hidden" id="documentAddressPostal_dropdown"></div>
                         </div>
 
                         <div class="form-group col-12" id="birthPlaceAddressWrapper">
-                            <label for="birthPlaceAddress">ที่อยู่บ้านเกิด (สำหรับชาวต่างชาติเท่านั้น)</label>
-                            <textarea id="birthPlaceAddress" name="birthPlaceAddress" placeholder="กรุณากรอกที่อยู่บ้านเกิด"></textarea>
+                            <label for="birthPlaceAddress">{{ __('consent::messages.modal.form.step2.fields.birth_place_address') }}</label>
+                            <textarea id="birthPlaceAddress" name="birthPlaceAddress" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.birth_place_address') }}"></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3: ข้อมูลอาชีพ/สถานที่ทำงาน -->
+                <!-- Step 3: Occupation / Workplace -->
                 <div class="step-container" data-step="3">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            ข้อมูลอาชีพ/สถานที่ทำงาน
+                            {{ __('consent::messages.modal.form.step3.sections.occupation_workplace') }}
                             <div class="checkbox-group">
                                 <input type="checkbox" id="useHomeAddress" name="useHomeAddress">
-                                <label for="useHomeAddress">ใช้งานที่อยู่เดียวกันกับ ข้อมูลที่อยู่</label>
+                                <label for="useHomeAddress">{{ __('consent::messages.modal.form.step3.fields.use_home_address') }}</label>
                             </div>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="occupation">อาชีพ <span class="required-asterisk">*</span></label>
+                            <label for="occupation">{{ __('consent::messages.modal.form.step3.fields.occupation') }} <span class="required-asterisk">*</span></label>
                             <select id="occupation" name="occupation" required>
-                                <option value="">เลือกอาชีพ</option>
-                                <option value="ข้าราชการ">ข้าราชการ</option>
-                                <option value="พนักงานราชการ">พนักงานราชการ</option>
-                                <option value="พนักงานรัฐวิสาหกิจ">พนักงานรัฐวิสาหกิจ</option>
-                                <option value="พนักงานบริษัทเอกชน">พนักงานบริษัทเอกชน</option>
-                                <option value="อาชีพอิสระ">อาชีพอิสระ</option>
-                                <option value="เจ้าของกิจการที่จดทะเบียนพาณิชย์">เจ้าของกิจการที่จดทะเบียนพาณิชย์</option>
-                                <option value="เจ้าของกิจการที่ไม่จดทะเบียนพาณิชย์">เจ้าของกิจการที่ไม่จดทะเบียนพาณิชย์</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
+                                <option value="">{{ __('consent::messages.modal.form.step3.options.occupation_prompt') }}</option>
+                                <option value="ข้าราชการ">{{ __('consent::messages.modal.form.step3.options.occupation_civil_servant') }}</option>
+                                <option value="พนักงานราชการ">{{ __('consent::messages.modal.form.step3.options.occupation_gov_employee') }}</option>
+                                <option value="พนักงานรัฐวิสาหกิจ">{{ __('consent::messages.modal.form.step3.options.occupation_state_enterprise') }}</option>
+                                <option value="พนักงานบริษัทเอกชน">{{ __('consent::messages.modal.form.step3.options.occupation_private_employee') }}</option>
+                                <option value="อาชีพอิสระ">{{ __('consent::messages.modal.form.step3.options.occupation_freelance') }}</option>
+                                <option value="เจ้าของกิจการที่จดทะเบียนพาณิชย์">{{ __('consent::messages.modal.form.step3.options.occupation_registered_owner') }}</option>
+                                <option value="เจ้าของกิจการที่ไม่จดทะเบียนพาณิชย์">{{ __('consent::messages.modal.form.step3.options.occupation_unregistered_owner') }}</option>
+                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step3.options.occupation_other') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-6 hidden" id="governmentLevelWrapper">
-                            <label for="governmentLevel">ระดับ</label>
-                            <input type="text" id="governmentLevel" name="governmentLevel" placeholder="ระดับข้าราชการ">
+                            <label for="governmentLevel">{{ __('consent::messages.modal.form.step3.fields.government_level') }}</label>
+                            <input type="text" id="governmentLevel" name="governmentLevel" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.government_level') }}">
                         </div>
 
                         <div class="form-group col-6 hidden" id="occupationOtherWrapper">
-                            <label for="occupationOther">ระบุ</label>
-                            <input type="text" id="occupationOther" name="occupationOther" placeholder="ระบุอาชีพของคุณ">
+                            <label for="occupationOther">{{ __('consent::messages.modal.form.step3.fields.occupation_other') }}</label>
+                            <input type="text" id="occupationOther" name="occupationOther" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.occupation_other') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="careerField">สาขาอาชีพ <span class="required-asterisk">*</span></label>
+                            <label for="careerField">{{ __('consent::messages.modal.form.step3.fields.career_field') }} <span class="required-asterisk">*</span></label>
                             <select id="careerField" name="careerField" required>
-                                <option value="">เลือกสาขาอาชีพ</option>
-                                <option value="ครู/อาจารย์">ครู/อาจารย์</option>
-                                <option value="ตํารวจ/ทหาร">ตํารวจ/ทหาร</option>
-                                <option value="แพทย์/ทันตแพทย์/สัตวแพยท์">แพทย์/ทันตแพทย์/สัตวแพยท์</option>
-                                <option value="เภสัชกร">เภสัชกร</option>
-                                <option value="พยาบาล">พยาบาล</option>
-                                <option value="สถาปนิก">สถาปนิก</option>
-                                <option value="วิศวกร">วิศวกร</option>
-                                <option value="บัญชีการเงิน">บัญชีการเงิน</option>
-                                <option value="พนักงานขาย">พนักงานขาย</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
+                                <option value="">{{ __('consent::messages.modal.form.step3.options.career_prompt') }}</option>
+                                <option value="ครู/อาจารย์">{{ __('consent::messages.modal.form.step3.options.career_teacher') }}</option>
+                                <option value="ตํารวจ/ทหาร">{{ __('consent::messages.modal.form.step3.options.career_police_military') }}</option>
+                                <option value="แพทย์/ทันตแพทย์/สัตวแพยท์">{{ __('consent::messages.modal.form.step3.options.career_medical') }}</option>
+                                <option value="เภสัชกร">{{ __('consent::messages.modal.form.step3.options.career_pharmacist') }}</option>
+                                <option value="พยาบาล">{{ __('consent::messages.modal.form.step3.options.career_nurse') }}</option>
+                                <option value="สถาปนิก">{{ __('consent::messages.modal.form.step3.options.career_architect') }}</option>
+                                <option value="วิศวกร">{{ __('consent::messages.modal.form.step3.options.career_engineer') }}</option>
+                                <option value="บัญชีการเงิน">{{ __('consent::messages.modal.form.step3.options.career_finance') }}</option>
+                                <option value="พนักงานขาย">{{ __('consent::messages.modal.form.step3.options.career_sales') }}</option>
+                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step3.options.career_other') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-6 hidden" id="careerFieldOtherWrapper">
-                            <label for="careerFieldOther">ระบุ</label>
-                            <input type="text" id="careerFieldOther" name="careerFieldOther" placeholder="ระบุสาขาอาชีพของคุณ">
+                            <label for="careerFieldOther">{{ __('consent::messages.modal.form.step3.fields.career_field_other') }}</label>
+                            <input type="text" id="careerFieldOther" name="careerFieldOther" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.career_field_other') }}">
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="companyName">ชื่อกิจการ/ที่ทำงาน</label>
-                            <input type="text" id="companyName" name="companyName" placeholder="ชื่อกิจการ/ที่ทำงาน">
+                            <label for="companyName">{{ __('consent::messages.modal.form.step3.fields.company_name') }}</label>
+                            <input type="text" id="companyName" name="companyName" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.company_name') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="businessType">ประเภทธุรกิจ <span class="required-asterisk">*</span></label>
+                            <label for="businessType">{{ __('consent::messages.modal.form.step3.fields.business_type') }} <span class="required-asterisk">*</span></label>
                             <select id="businessType" name="businessType" required>
-                                <option value="">เลือกประเภทธุรกิจ</option>
-                                <option value="การศึกษา">การศึกษา</option>
-                                <option value="รับเหมาก่อสร้าง">รับเหมาก่อสร้าง</option>
-                                <option value="วัสดุก่อสร้าง">วัสดุก่อสร้าง</option>
-                                <option value="บริการ">บริการ</option>
-                                <option value="ฟอร์นิเจอร์/โรงเลื่อย">ฟอร์นิเจอร์/โรงเลื่อย</option>
-                                <option value="สิ่งทอ">สิ่งทอ</option>
-                                <option value="พลาสติก">พลาสติก</option>
-                                <option value="เครื่องจักร/ผลิตภัณฑ์โลหะ">เครื่องจักร/ผลิตภัณฑ์โลหะ</option>
-                                <option value="สาธารณูปโภค/ไฟฟ้า">สาธารณูปโภค/ไฟฟ้า</option>
-                                <option value="ขนส่ง">ขนส่ง</option>
-                                <option value="สาธารณูปโภค">สาธารณูปโภค</option>
-                                <option value="ไฟฟ้า">ไฟฟ้า</option>
-                                <option value="เวชภัณฑ์/โรงพยาบาล/คลินิก">เวชภัณฑ์/โรงพยาบาล/คลินิก</option>
-                                <option value="อาหาร/เครื่องดื่ม">อาหาร/เครื่องดื่ม</option>
-                                <option value="ร้านสะดวกซื้อ">ร้านสะดวกซื้อ</option>
-                                <option value="โรงแรม/ร้านอาหาร">โรงแรม/ร้านอาหาร</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
+                                <option value="">{{ __('consent::messages.modal.form.step3.options.business_prompt') }}</option>
+                                <option value="การศึกษา">{{ __('consent::messages.modal.form.step3.options.business_education') }}</option>
+                                <option value="รับเหมาก่อสร้าง">{{ __('consent::messages.modal.form.step3.options.business_construction') }}</option>
+                                <option value="วัสดุก่อสร้าง">{{ __('consent::messages.modal.form.step3.options.business_construction_material') }}</option>
+                                <option value="บริการ">{{ __('consent::messages.modal.form.step3.options.business_service') }}</option>
+                                <option value="ฟอร์นิเจอร์/โรงเลื่อย">{{ __('consent::messages.modal.form.step3.options.business_furniture') }}</option>
+                                <option value="สิ่งทอ">{{ __('consent::messages.modal.form.step3.options.business_textile') }}</option>
+                                <option value="พลาสติก">{{ __('consent::messages.modal.form.step3.options.business_plastic') }}</option>
+                                <option value="เครื่องจักร/ผลิตภัณฑ์โลหะ">{{ __('consent::messages.modal.form.step3.options.business_machinery_metal') }}</option>
+                                <option value="สาธารณูปโภค/ไฟฟ้า">{{ __('consent::messages.modal.form.step3.options.business_utility_electric') }}</option>
+                                <option value="ขนส่ง">{{ __('consent::messages.modal.form.step3.options.business_transport') }}</option>
+                                <option value="สาธารณูปโภค">{{ __('consent::messages.modal.form.step3.options.business_utility') }}</option>
+                                <option value="ไฟฟ้า">{{ __('consent::messages.modal.form.step3.options.business_electric') }}</option>
+                                <option value="เวชภัณฑ์/โรงพยาบาล/คลินิก">{{ __('consent::messages.modal.form.step3.options.business_medical') }}</option>
+                                <option value="อาหาร/เครื่องดื่ม">{{ __('consent::messages.modal.form.step3.options.business_food_beverage') }}</option>
+                                <option value="ร้านสะดวกซื้อ">{{ __('consent::messages.modal.form.step3.options.business_convenience_store') }}</option>
+                                <option value="โรงแรม/ร้านอาหาร">{{ __('consent::messages.modal.form.step3.options.business_hotel_restaurant') }}</option>
+                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step3.options.business_other') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-6 hidden" id="businessTypeOtherWrapper">
-                            <label for="businessTypeOther">โปรดระบุ</label>
-                            <input type="text" id="businessTypeOther" name="businessTypeOther" placeholder="โปรดระบุประเภทธุรกิจ">
+                            <label for="businessTypeOther">{{ __('consent::messages.modal.form.step3.fields.business_type_other') }}</label>
+                            <input type="text" id="businessTypeOther" name="businessTypeOther" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.business_type_other') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="workAddressBuilding">อาคาร</label>
-                            <input type="text" id="workAddressBuilding" name="workAddressBuilding" placeholder="อาคาร">
+                            <label for="workAddressBuilding">{{ __('consent::messages.modal.form.step3.fields.work_building') }}</label>
+                            <input type="text" id="workAddressBuilding" name="workAddressBuilding" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_building') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="workAddressFloor">ชั้น</label>
-                            <input type="text" id="workAddressFloor" name="workAddressFloor" placeholder="ชั้น">
+                            <label for="workAddressFloor">{{ __('consent::messages.modal.form.step3.fields.work_floor') }}</label>
+                            <input type="text" id="workAddressFloor" name="workAddressFloor" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_floor') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="workDepartment">แผนก/ฝ่าย</label>
-                            <input type="text" id="workDepartment" name="workDepartment" placeholder="แผนก/ฝ่าย">
+                            <label for="workDepartment">{{ __('consent::messages.modal.form.step3.fields.work_department') }}</label>
+                            <input type="text" id="workDepartment" name="workDepartment" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_department') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="workAddressNo">เลขที่</label>
-                            <input type="text" id="workAddressNo" name="workAddressNo" placeholder="เลขที่">
+                            <label for="workAddressNo">{{ __('consent::messages.modal.form.step3.fields.work_no') }}</label>
+                            <input type="text" id="workAddressNo" name="workAddressNo" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_no') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="workAddressVillage">หมู่</label>
-                            <input type="text" id="workAddressVillage" name="workAddressVillage" placeholder="หมู่">
+                            <label for="workAddressVillage">{{ __('consent::messages.modal.form.step3.fields.work_village') }}</label>
+                            <input type="text" id="workAddressVillage" name="workAddressVillage" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_village') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="workAddressSoi">ซอย</label>
-                            <input type="text" id="workAddressSoi" name="workAddressSoi" placeholder="ซอย">
+                            <label for="workAddressSoi">{{ __('consent::messages.modal.form.step3.fields.work_soi') }}</label>
+                            <input type="text" id="workAddressSoi" name="workAddressSoi" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_soi') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="workAddressRoad">ถนน</label>
-                            <input type="text" id="workAddressRoad" name="workAddressRoad" placeholder="ถนน">
+                            <label for="workAddressRoad">{{ __('consent::messages.modal.form.step3.fields.work_road') }}</label>
+                            <input type="text" id="workAddressRoad" name="workAddressRoad" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_road') }}">
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="workAddressSubdistrict">แขวง/ตำบล</label>
-                            <input type="text" id="workAddressSubdistrict" name="workAddressSubdistrict" placeholder="พิมพ์ค้นหา/เลือก แขวง/ตำบล" autocomplete="off">
+                            <label for="workAddressSubdistrict">{{ __('consent::messages.modal.form.step3.fields.work_subdistrict') }}</label>
+                            <input type="text" id="workAddressSubdistrict" name="workAddressSubdistrict" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.search_subdistrict') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="workAddressSubdistrict_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="workAddressDistrict">เขต / อำเภอ</label>
-                            <input type="text" id="workAddressDistrict" name="workAddressDistrict" placeholder="พิมพ์ค้นหา/เลือก เขต / อำเภอ" autocomplete="off">
+                            <label for="workAddressDistrict">{{ __('consent::messages.modal.form.step3.fields.work_district') }}</label>
+                            <input type="text" id="workAddressDistrict" name="workAddressDistrict" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.search_district') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="workAddressDistrict_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="workAddressProvince">จังหวัด</label>
-                            <input type="text" id="workAddressProvince" name="workAddressProvince" placeholder="พิมพ์ค้นหา/เลือก จังหวัด" autocomplete="off">
+                            <label for="workAddressProvince">{{ __('consent::messages.modal.form.step3.fields.work_province') }}</label>
+                            <input type="text" id="workAddressProvince" name="workAddressProvince" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.search_province') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="workAddressProvince_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="workAddressPostal">รหัสไปรษณีย์</label>
-                            <input type="text" id="workAddressPostal" name="workAddressPostal" placeholder="พิมพ์ค้นหา/เลือก รหัสไปรษณีย์" autocomplete="off" inputmode="numeric">
+                            <label for="workAddressPostal">{{ __('consent::messages.modal.form.step3.fields.work_postal') }}</label>
+                            <input type="text" id="workAddressPostal" name="workAddressPostal" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.search_postal') }}" autocomplete="off" inputmode="numeric">
                             <div class="address-search-dropdown hidden" id="workAddressPostal_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="workPhone">โทรศัพท์</label>
-                            <input type="text" id="workPhone" name="workPhone" placeholder="โทรศัพท์">
+                            <label for="workPhone">{{ __('consent::messages.modal.form.step3.fields.work_phone') }}</label>
+                            <input type="text" id="workPhone" name="workPhone" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_phone') }}">
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="workYears">อายุงานรวม (ปี)</label>
-                            <input type="number" id="workYears" name="workYears" placeholder="ปี" min="0">
+                            <label for="workYears">{{ __('consent::messages.modal.form.step3.fields.work_years') }}</label>
+                            <input type="number" id="workYears" name="workYears" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_years') }}" min="0">
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="workMonths">อายุงานรวม (เดือน)</label>
-                            <input type="number" id="workMonths" name="workMonths" placeholder="เดือน" min="0" max="11">
+                            <label for="workMonths">{{ __('consent::messages.modal.form.step3.fields.work_months') }}</label>
+                            <input type="number" id="workMonths" name="workMonths" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_months') }}" min="0" max="11">
                         </div>
 
                         <div id="previousWorkSection" class="section4-container previous-work-section form-section-frame hidden">
                             <div class="form-group col-12 note-box">
-                                <span>** หากอายุงานไม่ถึง 1 ปี (โปรดระบุที่ทำงานเดิม) <span class="required-asterisk">*</span></span>
+                                <span>{{ __('consent::messages.modal.form.step3.notes.previous_work_required') }} <span class="required-asterisk">*</span></span>
                             </div>
 
                             <div class="form-group col-12">
-                                <label for="previousCompanyName">ชื่อที่ทำงานเดิม</label>
-                                <input type="text" id="previousCompanyName" name="previousCompanyName" placeholder="ชื่อที่ทำงานเดิม">
+                                <label for="previousCompanyName">{{ __('consent::messages.modal.form.step3.fields.previous_company_name') }}</label>
+                                <input type="text" id="previousCompanyName" name="previousCompanyName" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.previous_company_name') }}">
                             </div>
 
                             <div class="form-group col-6">
-                                <label for="previousPosition">ตำแหน่ง</label>
-                                <input type="text" id="previousPosition" name="previousPosition" placeholder="ตำแหน่ง">
+                                <label for="previousPosition">{{ __('consent::messages.modal.form.step3.fields.previous_position') }}</label>
+                                <input type="text" id="previousPosition" name="previousPosition" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.previous_position') }}">
                             </div>
 
                             <div class="form-group col-6">
-                                <label for="previousIncome">รายได้ต่อเดือน</label>
-                                <input type="number" id="previousIncome" name="previousIncome" placeholder="รายได้ต่อเดือน (บาท)" min="0">
+                                <label for="previousIncome">{{ __('consent::messages.modal.form.step3.fields.previous_income') }}</label>
+                                <input type="number" id="previousIncome" name="previousIncome" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.previous_income') }}" min="0">
                             </div>
 
                             <div class="form-group col-12">
-                                <label for="previousWorkAddress">ที่อยู่ที่ทำงานเดิม</label>
-                                <textarea id="previousWorkAddress" name="previousWorkAddress" rows="3" placeholder="ที่อยู่ที่ทำงานเดิม"></textarea>
+                                <label for="previousWorkAddress">{{ __('consent::messages.modal.form.step3.fields.previous_work_address') }}</label>
+                                <textarea id="previousWorkAddress" name="previousWorkAddress" rows="3" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.previous_work_address') }}"></textarea>
                             </div>
 
                             <div class="form-group col-12">
-                                <label for="previousPhone">หมายเลขโทรศัพท์</label>
-                                <input type="text" id="previousPhone" name="previousPhone" placeholder="หมายเลขโทรศัพท์">
+                                <label for="previousPhone">{{ __('consent::messages.modal.form.step3.fields.previous_phone') }}</label>
+                                <input type="text" id="previousPhone" name="previousPhone" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.previous_phone') }}">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 4: รายได้ -->
+                <!-- Step 4: Income -->
                 <div class="step-container" data-step="4">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            รายได้
+                            {{ __('consent::messages.modal.form.step4.sections.income') }}
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="income">รายได้รวมต่อเดือน <span class="required-asterisk">*</span></label>
-                            <input type="number" id="income" name="income" min="0" placeholder="รายได้ต่อเดือน (บาท)" required>
+                            <label for="income">{{ __('consent::messages.modal.form.step4.fields.income') }} <span class="required-asterisk">*</span></label>
+                            <input type="number" id="income" name="income" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.income') }}" required>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="extraIncome">รายได้อื่นๆ ต่อเดือน (ถ้ามี)</label>
-                            <input type="number" id="extraIncome" name="extraIncome" min="0" placeholder="รายได้อื่นๆ ต่อเดือน (บาท)">
+                            <label for="extraIncome">{{ __('consent::messages.modal.form.step4.fields.extra_income') }}</label>
+                            <input type="number" id="extraIncome" name="extraIncome" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.extra_income') }}">
                         </div>
 
                         <div class="form-group col-6" id="extraIncomeSourceWrapper">
-                            <label for="extraIncomeSource">แหล่งที่มาของรายได้ <span class="required-asterisk">*</span></label>
+                            <label for="extraIncomeSource">{{ __('consent::messages.modal.form.step4.fields.extra_income_source') }} <span class="required-asterisk">*</span></label>
                             <select id="extraIncomeSource" name="extraIncomeSource" required>
-                                <option value="">เลือกแหล่งที่มา</option>
-                                <option value="รับจ้าง/เงินเดือน">รับจ้าง/เงินเดือน</option>
-                                <option value="ค่าคอมมมิชั่น">ค่าคอมมมิชั่น</option>
-                                <option value="โบนัส">โบนัส</option>
-                                <option value="ธุรกิจส่วนตัว">ธุรกิจส่วนตัว</option>
-                                <option value="อื่นๆ">อื่นๆ (โปรดระบุ)</option>
+                                <option value="">{{ __('consent::messages.modal.form.step4.options.extra_income_source_prompt') }}</option>
+                                <option value="รับจ้าง/เงินเดือน">{{ __('consent::messages.modal.form.step4.options.extra_income_source_salary') }}</option>
+                                <option value="ค่าคอมมมิชั่น">{{ __('consent::messages.modal.form.step4.options.extra_income_source_commission') }}</option>
+                                <option value="โบนัส">{{ __('consent::messages.modal.form.step4.options.extra_income_source_bonus') }}</option>
+                                <option value="ธุรกิจส่วนตัว">{{ __('consent::messages.modal.form.step4.options.extra_income_source_business') }}</option>
+                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step4.options.extra_income_source_other') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-6 hidden" id="extraIncomeSourceOtherWrapper">
-                            <label for="extraIncomeSourceOther">โปรดระบุแหล่งที่มา</label>
-                            <input type="text" id="extraIncomeSourceOther" name="extraIncomeSourceOther" placeholder="โปรดระบุแหล่งที่มา">
+                            <label for="extraIncomeSourceOther">{{ __('consent::messages.modal.form.step4.fields.extra_income_source_other') }}</label>
+                            <input type="text" id="extraIncomeSourceOther" name="extraIncomeSourceOther" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.extra_income_source_other') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="incomeCountry">ประเทศที่มาของรายได้</label>
-                            <input type="text" id="incomeCountry" name="incomeCountry" placeholder="ประเทศที่มาของรายได้">
+                            <label for="incomeCountry">{{ __('consent::messages.modal.form.step4.fields.income_country') }}</label>
+                            <input type="text" id="incomeCountry" name="incomeCountry" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.income_country') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="hasOtherDebts">ภาระหนี้อื่นๆ ในปัจจุบัน <span class="required-asterisk">*</span></label>
+                            <label for="hasOtherDebts">{{ __('consent::messages.modal.form.step4.fields.has_other_debts') }} <span class="required-asterisk">*</span></label>
                             <select id="hasOtherDebts" name="hasOtherDebts" required>
-                                <option value="">เลือก</option>
-                                <option value="ไม่มี">ไม่มี</option>
-                                <option value="มี">มี</option>
+                                <option value="">{{ __('consent::messages.modal.form.step4.options.select_prompt') }}</option>
+                                <option value="ไม่มี">{{ __('consent::messages.modal.form.step4.options.no') }}</option>
+                                <option value="มี">{{ __('consent::messages.modal.form.step4.options.yes') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-6 hidden" id="otherDebtInstallmentWrapper">
-                            <label for="otherDebtInstallment">ยอดผ่อนต่อเดือน (บาท)</label>
-                            <input type="number" id="otherDebtInstallment" name="otherDebtInstallment" min="0" placeholder="ยอดผ่อนต่อเดือน">
+                            <label for="otherDebtInstallment">{{ __('consent::messages.modal.form.step4.fields.other_debt_installment') }}</label>
+                            <input type="number" id="otherDebtInstallment" name="otherDebtInstallment" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.other_debt_installment') }}">
                         </div>
 
                         <div id="section4_container" class="section4-container form-section-frame">
                             <div class="form-group col-12">
-                                <label>การชี้แจงการมีสินเชื่อบุคคล <span class="required-asterisk">*</span></label>
+                                <label>{{ __('consent::messages.modal.form.step4.fields.existing_loan_disclosure') }} <span class="required-asterisk">*</span></label>
                                 <span class="question-text">
-                                    ปัจจุบันมีวงเงินสินเชื่อส่วนบุคคล และวงเงินที่อยู่ระหว่างขอยื่น/ขอเพิ่มตั้งแต่ 2 เดือนก่อนหน้าจนถึงปัจจุบัน จากสถาบันการเงิน/ผู้ประกอบธุรกิจสินเชื่อบุคคลที่ไม่ใช่สถาบันการเงินมากกว่า 2 แห่งหรือไม่
+                                    {{ __('consent::messages.modal.form.step4.questions.existing_loan') }}
                                 </span>
                             </div>
 
                             <div class="form-group col-12">
                                 <select id="hasExistingLoan" name="hasExistingLoan" required>
-                                    <option value="">เลือก</option>
-                                    <option value="ใช่">ใช่</option>
-                                    <option value="ไม่ใช่">ไม่ใช่</option>
+                                    <option value="">{{ __('consent::messages.modal.form.step4.options.select_prompt') }}</option>
+                                    <option value="ใช่">{{ __('consent::messages.modal.form.step4.options.existing_loan_yes') }}</option>
+                                    <option value="ไม่ใช่">{{ __('consent::messages.modal.form.step4.options.existing_loan_no') }}</option>
                                 </select>
                             </div>
 
                             <div class="form-group col-6 hidden" id="existingLoanInstitutionCountWrapper">
-                                <label for="existingLoanInstitutionCount">จำนวนแห่ง</label>
-                                <input type="number" id="existingLoanInstitutionCount" name="existingLoanInstitutionCount" min="0" placeholder="จำนวนแห่ง">
+                                <label for="existingLoanInstitutionCount">{{ __('consent::messages.modal.form.step4.fields.existing_loan_institution_count') }}</label>
+                                <input type="number" id="existingLoanInstitutionCount" name="existingLoanInstitutionCount" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.existing_loan_institution_count') }}">
                             </div>
 
                             <div class="form-group col-6 hidden" id="existingLoanTotalAmountWrapper">
-                                <label for="existingLoanTotalAmount">รวมทั้งสิ้น (บาท)</label>
-                                <input type="number" id="existingLoanTotalAmount" name="existingLoanTotalAmount" min="0" placeholder="รวมทั้งสิ้น">
+                                <label for="existingLoanTotalAmount">{{ __('consent::messages.modal.form.step4.fields.existing_loan_total_amount') }}</label>
+                                <input type="number" id="existingLoanTotalAmount" name="existingLoanTotalAmount" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.existing_loan_total_amount') }}">
                             </div>
 
                             <div class="form-group col-12 note-box">
-                                <span>( หมายเหตุ กรณีกรอกข้อมูลไม่ถูกต้องไม่ครบถ้วน และ/หรือมีรายได้หรือกระเเสเงินสดหมุนเวียนเข้าในบัญชีเงินฝากสถาบันการเงินโดยเฉลี่ยน้อยกว่า 30,000 บาทต่อเดือน โดยมีวงเงินสินเชื่อส่วนบุคคลรวมตั้งแต่ 3 แห่งขึ้นไป บริษัทมีสิทธิปฏิเสธการให้สินเชื่อ หรือกรณีที่ทําสัญญาเงินกู้ ให้ถือว่าบริษัทมีสิทธิลดหรือยกเลิกวงเงินได้ทันที )</span>
+                                <span>{{ __('consent::messages.modal.form.step4.notes.existing_loan_warning') }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 5: ข้อมูลบุคคลอ้างอิง -->
+                <!-- Step 5: Reference Person -->
                 <div class="step-container" data-step="5">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            ข้อมูลบุคคลอ้างอิง
+                            {{ __('consent::messages.modal.form.step5.sections.reference') }}
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="refName">ชื่อ - นามสกุล <span class="required-asterisk">*</span></label>
-                            <input type="text" id="refName" name="refName" placeholder="ชื่อ - นามสกุล" required>
+                            <label for="refName">{{ __('consent::messages.modal.form.step5.fields.ref_name') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="refName" name="refName" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_name') }}" required>
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="refRelation">ความสัมพันธ์กับผู้กู้</label>
-                            <input type="text" id="refRelation" name="refRelation" placeholder="ความสัมพันธ์กับผู้กู้">
+                            <label for="refRelation">{{ __('consent::messages.modal.form.step5.fields.ref_relation') }}</label>
+                            <input type="text" id="refRelation" name="refRelation" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_relation') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="refAddressNo">ที่อยู่ปัจจุบัน เลขที่</label>
-                            <input type="text" id="refAddressNo" name="refAddressNo" placeholder="เลขที่">
+                            <label for="refAddressNo">{{ __('consent::messages.modal.form.step5.fields.ref_address_no') }}</label>
+                            <input type="text" id="refAddressNo" name="refAddressNo" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_address_no') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="refAddressFloor">ชั้น</label>
-                            <input type="text" id="refAddressFloor" name="refAddressFloor" placeholder="ชั้น">
+                            <label for="refAddressFloor">{{ __('consent::messages.modal.form.step5.fields.ref_address_floor') }}</label>
+                            <input type="text" id="refAddressFloor" name="refAddressFloor" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_address_floor') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="refAddressVillage">หมู่ที่</label>
-                            <input type="text" id="refAddressVillage" name="refAddressVillage" placeholder="หมู่ที่">
+                            <label for="refAddressVillage">{{ __('consent::messages.modal.form.step5.fields.ref_address_village') }}</label>
+                            <input type="text" id="refAddressVillage" name="refAddressVillage" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_address_village') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="refAddressBuilding">อาคาร/หมู่บ้าน</label>
-                            <input type="text" id="refAddressBuilding" name="refAddressBuilding" placeholder="อาคาร/หมู่บ้าน">
+                            <label for="refAddressBuilding">{{ __('consent::messages.modal.form.step5.fields.ref_address_building') }}</label>
+                            <input type="text" id="refAddressBuilding" name="refAddressBuilding" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_address_building') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="refAddressSoi">ซอย</label>
-                            <input type="text" id="refAddressSoi" name="refAddressSoi" placeholder="ซอย">
+                            <label for="refAddressSoi">{{ __('consent::messages.modal.form.step5.fields.ref_address_soi') }}</label>
+                            <input type="text" id="refAddressSoi" name="refAddressSoi" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_address_soi') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="refAddressRoad">ถนน</label>
-                            <input type="text" id="refAddressRoad" name="refAddressRoad" placeholder="ถนน">
+                            <label for="refAddressRoad">{{ __('consent::messages.modal.form.step5.fields.ref_address_road') }}</label>
+                            <input type="text" id="refAddressRoad" name="refAddressRoad" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_address_road') }}">
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="refAddressSubdistrict">แขวง/ตำบล</label>
-                            <input type="text" id="refAddressSubdistrict" name="refAddressSubdistrict" placeholder="พิมพ์ค้นหา/เลือก แขวง/ตำบล" autocomplete="off">
+                            <label for="refAddressSubdistrict">{{ __('consent::messages.modal.form.step5.fields.ref_address_subdistrict') }}</label>
+                            <input type="text" id="refAddressSubdistrict" name="refAddressSubdistrict" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.search_subdistrict') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="refAddressSubdistrict_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="refAddressDistrict">เขต/อำเภอ</label>
-                            <input type="text" id="refAddressDistrict" name="refAddressDistrict" placeholder="พิมพ์ค้นหา/เลือก เขต/อำเภอ" autocomplete="off">
+                            <label for="refAddressDistrict">{{ __('consent::messages.modal.form.step5.fields.ref_address_district') }}</label>
+                            <input type="text" id="refAddressDistrict" name="refAddressDistrict" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.search_district') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="refAddressDistrict_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="refAddressProvince">จังหวัด</label>
-                            <input type="text" id="refAddressProvince" name="refAddressProvince" placeholder="พิมพ์ค้นหา/เลือก จังหวัด" autocomplete="off">
+                            <label for="refAddressProvince">{{ __('consent::messages.modal.form.step5.fields.ref_address_province') }}</label>
+                            <input type="text" id="refAddressProvince" name="refAddressProvince" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.search_province') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="refAddressProvince_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6 address-search-field">
-                            <label for="refAddressPostal">รหัสไปรษณีย์</label>
-                            <input type="text" id="refAddressPostal" name="refAddressPostal" placeholder="พิมพ์ค้นหา/เลือก รหัสไปรษณีย์" autocomplete="off" inputmode="numeric">
+                            <label for="refAddressPostal">{{ __('consent::messages.modal.form.step5.fields.ref_address_postal') }}</label>
+                            <input type="text" id="refAddressPostal" name="refAddressPostal" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.search_postal') }}" autocomplete="off" inputmode="numeric">
                             <div class="address-search-dropdown hidden" id="refAddressPostal_dropdown"></div>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="refPhoneHome">หมายเลขโทรศัพท์บ้าน</label>
-                            <input type="text" id="refPhoneHome" name="refPhoneHome" placeholder="หมายเลขโทรศัพท์บ้าน">
+                            <label for="refPhoneHome">{{ __('consent::messages.modal.form.step5.fields.ref_phone_home') }}</label>
+                            <input type="text" id="refPhoneHome" name="refPhoneHome" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_phone_home') }}">
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="refPhoneMobile">หมายเลขโทรศัพท์มือถือ</label>
-                            <input type="text" id="refPhoneMobile" name="refPhoneMobile" placeholder="หมายเลขโทรศัพท์มือถือ">
+                            <label for="refPhoneMobile">{{ __('consent::messages.modal.form.step5.fields.ref_phone_mobile') }}</label>
+                            <input type="text" id="refPhoneMobile" name="refPhoneMobile" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_phone_mobile') }}">
                         </div>
 
                         <div class="form-group col-12 note-box">
-                            <span>( ข้าพเจ้าได้รับอนุญาตจากเจ้าของชือแล้ว และตกลงยินยอมให้บริษัทสามารถติดต่อกับบุคคลอ้างอิงดังกล่าวเพือการทวงถามหนีของข้าพเจ้าได้ )</span>
+                            <span>{{ __('consent::messages.modal.form.step5.notes.reference_consent') }}</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 6: ความประสงค์ในการสมัครใช้สินเชื่อ -->
+                <!-- Step 6: Loan Preference -->
                 <div class="step-container" data-step="6">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            ความประสงค์ในการสมัครใช้สินเชื่อ
+                            {{ __('consent::messages.modal.form.step6.sections.loan_preference') }}
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="loanPurpose">วัตถุประสงค์ในการขอสินเชื่อ <span class="required-asterisk">*</span></label>
-                            <input type="text" id="loanPurpose" name="loanPurpose" placeholder="วัตถุประสงค์ในการขอสินเชื่อ" required>
+                            <label for="loanPurpose">{{ __('consent::messages.modal.form.step6.fields.loan_purpose') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="loanPurpose" name="loanPurpose" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.loan_purpose') }}" required>
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="loanTerm">ระยะเวลาผ่อนชำระคืน <span class="required-asterisk">*</span></label>
+                            <label for="loanTerm">{{ __('consent::messages.modal.form.step6.fields.loan_term') }} <span class="required-asterisk">*</span></label>
                             <select id="loanTerm" name="loanTerm" required>
-                                <option value="">เลือกระยะเวลา</option>
-                                <option value="4">4 เดือน</option>
-                                <option value="6">6 เดือน</option>
-                                <option value="12">12 เดือน</option>
-                                <option value="18">18 เดือน</option>
-                                <option value="24">24 เดือน</option>
-                                <option value="36">36 เดือน</option>
-                                <option value="48">48 เดือน</option>
-                                <option value="60">60 เดือน</option>
+                                <option value="">{{ __('consent::messages.modal.form.step6.options.loan_term_prompt') }}</option>
+                                <option value="4">{{ __('consent::messages.modal.form.step6.options.loan_term_4') }}</option>
+                                <option value="6">{{ __('consent::messages.modal.form.step6.options.loan_term_6') }}</option>
+                                <option value="12">{{ __('consent::messages.modal.form.step6.options.loan_term_12') }}</option>
+                                <option value="18">{{ __('consent::messages.modal.form.step6.options.loan_term_18') }}</option>
+                                <option value="24">{{ __('consent::messages.modal.form.step6.options.loan_term_24') }}</option>
+                                <option value="36">{{ __('consent::messages.modal.form.step6.options.loan_term_36') }}</option>
+                                <option value="48">{{ __('consent::messages.modal.form.step6.options.loan_term_48') }}</option>
+                                <option value="60">{{ __('consent::messages.modal.form.step6.options.loan_term_60') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="loanAmountType">วงเงินสินเชื่อที่ต้องการ <span class="required-asterisk">*</span></label>
+                            <label for="loanAmountType">{{ __('consent::messages.modal.form.step6.fields.loan_amount_type') }} <span class="required-asterisk">*</span></label>
                             <select id="loanAmountType" name="loanAmountType" required>
-                                <option value="">เลือกวงเงิน</option>
-                                <option value="full">เต็มจำนวนตามที่บริษัทอนุมัติ</option>
-                                <option value="custom">วงเงินที่ขอกู้/จำนวนทั้งสิ้น</option>
+                                <option value="">{{ __('consent::messages.modal.form.step6.options.loan_amount_prompt') }}</option>
+                                <option value="full">{{ __('consent::messages.modal.form.step6.options.loan_amount_full') }}</option>
+                                <option value="custom">{{ __('consent::messages.modal.form.step6.options.loan_amount_custom') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-12 hidden" id="customLoanAmountWrapper">
-                            <label for="customLoanAmount">ระบุจำนวนเงินที่ขอกู้ (บาท)</label>
-                            <input type="number" id="customLoanAmount" name="customLoanAmount" placeholder="ระบุจำนวนเงิน" min="0">
+                            <label for="customLoanAmount">{{ __('consent::messages.modal.form.step6.fields.custom_loan_amount') }}</label>
+                            <input type="number" id="customLoanAmount" name="customLoanAmount" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.custom_loan_amount') }}" min="0">
                         </div>
 
                         <div class="form-group col-12 note-box">
-                            <span>(กรณีที่บริษัทไม่สามารถอนุมัติเงินตามที่ท่านเลือกได้ บริษัทจะอนุมัติวงเงินให้ท่านตามความเหมาะสม)</span>
+                            <span>{{ __('consent::messages.modal.form.step6.notes.loan_amount') }}</span>
                         </div>
 
                         <div class="form-section-title">
-                            ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก
+                            {{ __('consent::messages.modal.form.step6.sections.first_disbursement') }}
                         </div>
 
                         <div class="form-group col-12">
                             <p class="mb-1 text-muted">
-                                ในกรณที่บริษัทอนุมัติสินเชื่อ ข้าพเจ้ามีความประสงค์ให้บริษัทโอนเงินกู้เข้าบัญชีของข้าพเจ้า โดยโอนเข้าบัญชีเงินฝากเลขที่ (กรอกข้อมูล)
+                                {{ __('consent::messages.modal.form.step6.notes.first_disbursement') }}
                             </p>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="accountNumber">เลขที่บัญชี <span class="required-asterisk">*</span></label>
-                            <input type="text" id="accountNumber" name="accountNumber" placeholder="เลขที่บัญชี" required>
+                            <label for="accountNumber">{{ __('consent::messages.modal.form.step6.fields.account_number') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="accountNumber" name="accountNumber" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.account_number') }}" required>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="accountType">ประเภทบัญชี <span class="required-asterisk">*</span></label>
-                            <input type="text" id="accountType" name="accountType" placeholder="ประเภทบัญชี (เช่น ออมทรัพย์, กระแสรายวัน)" required>
+                            <label for="accountType">{{ __('consent::messages.modal.form.step6.fields.account_type') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="accountType" name="accountType" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.account_type') }}" required>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="bankName">ธนาคาร <span class="required-asterisk">*</span></label>
-                            <input type="text" id="bankName" name="bankName" placeholder="ชื่อธนาคาร" required>
+                            <label for="bankName">{{ __('consent::messages.modal.form.step6.fields.bank_name') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="bankName" name="bankName" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.bank_name') }}" required>
                         </div>
 
                         <div class="form-group col-6">
-                            <label for="accountName">ชื่อบัญชี <span class="required-asterisk">*</span></label>
-                            <input type="text" id="accountName" name="accountName" placeholder="ชื่อบัญชี" required>
+                            <label for="accountName">{{ __('consent::messages.modal.form.step6.fields.account_name') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="accountName" name="accountName" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.account_name') }}" required>
                         </div>
 
                         <div class="form-section-title">
-                            วิธีการชําระเงิน
+                            {{ __('consent::messages.modal.form.step6.sections.payment_method') }}
                         </div>
 
                         <div class="form-group col-12">
-                            <label for="paymentMethod">วิธีการชําระเงิน <span class="required-asterisk">*</span></label>
+                            <label for="paymentMethod">{{ __('consent::messages.modal.form.step6.fields.payment_method') }} <span class="required-asterisk">*</span></label>
                             <select id="paymentMethod" name="paymentMethod" required>
-                                <option value="">เลือกวิธีการชําระเงิน</option>
-                                <option value="ชําระด้วยเงินสด">ชําระด้วยเงินสด</option>
-                                <option value="ชําระโดยการหักบัญชี">ชําระโดยการหักบัญชี ( เฉพาะบัญชีเงินฝากของท่านที่มีอยู่กับสถาบันการเงินเท่านั้น )</option>
+                                <option value="">{{ __('consent::messages.modal.form.step6.options.payment_method_prompt') }}</option>
+                                <option value="ชําระด้วยเงินสด">{{ __('consent::messages.modal.form.step6.options.payment_method_cash') }}</option>
+                                <option value="ชําระโดยการหักบัญชี">{{ __('consent::messages.modal.form.step6.options.payment_method_debit') }}</option>
                             </select>
                         </div>
 
                         <div id="directDebitWrapper" class="hidden display-contents">
                             <div class="form-group col-12 note-box text-left line-height-relaxed mb-1">
                                 <span>
-                                    กรณียินยอมหักบัญชี ข้าพเจ้ายินยอมให้สถาบันการเงินหักเงินจากบัญชีเงินเดือนของข้าพเจ้าที่มีอยู่กับสถาบันการเงิน เป็นจํานวนเงิน <strong id="display_directDebitAmount">.....................................</strong> บาท/เดือน จากบัญชีเลขที่ <strong id="display_directDebitAccountNumber">.........................................</strong> เท่านั้น ณ วันครบกําหนดชําระตามที่บริษัทแจ้งให้ทราบ หรือทุกวันที่เงินเดือนออกในแต่ละเดือนแล้วแต่วันใดจะถึงก่อน เพื่อชําระเงินกู้รวมทั้งดอกเบี้ยจนกว่าจะชําระหนี้ให้แก่บริษัทจนเสร็จสิ้น หากบริษัทไม่สามารถหักเงินจากบัญชีดังกล่าวในวันดังกล่าวได้ ข้าพเจ้าตกลงยอมรับให้บริษัทถือว่าเป็นการผิดนัดชําระหนี้และขอรับรองว่าการที่บริษัทหักเงินจากบัญชีของข้าพเจ้าตามใบสมัครฉบับนี้เป็นไปตามคําร้องขอของข้าพเจ้า หากมีความเสียหายหรือผิดพลาดใดๆ เกิดขึ้นแก่บริษัท ข้าพเจ้าตกลงชดใช้ค่าเสียหายให้แก่บริษัททั้งจํานวนทันที
+                                    {!! __('consent::messages.modal.form.step6.notes.direct_debit') !!}
                                 </span>
                             </div>
                             
                             <div class="form-group col-6">
-                                <label for="directDebitAmount">จำนวนเงินหักบัญชีต่อเดือน (บาท)</label>
-                                <input type="number" id="directDebitAmount" name="directDebitAmount" min="0" placeholder="จำนวนเงิน">
+                                <label for="directDebitAmount">{{ __('consent::messages.modal.form.step6.fields.direct_debit_amount') }}</label>
+                                <input type="number" id="directDebitAmount" name="directDebitAmount" min="0" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.direct_debit_amount') }}">
                             </div>
 
                             <div class="form-group col-6">
-                                <label for="directDebitAccountNumber">จากบัญชีเลขที่</label>
-                                <input type="text" id="directDebitAccountNumber" name="directDebitAccountNumber" placeholder="เลขที่บัญชีสำหรับหักเงิน">
+                                <label for="directDebitAccountNumber">{{ __('consent::messages.modal.form.step6.fields.direct_debit_account_number') }}</label>
+                                <input type="text" id="directDebitAccountNumber" name="directDebitAccountNumber" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.direct_debit_account_number') }}">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 7: ข้อความยินยอม -->
+                <!-- Step 7: Consent Statement -->
                 <div class="step-container" data-step="7">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            ข้อความยินยอม
+                            {{ __('consent::messages.modal.form.step7.sections.consent') }}
                         </div>
 
                         <div class="form-group col-12">
                             <p class="text-left line-height-extra mb-1-5 text-indent-large">
-                                ข้าพเจ้าขอรับรองว่าข้อความข้างต้นเป็นความจริงทุกประการ รวมทั้งได้รับทราบเงื่อนไขและหลักเกณฑ์ที่กำหนดในการใช้บริการสินเชื่อ โดยลงนามในใบสมัครสินเชื่อส่วนบุคคล (Personal Loan) นี้ และเมื่อบริษัทอนุมัติสินเชื่อดังกล่าวให้ข้าพเจ้าแล้ว ข้าพเจ้าตกลงปฏิบัติตามภาระผูกพันที่เกิดขึ้นตามสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ที่ปรากฏอยู่ในใบสมัครนี้ รวมทั้งข้อกำหนด/เงื่อนไขในการใช้สินเชื่อภายใต้ชื่อสินเชื่อส่วนบุคคล (Personal Loan) ของบริษัท และให้ถือว่าใบสมัครสินเชื่อส่วนบุคคล (Personal Loan) นี้ เป็นส่วนหนึ่งของสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ด้วย ข้าพเจ้าได้อ่านและเข้าใจข้อกำหนดและเงื่อนไขต่างๆ ที่เกี่ยวข้องถี่ถ้วนแล้ว พร้อมทั้งได้รับสำเนาสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ไว้เรียบร้อยแล้ว จึงลงลายมือชื่อไว้เป็นหลักฐาน</p>
+                                {{ __('consent::messages.modal.form.step7.paragraphs.consent_statement') }}</p>
                         </div>
 
                         <div class="form-group col-12">
                             <div class="warning-box">
-                                <h4 class="warning-title">ข้อควรระวัง</h4>
+                                <h4 class="warning-title">{{ __('consent::messages.modal.form.step7.warning.title') }}</h4>
                                 <ul class="warning-list">
-                                    <li class="warning-item">บริษัทจะคิดดอกเบี้ยตั้งแต่วันที่ผู้ขอกู้ได้รับเงินกู้ กรณีผิดนัดชำระหรือชำระต่ำกว่ายอดชำระขั้นต่ำจะมีดอกเบี้ยและค่าใช้จ่ายในการติดตามทวงถามหนี้เพิ่ม</li>
-                                    <li class="warning-item">โปรดทำความเข้าใจผลิตภัณฑ์และเงื่อนไขก่อนลงนาม หากมีข้อสงสัยหรือต้องการสอบถามข้อมูลเพิ่มเติม สามารถติดต่อได้ที่โทรศัพท์ 082-257-7997</li>
-                                    <li>บริษัทอาจมอบหมายให้ผู้ที่รับมอบหมายจำเป็นที่ต้องดำเนินการทางกฎหมาย หากท่านผิดนัดชำระ หรือไม่ชำระค่างวดอย่างสม่ำเสมอ</li>
+                                    <li class="warning-item">{{ __('consent::messages.modal.form.step7.warning.item_1') }}</li>
+                                    <li class="warning-item">{{ __('consent::messages.modal.form.step7.warning.item_2') }}</li>
+                                    <li>{{ __('consent::messages.modal.form.step7.warning.item_3') }}</li>
                                 </ul>
                             </div>
                         </div>
 
                         <div class="form-group col-12 signature-group">
-                            <label>ลงชื่อผู้ขอสินเชื่อ <span class="required-asterisk">*</span></label>
+                            <label>{{ __('consent::messages.modal.form.step7.fields.signature') }} <span class="required-asterisk">*</span></label>
                             <div class="signature-pad-box">
                                 <canvas id="signaturePad" class="signature-canvas"></canvas>
-                                <button type="button" id="clearSignatureBtn" class="signature-clear-btn">ล้าง</button>
+                                <button type="button" id="clearSignatureBtn" class="signature-clear-btn">{{ __('consent::messages.modal.form.step7.actions.clear_signature') }}</button>
                             </div>
                             <input type="hidden" id="signatureData" name="signatureData">
-                            <p class="signature-date">วันที่เซ็น: {{ date('d/m/Y') }}</p>
+                            <p class="signature-date">{{ __('consent::messages.modal.form.step7.fields.signed_date') }}: {{ date('d/m/Y') }}</p>
                         </div>
                     </div>
                 </div>
@@ -808,35 +808,35 @@
                 <div class="step-container" data-step="8">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
+                            {{ __('consent::messages.modal.form.attachment.section_title') }}
                         </div>
                         <div class="col-12">
                             <div class="document-upload-table-wrap">
                                 <table class="document-upload-table">
                                     <thead>
                                         <tr>
-                                            <th>เอกสารแสดงตน</th>
-                                            <th>เอกสารของผู้กู้</th>
+                                            <th>{{ __('consent::messages.modal.form.attachment.identity_header') }}</th>
+                                            <th>{{ __('consent::messages.modal.form.attachment.borrower_header') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="document-upload-label-cell">สำเนาบัตรประชาชนที่ยังไม่หมดอายุ</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.identity_id_card_copy') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
                                                     <label for="identityIdCardDocuments" class="custom-file-upload compact">
-                                                        <span>อัพโหลด</span>
+                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
                                                         <p>PDF, JPG, PNG</p>
                                                     </label>
                                                     <input type="file" id="identityIdCardDocuments" name="identityIdCardDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
                                                     <div class="hidden" id="identityIdCardDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
                                                         <div id="identityIdCardDocumentsSelectedList"></div>
                                                     </div>
 
                                                     <div class="hidden" id="identityIdCardDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
                                                         <div id="identityIdCardDocumentsExistingList"></div>
                                                     </div>
                                                 </div>
@@ -844,22 +844,22 @@
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">หนังสือเดินทาง</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.passport') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
                                                     <label for="identityPassportDocuments" class="custom-file-upload compact">
-                                                        <span>อัพโหลด</span>
+                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
                                                         <p>PDF, JPG, PNG</p>
                                                     </label>
                                                     <input type="file" id="identityPassportDocuments" name="identityPassportDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
                                                     <div class="hidden" id="identityPassportDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
                                                         <div id="identityPassportDocumentsSelectedList"></div>
                                                     </div>
 
                                                     <div class="hidden" id="identityPassportDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
                                                         <div id="identityPassportDocumentsExistingList"></div>
                                                     </div>
                                                 </div>
@@ -867,22 +867,22 @@
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">สำเนาทะเบียนบ้าน</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.house_registration_copy') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
                                                     <label for="identityHouseRegistrationDocuments" class="custom-file-upload compact">
-                                                        <span>อัพโหลด</span>
+                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
                                                         <p>PDF, JPG, PNG</p>
                                                     </label>
                                                     <input type="file" id="identityHouseRegistrationDocuments" name="identityHouseRegistrationDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
                                                     <div class="hidden" id="identityHouseRegistrationDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
                                                         <div id="identityHouseRegistrationDocumentsSelectedList"></div>
                                                     </div>
 
                                                     <div class="hidden" id="identityHouseRegistrationDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
                                                         <div id="identityHouseRegistrationDocumentsExistingList"></div>
                                                     </div>
                                                 </div>
@@ -890,22 +890,22 @@
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">ใบอนุญาตทำงาน</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.work_permit') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
                                                     <label for="identityWorkPermitDocuments" class="custom-file-upload compact">
-                                                        <span>อัพโหลด</span>
+                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
                                                         <p>PDF, JPG, PNG</p>
                                                     </label>
                                                     <input type="file" id="identityWorkPermitDocuments" name="identityWorkPermitDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
                                                     <div class="hidden" id="identityWorkPermitDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
                                                         <div id="identityWorkPermitDocumentsSelectedList"></div>
                                                     </div>
 
                                                     <div class="hidden" id="identityWorkPermitDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
                                                         <div id="identityWorkPermitDocumentsExistingList"></div>
                                                     </div>
                                                 </div>
@@ -913,22 +913,22 @@
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">สำเนาเปลี่ยนชื่อ - นามสกุล (ถ้ามี)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.name_change_copy_optional') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
                                                     <label for="identityNameChangeDocuments" class="custom-file-upload compact">
-                                                        <span>อัพโหลด</span>
+                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
                                                         <p>PDF, JPG, PNG</p>
                                                     </label>
                                                     <input type="file" id="identityNameChangeDocuments" name="identityNameChangeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
                                                     <div class="hidden" id="identityNameChangeDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่เลือก</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
                                                         <div id="identityNameChangeDocumentsSelectedList"></div>
                                                     </div>
 
                                                     <div class="hidden" id="identityNameChangeDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label>
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
                                                         <div id="identityNameChangeDocumentsExistingList"></div>
                                                     </div>
                                                 </div>
@@ -936,294 +936,294 @@
                                         </tr>
 
                                         <tr class="document-upload-section-row">
-                                            <th>เอกสารแสดงรายได้</th>
-                                            <th>เอกสารของผู้กู้</th>
+                                            <th>{{ __('consent::messages.modal.form.attachment.income_header') }}</th>
+                                            <th>{{ __('consent::messages.modal.form.attachment.borrower_header') }}</th>
                                         </tr>
 
                                         <tr class="document-income-subsection-row">
-                                            <th colspan="2">ผู้มีรายได้ประจำ</th>
+                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.salaried') }}</th>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">สลิปเงินเดือนล่าสุด (เอกสารไม่เกิน 3 เดือน)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.salary_slip_latest') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSalarySlipDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSalarySlipDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSalarySlipDocuments" name="incomeSalarySlipDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSalarySlipDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSalarySlipDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSalarySlipDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSalarySlipDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSalarySlipDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSalarySlipDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSalarySlipDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSalarySlipDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">หนังสือรับรองเงินเดือน (เอกสารไม่เกิน 3 เดือน)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.salary_certificate') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSalaryCertificateDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSalaryCertificateDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSalaryCertificateDocuments" name="incomeSalaryCertificateDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSalaryCertificateDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSalaryCertificateDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSalaryCertificateDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSalaryCertificateDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSalaryCertificateDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSalaryCertificateDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSalaryCertificateDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSalaryCertificateDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">เอกสาร 50 ทวิ ปีล่าสุด หรือกรณี 50 ทวิ แบบรายเดือนใช้ย้อนหลัง 6 เดือน</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.tax_50_tawi_latest_or_6m') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSalary50TawiDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSalary50TawiDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSalary50TawiDocuments" name="incomeSalary50TawiDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSalary50TawiDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSalary50TawiDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSalary50TawiDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSalary50TawiDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSalary50TawiDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSalary50TawiDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSalary50TawiDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSalary50TawiDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 6 เดือน (ที่รับเงินเดือน)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_6m_salary') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSalaryStatement6mDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSalaryStatement6mDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSalaryStatement6mDocuments" name="incomeSalaryStatement6mDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSalaryStatement6mDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSalaryStatement6mDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSalaryStatement6mDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSalaryStatement6mDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSalaryStatement6mDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSalaryStatement6mDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSalaryStatement6mDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSalaryStatement6mDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr class="document-income-subsection-row">
-                                            <th colspan="2">กรณีเงินเดือนน้อยกว่าเกณฑ์รายได้ขั้นต่ำ สามารถรวมรายได้อื่นๆ เพิ่มเติมได้ เช่น ค่าคอมมิชชัน ค่าล่วงเวลา เป็นต้น</th>
+                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.low_income_can_add_other_income') }}</th>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">สลิปเงินเดือน, สลิปค่าคอมมิชชัน, สลิปค่าล่วงเวลา (เอกสารไม่เกิน 3 เดือน)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.supplementary_slips') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSupplementarySlipDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSupplementarySlipDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSupplementarySlipDocuments" name="incomeSupplementarySlipDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSupplementarySlipDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSupplementarySlipDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSupplementarySlipDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSupplementarySlipDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSupplementarySlipDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSupplementarySlipDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSupplementarySlipDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSupplementarySlipDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 6 เดือน (ที่รับเงินเดือน)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_6m_salary') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSupplementaryStatement6mDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSupplementaryStatement6mDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSupplementaryStatement6mDocuments" name="incomeSupplementaryStatement6mDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSupplementaryStatement6mDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSupplementaryStatement6mDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSupplementaryStatement6mDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSupplementaryStatement6mDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSupplementaryStatement6mDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSupplementaryStatement6mDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSupplementaryStatement6mDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSupplementaryStatement6mDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr class="document-income-subsection-row">
-                                            <th colspan="2">เจ้าของกิจการ / กรณีจดทะเบียน</th>
+                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.business_owner_registered') }}</th>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">หนังสือรับรองการจดทะเบียนนิติบุคคล</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.registered_certificate') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeRegisteredCertDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeRegisteredCertDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeRegisteredCertDocuments" name="incomeRegisteredCertDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeRegisteredCertDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeRegisteredCertDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeRegisteredCertDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeRegisteredCertDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredCertDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeRegisteredCertDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredCertDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeRegisteredCertDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">สำเนารายชื่อผู้ถือหุ้น</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.shareholder_list_copy') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeRegisteredShareholderDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeRegisteredShareholderDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeRegisteredShareholderDocuments" name="incomeRegisteredShareholderDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeRegisteredShareholderDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeRegisteredShareholderDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeRegisteredShareholderDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeRegisteredShareholderDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredShareholderDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeRegisteredShareholderDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredShareholderDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeRegisteredShareholderDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">ใบทะเบียนการค้า</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.trade_registration') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeRegisteredTradeDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeRegisteredTradeDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeRegisteredTradeDocuments" name="incomeRegisteredTradeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeRegisteredTradeDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeRegisteredTradeDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeRegisteredTradeDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeRegisteredTradeDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredTradeDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeRegisteredTradeDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredTradeDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeRegisteredTradeDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 1 ปี</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeRegisteredStatement1yDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeRegisteredStatement1yDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeRegisteredStatement1yDocuments" name="incomeRegisteredStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeRegisteredStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeRegisteredStatement1yDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeRegisteredStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeRegisteredStatement1yDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeRegisteredStatement1yDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeRegisteredStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeRegisteredStatement1yDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr class="document-income-subsection-row">
-                                            <th colspan="2">กรณีไม่จดทะเบียน</th>
+                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.unregistered_case') }}</th>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">สัญญาเช่า (ถ้ามี)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.lease_contract_optional') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeUnregisteredLeaseDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeUnregisteredLeaseDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeUnregisteredLeaseDocuments" name="incomeUnregisteredLeaseDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredLeaseDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredLeaseDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredLeaseDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredLeaseDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredLeaseDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredLeaseDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredLeaseDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredLeaseDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">เอกสารการเสียภาษี</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.tax_documents') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeUnregisteredTaxDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeUnregisteredTaxDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeUnregisteredTaxDocuments" name="incomeUnregisteredTaxDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredTaxDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredTaxDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredTaxDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredTaxDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredTaxDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredTaxDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredTaxDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredTaxDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 1 ปี</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeUnregisteredStatement1yDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeUnregisteredStatement1yDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeUnregisteredStatement1yDocuments" name="incomeUnregisteredStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredStatement1yDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredStatement1yDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredStatement1yDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredStatement1yDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">บิลซื้อ, บิลขาย (ถ้ามี)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.purchase_sales_invoices_optional') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeUnregisteredInvoiceDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeUnregisteredInvoiceDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeUnregisteredInvoiceDocuments" name="incomeUnregisteredInvoiceDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredInvoiceDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredInvoiceDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredInvoiceDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredInvoiceDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredInvoiceDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredInvoiceDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredInvoiceDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredInvoiceDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">รูปถ่ายกิจการ</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.business_photos') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeUnregisteredBusinessPhotoDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeUnregisteredBusinessPhotoDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeUnregisteredBusinessPhotoDocuments" name="incomeUnregisteredBusinessPhotoDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredBusinessPhotoDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeUnregisteredBusinessPhotoDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredBusinessPhotoDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeUnregisteredBusinessPhotoDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredBusinessPhotoDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredBusinessPhotoDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeUnregisteredBusinessPhotoDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredBusinessPhotoDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr class="document-income-subsection-row">
-                                            <th colspan="2">เจ้าของกิจการ/ผู้ประกอบอาชีพอิสระ - กรณีบุคคลธรรมดา</th>
+                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.self_employed_individual') }}</th>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">เอกสารการเสียภาษี เช่น 50 ทวิ ล่าสุด หรือกรณี 50 ทวิ แบบรายเดือนใช้ย้อนหลัง 6 เดือน (ต้องมีตราประทับพร้อมลายเซ็นผู้จ่ายเงิน)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.tax_docs_50_tawi_with_stamp') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSelfIndividualTax50Documents" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSelfIndividualTax50Documents" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSelfIndividualTax50Documents" name="incomeSelfIndividualTax50Documents[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfIndividualTax50DocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfIndividualTax50DocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfIndividualTax50DocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfIndividualTax50DocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualTax50DocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfIndividualTax50DocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualTax50DocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfIndividualTax50DocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">แบบยื่นภาษี ภ.ง.ด. 90, 91, 94</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.pnd_90_91_94') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSelfIndividualPndDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSelfIndividualPndDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSelfIndividualPndDocuments" name="incomeSelfIndividualPndDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfIndividualPndDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfIndividualPndDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfIndividualPndDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfIndividualPndDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualPndDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfIndividualPndDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualPndDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfIndividualPndDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 1 ปี</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSelfIndividualStatement1yDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSelfIndividualStatement1yDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSelfIndividualStatement1yDocuments" name="incomeSelfIndividualStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfIndividualStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfIndividualStatement1yDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfIndividualStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfIndividualStatement1yDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfIndividualStatement1yDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfIndividualStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfIndividualStatement1yDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr class="document-income-subsection-row">
-                                            <th colspan="2">เจ้าของกิจการ/ผู้ประกอบอาชีพอิสระ - กรณีผู้ประกอบการ</th>
+                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.self_employed_entrepreneur') }}</th>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">เอกสารการเสียภาษี</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.tax_documents') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSelfBusinessTaxDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSelfBusinessTaxDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSelfBusinessTaxDocuments" name="incomeSelfBusinessTaxDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfBusinessTaxDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfBusinessTaxDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfBusinessTaxDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfBusinessTaxDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessTaxDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfBusinessTaxDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessTaxDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfBusinessTaxDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">รายการเดินบัญชีย้อนหลัง 1 ปี</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSelfBusinessStatement1yDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSelfBusinessStatement1yDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSelfBusinessStatement1yDocuments" name="incomeSelfBusinessStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfBusinessStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfBusinessStatement1yDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfBusinessStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfBusinessStatement1yDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfBusinessStatement1yDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfBusinessStatement1yDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">บิลซื้อ, บิลขาย (ถ้ามี)</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.purchase_sales_invoices_optional') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSelfBusinessInvoiceDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSelfBusinessInvoiceDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSelfBusinessInvoiceDocuments" name="incomeSelfBusinessInvoiceDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfBusinessInvoiceDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfBusinessInvoiceDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfBusinessInvoiceDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfBusinessInvoiceDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessInvoiceDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfBusinessInvoiceDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessInvoiceDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfBusinessInvoiceDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td class="document-upload-label-cell">รูปถ่ายกิจการ</td>
+                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.business_photos') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSelfBusinessPhotoDocuments" class="custom-file-upload compact"><span>อัพโหลด</span><p>PDF, JPG, PNG</p></label>
+                                                    <label for="incomeSelfBusinessPhotoDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
                                                     <input type="file" id="incomeSelfBusinessPhotoDocuments" name="incomeSelfBusinessPhotoDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfBusinessPhotoDocumentsSelectedWrapper"><label class="uploaded-files-title">ไฟล์ที่เลือก</label><div id="incomeSelfBusinessPhotoDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfBusinessPhotoDocumentsExistingWrapper"><label class="uploaded-files-title">ไฟล์ที่แนบแล้ว</label><div id="incomeSelfBusinessPhotoDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessPhotoDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfBusinessPhotoDocumentsSelectedList"></div></div>
+                                                    <div class="hidden" id="incomeSelfBusinessPhotoDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfBusinessPhotoDocumentsExistingList"></div></div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -1237,9 +1237,9 @@
 
             <div class="modal-footer">
                 <div class="wizard-actions">
-                    <button type="button" class="action-btn outline hidden" id="prevStepBtn">ย้อนกลับ</button>
-                    <button type="button" class="action-btn" id="nextStepBtn">ถัดไป</button>
-                    <button type="submit" class="action-btn hidden" id="consentSubmitBtn">บันทึกข้อมูลสำเร็จ</button>
+                    <button type="button" class="action-btn outline hidden" id="prevStepBtn">{{ __('consent::messages.modal.form.buttons.prev') }}</button>
+                    <button type="button" class="action-btn" id="nextStepBtn">{{ __('consent::messages.modal.form.buttons.next') }}</button>
+                    <button type="submit" class="action-btn hidden" id="consentSubmitBtn">{{ __('consent::messages.modal.form.buttons.submit') }}</button>
                 </div>
             </div>
         </form>

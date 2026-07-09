@@ -3,7 +3,7 @@
     <div class="modal-content modal-lg">
         <div class="modal-header view-modal-header">
             <h3 class="view-modal-title">
-                📄 เอกสารคำขอและใบยินยอมสินเชื่อบุคคล
+                {{ __('consent::messages.modal.view.title') }}
             </h3>
             <button type="button" class="close-btn view-modal-close" id="closeViewConsentModal" aria-label="Close modal">&times;</button>
         </div>
@@ -13,7 +13,7 @@
             </div>
         </div>
         <div class="modal-footer view-modal-footer">
-            <button type="button" class="action-btn outline" id="closeViewConsentFooter">ปิดหน้าต่าง</button>
+            <button type="button" class="action-btn outline" id="closeViewConsentFooter">{{ __('consent::messages.modal.view.close') }}</button>
         </div>
     </div>
 </div>

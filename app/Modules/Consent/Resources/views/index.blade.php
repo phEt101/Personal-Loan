@@ -1,14 +1,14 @@
-@extends('layouts.app', ['title' => 'รายงานใบยินยอม'])
+@extends('layouts.app', ['title' => __('consent::messages.index.page_title')])
 
 @section('content')
     <section class="dashboard">
         <div class="hero compact-hero hero-with-actions">
             <div class="hero-body">
-                <h2>รายงานใบยินยอม</h2>
-                <p>สรุปสถานะการเซ็นใบยินยอมของลูกค้า</p>
+                <h2>{{ __('consent::messages.index.hero_title') }}</h2>
+                <p>{{ __('consent::messages.index.hero_subtitle') }}</p>
             </div>
             <div class="hero-actions">
-                <button type="button" id="openConsentModal" class="action-btn">+ สร้างใบยินยอม</button>
+                <button type="button" id="openConsentModal" class="action-btn">{{ __('consent::messages.index.create_button') }}</button>
             </div>
         </div>
 
@@ -18,7 +18,7 @@
 
         @if($errors->any())
             <div class="alert alert-danger">
-                <div class="alert-title">บันทึกข้อมูลไม่สำเร็จ กรุณาตรวจสอบข้อมูลอีกครั้ง</div>
+                <div class="alert-title">{{ __('consent::messages.index.save_failed') }}</div>
                 <ul class="alert-list">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -29,15 +29,15 @@
 
         <section class="summary-cards compact-summary">
             <div class="summary-card">
-                <div class="summary-label">ลูกค้าทั้งหมด</div>
+                <div class="summary-label">{{ __('consent::messages.index.summary_total') }}</div>
                 <div class="summary-value">{{ $total }}</div>
             </div>
             <div class="summary-card">
-                <div class="summary-label">ผ่านเกณฑ์</div>
+                <div class="summary-label">{{ __('consent::messages.index.summary_approved') }}</div>
                 <div class="summary-value">{{ $approved }}</div>
             </div>
             <div class="summary-card">
-                <div class="summary-label">ไม่ผ่านเกณฑ์</div>
+                <div class="summary-label">{{ __('consent::messages.index.summary_rejected') }}</div>
                 <div class="summary-value">{{ $rejected }}</div>
             </div>
         </section>
@@ -47,43 +47,43 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>รหัส</th>
-                            <th>ชื่อ</th>
-                            <th>วันที่ทำรายการ</th>
-                            <th>สถานะ</th>
-                            <th>การกระทำ</th>
+                            <th>{{ __('consent::messages.index.table.code') }}</th>
+                            <th>{{ __('consent::messages.index.table.name') }}</th>
+                            <th>{{ __('consent::messages.index.table.date') }}</th>
+                            <th>{{ __('consent::messages.index.table.status') }}</th>
+                            <th>{{ __('consent::messages.index.table.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($customers as $customer)
                             <tr>
-                                <td data-label="รหัส">{{ $customer->app_no ?? '-' }}</td>
-                                <td data-label="ชื่อ">{{ $customer->applicant?->name ?? '-' }}</td>
-                                <td data-label="วันที่ทำรายการ">{{ $customer->created_at?->format('d/m/Y') ?? '-' }}</td>
-                                <td data-label="สถานะ">
+                                <td data-label="{{ __('consent::messages.index.table.code') }}">{{ $customer->app_no ?? '-' }}</td>
+                                <td data-label="{{ __('consent::messages.index.table.name') }}">{{ $customer->applicant?->name ?? '-' }}</td>
+                                <td data-label="{{ __('consent::messages.index.table.date') }}">{{ $customer->created_at?->format('d/m/Y') ?? '-' }}</td>
+                                <td data-label="{{ __('consent::messages.index.table.status') }}">
                                     @if($customer->status === 'approved')
-                                        <span class="badge badge-signed">ผ่าน</span>
+                                        <span class="badge badge-signed">{{ __('consent::messages.index.status.approved') }}</span>
                                     @elseif($customer->status === 'rejected')
-                                        <span class="badge badge-pending">ไม่ผ่าน</span>
+                                        <span class="badge badge-pending">{{ __('consent::messages.index.status.rejected') }}</span>
                                     @else
-                                        <span class="badge">รอดำเนินการ</span>
+                                        <span class="badge">{{ __('consent::messages.index.status.pending') }}</span>
                                     @endif
                                 </td>
-                                <td data-label="การกระทำ">
+                                <td data-label="{{ __('consent::messages.index.table.actions') }}">
                                     <div class="table-actions">
                                         <button
                                             type="button"
                                             class="action-btn outline table-action-btn-small"
                                             onclick="viewDocument({ id: {{ Js::from($customer->encrypted_id) }} }); return false;"
                                         >
-                                            ดูเอกสาร
+                                            {{ __('consent::messages.index.actions.view') }}
                                         </button>
                                         <button
                                             type="button"
                                             class="action-btn table-action-btn-small"
                                             onclick="editDocument({ id: {{ Js::from($customer->encrypted_id) }} }); return false;"
                                         >
-                                            แก้ไข
+                                            {{ __('consent::messages.index.actions.edit') }}
                                         </button>
                                         <form method="POST" action="{{ route('consent.destroy', $customer->encrypted_id) }}" class="delete-consent-form table-actions-form" data-name="{{ $customer->applicant?->name ?? '-' }}">
                                             @csrf
@@ -92,7 +92,7 @@
                                                 type="submit"
                                                 class="action-btn table-action-btn-delete"
                                             >
-                                                ลบ
+                                                {{ __('consent::messages.index.actions.delete') }}
                                             </button>
                                         </form>
                                     </div>
@@ -100,7 +100,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="empty-cell">ไม่มีข้อมูล</td>
+                                <td colspan="5" class="empty-cell">{{ __('consent::messages.index.empty') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -121,7 +121,7 @@
     <div id="pdfConsentModal" class="modal">
         <div class="modal-content modal-lg">
             <div class="modal-header">
-                <h3 class="modal-title">ข้อมูลผลิตภัณฑ์และเงื่อนไขการสมัคร</h3>
+                <h3 class="modal-title">{{ __('consent::messages.modal.pdf.title') }}</h3>
                 <button type="button" class="close-btn" id="closePdfModal" aria-label="Close modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: 0; overflow-y: auto; height: 75vh; background: #f3f4f6;">
@@ -139,8 +139,8 @@
             </div>
             <div class="modal-footer">
                 <div class="form-actions modal-form-actions">
-                    <button type="button" class="action-btn outline" id="cancelPdfModal">ยกเลิก</button>
-                    <button type="button" class="action-btn" id="proceedToConsentModal">ยอมรับและดำเนินการต่อ</button>
+                    <button type="button" class="action-btn outline" id="cancelPdfModal">{{ __('consent::messages.modal.pdf.cancel') }}</button>
+                    <button type="button" class="action-btn" id="proceedToConsentModal">{{ __('consent::messages.modal.pdf.proceed') }}</button>
                 </div>
             </div>
         </div>
@@ -153,6 +153,21 @@
             form: @json(route('consent.modals.form')),
             view: @json(route('consent.modals.view')),
             saveStep: @json(route('consent.save-step')),
+        };
+
+        const consentI18n = {
+            form: {
+                createTitle: @json(__('consent::messages.modal.form.create_title')),
+                editTitle: @json(__('consent::messages.modal.form.edit_title')),
+                submitCreate: @json(__('consent::messages.modal.form.buttons.submit_create')),
+                submitEdit: @json(__('consent::messages.modal.form.buttons.submit_edit')),
+                step1: {
+                    idCardNumber: @json(__('consent::messages.modal.form.step1.fields.id_card_number')),
+                    passportNumber: @json(__('consent::messages.modal.form.step1.fields.passport_number')),
+                    idCardPlaceholder: @json(__('consent::messages.modal.form.step1.placeholders.id_card_number')),
+                    passportPlaceholder: @json(__('consent::messages.modal.form.step1.placeholders.passport_number')),
+                },
+            },
         };
 
         const consentBaseUrl = @json(url('/consent'));
@@ -1820,10 +1835,10 @@
                 resetAllDocumentSelections();
                 renderIncomeDocumentsExisting(null);
                 if (consentModalTitle) {
-                    consentModalTitle.textContent = 'สร้างใบยินยอมแบบละเอียด';
+                    consentModalTitle.textContent = consentI18n.form.createTitle;
                 }
                 if (consentSubmitBtn) {
-                    consentSubmitBtn.textContent = 'บันทึกข้อมูลใบสมัคร';
+                    consentSubmitBtn.textContent = consentI18n.form.submitCreate;
                 }
                 if (appNoInput) {
                     appNoInput.value = modalNextAppNo;
@@ -1859,10 +1874,10 @@
                 refAddressController.reset();
                 setFieldValue('consent_id', customer.id);
                 if (consentModalTitle) {
-                    consentModalTitle.textContent = 'แก้ไขใบยินยอมแบบละเอียด';
+                    consentModalTitle.textContent = consentI18n.form.editTitle;
                 }
                 if (consentSubmitBtn) {
-                    consentSubmitBtn.textContent = 'บันทึกการแก้ไข';
+                    consentSubmitBtn.textContent = consentI18n.form.submitEdit;
                 }
 
                 const hasPassport = (customer.passport ?? '').toString().trim() !== '';
@@ -2047,16 +2062,16 @@
                 }
 
                 if (idTypeSelect.value === 'passport') {
-                    idNumberLabel.innerHTML = 'เลขหนังสือเดินทาง <span class="required-asterisk">*</span>';
-                    idCardInput.placeholder = 'ระบุเลขหนังสือเดินทาง';
+                    idNumberLabel.innerHTML = `${consentI18n.form.step1.passportNumber} <span class="required-asterisk">*</span>`;
+                    idCardInput.placeholder = consentI18n.form.step1.passportPlaceholder;
                     idCardInput.maxLength = 20;
                     idCardInput.removeAttribute('inputmode');
                     idCardInput.value = idCardInput.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
                     return;
                 }
 
-                idNumberLabel.innerHTML = 'เลขบัตรประจำตัวประชาชน <span class="required-asterisk">*</span>';
-                idCardInput.placeholder = 'เลข 13 หลัก';
+                idNumberLabel.innerHTML = `${consentI18n.form.step1.idCardNumber} <span class="required-asterisk">*</span>`;
+                idCardInput.placeholder = consentI18n.form.step1.idCardPlaceholder;
                 idCardInput.maxLength = 13;
                 idCardInput.setAttribute('inputmode', 'numeric');
                 idCardInput.value = idCardInput.value.replace(/[^0-9]/g, '').slice(0, 13);
