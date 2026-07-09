@@ -110,7 +110,53 @@
 
         @if(method_exists($customers, 'links'))
             <div class="pagination-container">
-                {{ $customers->onEachSide(1)->links() }}
+                @if ($customers->hasPages())
+                    <nav class="pagination-nav" role="navigation" aria-label="{{ __('consent::messages.pagination.navigation') }}">
+                        <div class="pagination-summary">
+                            {{ __('consent::messages.pagination.showing') }}
+                            @if ($customers->firstItem())
+                                <span>{{ $customers->firstItem() }}</span>
+                                {{ __('consent::messages.pagination.to') }}
+                                <span>{{ $customers->lastItem() }}</span>
+                            @else
+                                <span>{{ $customers->count() }}</span>
+                            @endif
+                            {{ __('consent::messages.pagination.of') }}
+                            <span>{{ $customers->total() }}</span>
+                            {{ __('consent::messages.pagination.results') }}
+                        </div>
+
+                        <div class="pagination-list">
+                            <a
+                                href="{{ $customers->previousPageUrl() ?: '#' }}"
+                                class="pagination-link {{ $customers->onFirstPage() ? 'is-disabled' : '' }}"
+                                rel="prev"
+                                aria-label="{{ __('consent::messages.pagination.previous') }}"
+                                @if($customers->onFirstPage()) aria-disabled="true" tabindex="-1" @endif
+                            >
+                                {{ __('consent::messages.pagination.previous') }}
+                            </a>
+
+                            @foreach ($customers->getUrlRange(max(1, $customers->currentPage() - 1), min($customers->lastPage(), $customers->currentPage() + 1)) as $page => $url)
+                                @if ($page === $customers->currentPage())
+                                    <span class="pagination-current" aria-current="page">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $url }}" class="pagination-link" aria-label="{{ __('consent::messages.pagination.go_to_page', ['page' => $page]) }}">{{ $page }}</a>
+                                @endif
+                            @endforeach
+
+                            <a
+                                href="{{ $customers->nextPageUrl() ?: '#' }}"
+                                class="pagination-link {{ $customers->hasMorePages() ? '' : 'is-disabled' }}"
+                                rel="next"
+                                aria-label="{{ __('consent::messages.pagination.next') }}"
+                                @unless($customers->hasMorePages()) aria-disabled="true" tabindex="-1" @endunless
+                            >
+                                {{ __('consent::messages.pagination.next') }}
+                            </a>
+                        </div>
+                    </nav>
+                @endif
             </div>
         @endif
     </section>

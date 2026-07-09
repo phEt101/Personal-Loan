@@ -29,6 +29,16 @@ return [
         ],
         'empty' => 'No data available',
     ],
+    'pagination' => [
+        'navigation' => 'Pagination Navigation',
+        'showing' => 'Showing',
+        'to' => 'to',
+        'of' => 'of',
+        'results' => 'results',
+        'previous' => 'Previous',
+        'next' => 'Next',
+        'go_to_page' => 'Go to page :page',
+    ],
     'modal' => [
         'pdf' => [
             'title' => 'Product Information and Application Terms',

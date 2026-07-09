@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Modules\Consent\Http\Controllers\ConsentController;
 
-Route::middleware('web')->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/consent', [ConsentController::class, 'index'])->name('consent.index');
     Route::post('/consent/save-step', [ConsentController::class, 'saveStep'])->name('consent.save-step');
     Route::delete('/consent/{consent}', [ConsentController::class, 'destroy'])->name('consent.destroy');

@@ -30,7 +30,10 @@
                     </div>
                     <div class="user-dropdown-links">
                         <a href="#" class="user-dropdown-item">{{ __('messages.layout.my_profile') }}</a>
-                        <a href="#" class="user-dropdown-item user-dropdown-signout">{{ __('messages.layout.sign_out') }}</a>
+                        <form method="POST" action="{{ route('logout') }}" class="user-dropdown-form">
+                            @csrf
+                            <button type="submit" class="user-dropdown-item user-dropdown-signout">{{ __('messages.layout.sign_out') }}</button>
+                        </form>
                     </div>
                 </div>
             </div>

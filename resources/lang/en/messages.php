@@ -17,13 +17,5 @@ return [
     'language' => [
         'th' => 'TH',
         'en' => 'EN',
-    ],
-    'home' => [
-        'eyebrow' => 'Dashboard',
-        'title' => 'Personal Loan main dashboard',
-        'description' => 'Manage consent forms and application details from one place, with instant language switching.',
-        'primary_action' => 'Open Consent',
-        'secondary_action' => 'Explore the system',
-        'language_hint' => 'Use the TH / EN buttons above to switch language.',
-    ],
+    ]
 ];
