@@ -1149,7 +1149,7 @@
                 }
 
                 try {
-                    console.log(`[Wizard] Saving step ${step}...`);
+                  
                     const response = await fetch(modalEndpoints.saveStep, {
                         method: 'POST',
                         body: formData,
@@ -1163,14 +1163,13 @@
                     const result = await response.json();
                     
                     if (response.ok && result.ok) {
-                        console.log(`[Wizard] Step ${step} saved. Consent ID: ${result.consent_id}`);
                         if (result.consent_id) {
                             const idField = document.getElementById('consent_id');
                             if (idField) idField.value = result.consent_id;
                         }
                         return { ok: true, data: result };
                     } else {
-                        console.error(`[Wizard] Save failed for step ${step}:`, result.message || result.errors);
+                        
                         return { 
                             ok: false, 
                             message: result.message || 'กรุณาตรวจสอบข้อมูลที่กรอก', 
@@ -1178,7 +1177,7 @@
                         };
                     }
                 } catch (error) {
-                    console.error(`[Wizard] Error in step ${step}:`, error);
+                   
                     return { ok: false, message: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์' };
                 }
             }
@@ -1704,145 +1703,40 @@
 
             const documentUploadGroups = [
                 {
-                    key: 'incomeSalarySlipDocuments',
-                    documentType: 'income_salary_slip',
-                    acceptedDocumentTypes: ['income_salary_slip', 'income_salary', 'income_proof'],
-                    defaultTypeLabel: 'สลิปเงินเดือนล่าสุด',
+                    key: 'incomeDocuments',
+                    documentType: 'income_document',
+                    acceptedDocumentTypes: [
+                        'income_document',
+                        'income_salary_slip',
+                        'income_salary_certificate',
+                        'income_salary_50tawi',
+                        'income_salary_statement_6m',
+                        'income_supplementary_slip',
+                        'income_supplementary_statement_6m',
+                        'income_registered_corporate_cert',
+                        'income_registered_shareholder_list',
+                        'income_registered_trade_registration',
+                        'income_registered_statement_1y',
+                        'income_unregistered_lease',
+                        'income_unregistered_tax',
+                        'income_unregistered_statement_1y',
+                        'income_unregistered_invoice',
+                        'income_unregistered_business_photo',
+                        'income_self_individual_tax',
+                        'income_self_individual_pnd',
+                        'income_self_individual_statement_1y',
+                        'income_self_business_tax',
+                        'income_self_business_statement_1y',
+                        'income_self_business_invoice',
+                        'income_self_business_photo',
+                    ],
+                    defaultTypeLabel: 'เอกสารแสดงรายได้',
                 },
                 {
-                    key: 'incomeSalaryCertificateDocuments',
-                    documentType: 'income_salary_certificate',
-                    defaultTypeLabel: 'หนังสือรับรองเงินเดือน',
-                },
-                {
-                    key: 'incomeSalary50TawiDocuments',
-                    documentType: 'income_salary_50tawi',
-                    defaultTypeLabel: 'เอกสาร 50 ทวิ',
-                },
-                {
-                    key: 'incomeSalaryStatement6mDocuments',
-                    documentType: 'income_salary_statement_6m',
-                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 6 เดือน (เงินเดือน)',
-                },
-                {
-                    key: 'incomeSupplementarySlipDocuments',
-                    documentType: 'income_supplementary_slip',
-                    acceptedDocumentTypes: ['income_supplementary_slip', 'income_salary_supplement'],
-                    defaultTypeLabel: 'สลิปเงินเดือน/คอมมิชชัน/ค่าล่วงเวลา',
-                },
-                {
-                    key: 'incomeSupplementaryStatement6mDocuments',
-                    documentType: 'income_supplementary_statement_6m',
-                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 6 เดือน (รายได้เสริม)',
-                },
-                {
-                    key: 'incomeRegisteredCertDocuments',
-                    documentType: 'income_registered_corporate_cert',
-                    acceptedDocumentTypes: ['income_registered_corporate_cert', 'income_business_registered'],
-                    defaultTypeLabel: 'หนังสือรับรองการจดทะเบียนนิติบุคคล',
-                },
-                {
-                    key: 'incomeRegisteredShareholderDocuments',
-                    documentType: 'income_registered_shareholder_list',
-                    defaultTypeLabel: 'สำเนารายชื่อผู้ถือหุ้น',
-                },
-                {
-                    key: 'incomeRegisteredTradeDocuments',
-                    documentType: 'income_registered_trade_registration',
-                    defaultTypeLabel: 'ใบทะเบียนการค้า',
-                },
-                {
-                    key: 'incomeRegisteredStatement1yDocuments',
-                    documentType: 'income_registered_statement_1y',
-                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 1 ปี (จดทะเบียน)',
-                },
-                {
-                    key: 'incomeUnregisteredLeaseDocuments',
-                    documentType: 'income_unregistered_lease',
-                    acceptedDocumentTypes: ['income_unregistered_lease', 'income_business_unregistered'],
-                    defaultTypeLabel: 'สัญญาเช่า',
-                },
-                {
-                    key: 'incomeUnregisteredTaxDocuments',
-                    documentType: 'income_unregistered_tax',
-                    defaultTypeLabel: 'เอกสารการเสียภาษี (ไม่จดทะเบียน)',
-                },
-                {
-                    key: 'incomeUnregisteredStatement1yDocuments',
-                    documentType: 'income_unregistered_statement_1y',
-                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 1 ปี (ไม่จดทะเบียน)',
-                },
-                {
-                    key: 'incomeUnregisteredInvoiceDocuments',
-                    documentType: 'income_unregistered_invoice',
-                    defaultTypeLabel: 'บิลซื้อ/บิลขาย (ไม่จดทะเบียน)',
-                },
-                {
-                    key: 'incomeUnregisteredBusinessPhotoDocuments',
-                    documentType: 'income_unregistered_business_photo',
-                    defaultTypeLabel: 'รูปถ่ายกิจการ (ไม่จดทะเบียน)',
-                },
-                {
-                    key: 'incomeSelfIndividualTax50Documents',
-                    documentType: 'income_self_individual_tax',
-                    acceptedDocumentTypes: ['income_self_individual_tax', 'income_self_employed_individual'],
-                    defaultTypeLabel: 'เอกสารการเสียภาษี/50 ทวิ (บุคคลธรรมดา)',
-                },
-                {
-                    key: 'incomeSelfIndividualPndDocuments',
-                    documentType: 'income_self_individual_pnd',
-                    defaultTypeLabel: 'แบบยื่นภาษี ภ.ง.ด. 90/91/94',
-                },
-                {
-                    key: 'incomeSelfIndividualStatement1yDocuments',
-                    documentType: 'income_self_individual_statement_1y',
-                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 1 ปี (บุคคลธรรมดา)',
-                },
-                {
-                    key: 'incomeSelfBusinessTaxDocuments',
-                    documentType: 'income_self_business_tax',
-                    acceptedDocumentTypes: ['income_self_business_tax', 'income_self_employed_business'],
-                    defaultTypeLabel: 'เอกสารการเสียภาษี (ผู้ประกอบการ)',
-                },
-                {
-                    key: 'incomeSelfBusinessStatement1yDocuments',
-                    documentType: 'income_self_business_statement_1y',
-                    defaultTypeLabel: 'รายการเดินบัญชีย้อนหลัง 1 ปี (ผู้ประกอบการ)',
-                },
-                {
-                    key: 'incomeSelfBusinessInvoiceDocuments',
-                    documentType: 'income_self_business_invoice',
-                    defaultTypeLabel: 'บิลซื้อ/บิลขาย (ผู้ประกอบการ)',
-                },
-                {
-                    key: 'incomeSelfBusinessPhotoDocuments',
-                    documentType: 'income_self_business_photo',
-                    defaultTypeLabel: 'รูปถ่ายกิจการ (ผู้ประกอบการ)',
-                },
-                {
-                    key: 'identityIdCardDocuments',
-                    documentType: 'id_card',
-                    defaultTypeLabel: 'สำเนาบัตรประชาชน',
-                },
-                {
-                    key: 'identityPassportDocuments',
-                    documentType: 'passport',
-                    defaultTypeLabel: 'หนังสือเดินทาง',
-                },
-                {
-                    key: 'identityHouseRegistrationDocuments',
-                    documentType: 'house_registration',
-                    defaultTypeLabel: 'สำเนาทะเบียนบ้าน',
-                },
-                {
-                    key: 'identityWorkPermitDocuments',
-                    documentType: 'work_permit',
-                    defaultTypeLabel: 'ใบอนุญาตทำงาน',
-                },
-                {
-                    key: 'identityNameChangeDocuments',
-                    documentType: 'name_change',
-                    defaultTypeLabel: 'สำเนาเปลี่ยนชื่อ-นามสกุล',
+                    key: 'identityDocuments',
+                    documentType: 'identity_document',
+                    acceptedDocumentTypes: ['identity_document', 'id_card', 'passport', 'house_registration', 'work_permit', 'name_change'],
+                    defaultTypeLabel: 'เอกสารแสดงตน',
                 },
             ];
 

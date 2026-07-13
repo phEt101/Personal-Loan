@@ -863,115 +863,34 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.identity_id_card_copy') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="identityIdCardDocuments" class="custom-file-upload compact">
-                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
-                                                        <p>PDF, JPG, PNG</p>
-                                                    </label>
-                                                    <input type="file" id="identityIdCardDocuments" name="identityIdCardDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-
-                                                    <div class="hidden" id="identityIdCardDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
-                                                        <div id="identityIdCardDocumentsSelectedList"></div>
-                                                    </div>
-
-                                                    <div class="hidden" id="identityIdCardDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
-                                                        <div id="identityIdCardDocumentsExistingList"></div>
-                                                    </div>
+                                            <td class="document-upload-label-cell">
+                                                <div class="identity-doc-list-wrapper">
+                                                    <p class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.identity_header') }}</p>
+                                                    <ul class="identity-doc-list">
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.identity_id_card_copy') }} </li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.passport') }} </li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.house_registration_copy') }} </li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.work_permit') }} </li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.name_change_copy_optional') }} </li>
+                                                    </ul>
                                                 </div>
                                             </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.passport') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="identityPassportDocuments" class="custom-file-upload compact">
+                                                    <label for="identityDocuments" class="custom-file-upload compact">
                                                         <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
                                                         <p>PDF, JPG, PNG</p>
                                                     </label>
-                                                    <input type="file" id="identityPassportDocuments" name="identityPassportDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+                                                    <input type="file" id="identityDocuments" name="identityDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
-                                                    <div class="hidden" id="identityPassportDocumentsSelectedWrapper">
+                                                    <div class="hidden" id="identityDocumentsSelectedWrapper">
                                                         <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
-                                                        <div id="identityPassportDocumentsSelectedList"></div>
+                                                        <div id="identityDocumentsSelectedList"></div>
                                                     </div>
 
-                                                    <div class="hidden" id="identityPassportDocumentsExistingWrapper">
+                                                    <div class="hidden" id="identityDocumentsExistingWrapper">
                                                         <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
-                                                        <div id="identityPassportDocumentsExistingList"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.house_registration_copy') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="identityHouseRegistrationDocuments" class="custom-file-upload compact">
-                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
-                                                        <p>PDF, JPG, PNG</p>
-                                                    </label>
-                                                    <input type="file" id="identityHouseRegistrationDocuments" name="identityHouseRegistrationDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-
-                                                    <div class="hidden" id="identityHouseRegistrationDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
-                                                        <div id="identityHouseRegistrationDocumentsSelectedList"></div>
-                                                    </div>
-
-                                                    <div class="hidden" id="identityHouseRegistrationDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
-                                                        <div id="identityHouseRegistrationDocumentsExistingList"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.work_permit') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="identityWorkPermitDocuments" class="custom-file-upload compact">
-                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
-                                                        <p>PDF, JPG, PNG</p>
-                                                    </label>
-                                                    <input type="file" id="identityWorkPermitDocuments" name="identityWorkPermitDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-
-                                                    <div class="hidden" id="identityWorkPermitDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
-                                                        <div id="identityWorkPermitDocumentsSelectedList"></div>
-                                                    </div>
-
-                                                    <div class="hidden" id="identityWorkPermitDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
-                                                        <div id="identityWorkPermitDocumentsExistingList"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.name_change_copy_optional') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="identityNameChangeDocuments" class="custom-file-upload compact">
-                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
-                                                        <p>PDF, JPG, PNG</p>
-                                                    </label>
-                                                    <input type="file" id="identityNameChangeDocuments" name="identityNameChangeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-
-                                                    <div class="hidden" id="identityNameChangeDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
-                                                        <div id="identityNameChangeDocumentsSelectedList"></div>
-                                                    </div>
-
-                                                    <div class="hidden" id="identityNameChangeDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
-                                                        <div id="identityNameChangeDocumentsExistingList"></div>
+                                                        <div id="identityDocumentsExistingList"></div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -982,290 +901,46 @@
                                             <th>{{ __('consent::messages.modal.form.attachment.borrower_header') }}</th>
                                         </tr>
 
-                                        <tr class="document-income-subsection-row">
-                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.salaried') }}</th>
-                                        </tr>
-
                                         <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.salary_slip_latest') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSalarySlipDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSalarySlipDocuments" name="incomeSalarySlipDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSalarySlipDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSalarySlipDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSalarySlipDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSalarySlipDocumentsExistingList"></div></div>
+                                            <td class="document-upload-label-cell">
+                                                <div class="income-doc-list-wrapper">
+                                                    <p class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.income_header') }}</p>
+                                                    <ul class="income-doc-list">
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.salary_slip_latest') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.salary_certificate') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.tax_50_tawi_latest_or_6m') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.bank_statement_6m_salary') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.supplementary_slips') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.registered_certificate') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.shareholder_list_copy') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.trade_registration') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.lease_contract_optional') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.tax_documents') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.purchase_sales_invoices_optional') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.business_photos') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.tax_docs_50_tawi_with_stamp') }}</li>
+                                                        <li>{{ __('consent::messages.modal.form.attachment.documents.pnd_90_91_94') }}</li>
+                                                    </ul>
                                                 </div>
                                             </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.salary_certificate') }}</td>
                                             <td class="document-upload-input-cell">
                                                 <div class="upload-stack">
-                                                    <label for="incomeSalaryCertificateDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSalaryCertificateDocuments" name="incomeSalaryCertificateDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSalaryCertificateDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSalaryCertificateDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSalaryCertificateDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSalaryCertificateDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                    <label for="incomeDocuments" class="custom-file-upload compact">
+                                                        <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
+                                                        <p>PDF, JPG, PNG</p>
+                                                    </label>
+                                                    <input type="file" id="incomeDocuments" name="incomeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.tax_50_tawi_latest_or_6m') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSalary50TawiDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSalary50TawiDocuments" name="incomeSalary50TawiDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSalary50TawiDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSalary50TawiDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSalary50TawiDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSalary50TawiDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                    <div class="hidden" id="incomeDocumentsSelectedWrapper">
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
+                                                        <div id="incomeDocumentsSelectedList"></div>
+                                                    </div>
 
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_6m_salary') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSalaryStatement6mDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSalaryStatement6mDocuments" name="incomeSalaryStatement6mDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSalaryStatement6mDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSalaryStatement6mDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSalaryStatement6mDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSalaryStatement6mDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="document-income-subsection-row">
-                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.low_income_can_add_other_income') }}</th>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.supplementary_slips') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSupplementarySlipDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSupplementarySlipDocuments" name="incomeSupplementarySlipDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSupplementarySlipDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSupplementarySlipDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSupplementarySlipDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSupplementarySlipDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_6m_salary') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSupplementaryStatement6mDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSupplementaryStatement6mDocuments" name="incomeSupplementaryStatement6mDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSupplementaryStatement6mDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSupplementaryStatement6mDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSupplementaryStatement6mDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSupplementaryStatement6mDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="document-income-subsection-row">
-                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.business_owner_registered') }}</th>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.registered_certificate') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeRegisteredCertDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeRegisteredCertDocuments" name="incomeRegisteredCertDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeRegisteredCertDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeRegisteredCertDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeRegisteredCertDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeRegisteredCertDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.shareholder_list_copy') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeRegisteredShareholderDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeRegisteredShareholderDocuments" name="incomeRegisteredShareholderDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeRegisteredShareholderDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeRegisteredShareholderDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeRegisteredShareholderDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeRegisteredShareholderDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.trade_registration') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeRegisteredTradeDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeRegisteredTradeDocuments" name="incomeRegisteredTradeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeRegisteredTradeDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeRegisteredTradeDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeRegisteredTradeDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeRegisteredTradeDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeRegisteredStatement1yDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeRegisteredStatement1yDocuments" name="incomeRegisteredStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeRegisteredStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeRegisteredStatement1yDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeRegisteredStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeRegisteredStatement1yDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="document-income-subsection-row">
-                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.unregistered_case') }}</th>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.lease_contract_optional') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeUnregisteredLeaseDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeUnregisteredLeaseDocuments" name="incomeUnregisteredLeaseDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredLeaseDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredLeaseDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredLeaseDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredLeaseDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.tax_documents') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeUnregisteredTaxDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeUnregisteredTaxDocuments" name="incomeUnregisteredTaxDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredTaxDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredTaxDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredTaxDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredTaxDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeUnregisteredStatement1yDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeUnregisteredStatement1yDocuments" name="incomeUnregisteredStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredStatement1yDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredStatement1yDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.purchase_sales_invoices_optional') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeUnregisteredInvoiceDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeUnregisteredInvoiceDocuments" name="incomeUnregisteredInvoiceDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredInvoiceDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredInvoiceDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredInvoiceDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredInvoiceDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.business_photos') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeUnregisteredBusinessPhotoDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeUnregisteredBusinessPhotoDocuments" name="incomeUnregisteredBusinessPhotoDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeUnregisteredBusinessPhotoDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeUnregisteredBusinessPhotoDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeUnregisteredBusinessPhotoDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeUnregisteredBusinessPhotoDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="document-income-subsection-row">
-                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.self_employed_individual') }}</th>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.tax_docs_50_tawi_with_stamp') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSelfIndividualTax50Documents" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSelfIndividualTax50Documents" name="incomeSelfIndividualTax50Documents[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfIndividualTax50DocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfIndividualTax50DocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfIndividualTax50DocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfIndividualTax50DocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.pnd_90_91_94') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSelfIndividualPndDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSelfIndividualPndDocuments" name="incomeSelfIndividualPndDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfIndividualPndDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfIndividualPndDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfIndividualPndDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfIndividualPndDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSelfIndividualStatement1yDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSelfIndividualStatement1yDocuments" name="incomeSelfIndividualStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfIndividualStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfIndividualStatement1yDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfIndividualStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfIndividualStatement1yDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="document-income-subsection-row">
-                                            <th colspan="2">{{ __('consent::messages.modal.form.attachment.subsections.self_employed_entrepreneur') }}</th>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.tax_documents') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSelfBusinessTaxDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSelfBusinessTaxDocuments" name="incomeSelfBusinessTaxDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfBusinessTaxDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfBusinessTaxDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfBusinessTaxDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfBusinessTaxDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.bank_statement_1y') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSelfBusinessStatement1yDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSelfBusinessStatement1yDocuments" name="incomeSelfBusinessStatement1yDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfBusinessStatement1yDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfBusinessStatement1yDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfBusinessStatement1yDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfBusinessStatement1yDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.purchase_sales_invoices_optional') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSelfBusinessInvoiceDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSelfBusinessInvoiceDocuments" name="incomeSelfBusinessInvoiceDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfBusinessInvoiceDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfBusinessInvoiceDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfBusinessInvoiceDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfBusinessInvoiceDocumentsExistingList"></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.documents.business_photos') }}</td>
-                                            <td class="document-upload-input-cell">
-                                                <div class="upload-stack">
-                                                    <label for="incomeSelfBusinessPhotoDocuments" class="custom-file-upload compact"><span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span><p>PDF, JPG, PNG</p></label>
-                                                    <input type="file" id="incomeSelfBusinessPhotoDocuments" name="incomeSelfBusinessPhotoDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
-                                                    <div class="hidden" id="incomeSelfBusinessPhotoDocumentsSelectedWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label><div id="incomeSelfBusinessPhotoDocumentsSelectedList"></div></div>
-                                                    <div class="hidden" id="incomeSelfBusinessPhotoDocumentsExistingWrapper"><label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label><div id="incomeSelfBusinessPhotoDocumentsExistingList"></div></div>
+                                                    <div class="hidden" id="incomeDocumentsExistingWrapper">
+                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
+                                                        <div id="incomeDocumentsExistingList"></div>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
