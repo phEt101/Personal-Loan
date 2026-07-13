@@ -20,6 +20,7 @@ class ConsentApplication extends Model
         'app_no',
         'officer_name',
         'officer_phone',
+        'officer_group',
         'document_delivery',
         'status',
         'signed',

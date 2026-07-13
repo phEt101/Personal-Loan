@@ -1,6 +1,29 @@
 <!-- Modal สำหรับสร้างใบยินยอม -->
 <div id="consentModal" class="modal" data-next-app-no="{{ $nextAppNo }}">
     <div class="modal-content modal-lg">
+        <style>
+            /* Prevent date inputs inside modal from wrapping or being clipped on iPad/iOS */
+            #consentModal input[type="date"] {
+                -webkit-appearance: none;
+                appearance: none;
+                min-height: 44px;
+                line-height: 1.2;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                min-width: 0;
+                padding-left: 0.75rem;
+                padding-right: 1rem;
+                text-align: center;
+                box-sizing: border-box;
+            }
+            #consentModal input[type="date"]::-webkit-clear-button,
+            #consentModal input[type="date"]::-webkit-inner-spin-button {
+                display: none;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+        </style>
         <form method="POST" action="#" class="consent-form-wrapper" id="consentForm" autocomplete="off" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="consent_id" id="consent_id" value="">
@@ -72,14 +95,23 @@
                             {{ __('consent::messages.modal.form.step1.sections.company_officer') }}
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="officer_name">{{ __('consent::messages.modal.form.step1.fields.officer_name') }}</label>
                             <input type="text" id="officer_name" name="officer_name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.officer_name') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="officer_phone">{{ __('consent::messages.modal.form.step1.fields.officer_phone') }}</label>
                             <input type="text" id="officer_phone" name="officer_phone" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.officer_phone') }}">
+                        </div>
+
+                        <div class="form-group col-4">
+                            <label for="officer_group">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</label>
+                            <select id="officer_group" name="officer_group">
+                                <option value="">{{ __('consent::messages.modal.form.step1.options.officer_group_prompt') }}</option>
+                                <option value="group_1">{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
+                                <option value="group_2">{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
+                            </select>
                         </div>
 
                         <div class="form-section-title">
@@ -101,24 +133,49 @@
                             <input type="text" id="title_other" name="title_other" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.title_other') }}">
                         </div>
 
-                        <div class="form-group col-9" id="nameGroup">
+                        <div class="form-group col-6" id="nameGroup">
                             <label for="name">{{ __('consent::messages.modal.form.step1.fields.name_th') }}</label>
                             <input type="text" id="name" name="name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.name_th') }}" required>
                         </div>
 
-                        <div class="form-group col-12">
+                        <div class="form-group col-9">
                             <label for="name_en">{{ __('consent::messages.modal.form.step1.fields.name_en') }}</label>
                             <input type="text" id="name_en" name="name_en" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.name_en') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="birthdate">{{ __('consent::messages.modal.form.step1.fields.birthdate') }} <span class="required-asterisk">*</span></label>
                             <input type="date" id="birthdate" name="birthdate" required>
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="nationality">{{ __('consent::messages.modal.form.step1.fields.nationality') }} <span class="required-asterisk">*</span></label>
                             <input type="text" id="nationality" name="nationality" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.nationality') }}" required>
+                        </div>
+
+                         <div class="form-group col-4">
+                            <label for="education">{{ __('consent::messages.modal.form.step1.fields.education') }} <span class="required-asterisk">*</span></label>
+                            <select id="education" name="education" required>
+                                <option value="">{{ __('consent::messages.modal.form.step1.options.education_prompt') }}</option>
+                                <option value="มัธยมต้น">{{ __('consent::messages.modal.form.step1.options.education_lower_secondary') }}</option>
+                                <option value="มัธยมปลาย">{{ __('consent::messages.modal.form.step1.options.education_upper_secondary') }}</option>
+                                <option value="อุดมศึกษา">{{ __('consent::messages.modal.form.step1.options.education_higher') }}</option>
+                                <option value="ปริญญาตรี">{{ __('consent::messages.modal.form.step1.options.education_bachelor') }}</option>
+                                <option value="ปริญญาโท">{{ __('consent::messages.modal.form.step1.options.education_master') }}</option>
+                                <option value="ปริญญาเอก">{{ __('consent::messages.modal.form.step1.options.education_doctorate') }}</option>
+                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step1.options.education_other') }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-4">
+                            <label for="marital_status">{{ __('consent::messages.modal.form.step1.fields.marital_status') }} <span class="required-asterisk">*</span></label>
+                            <select id="marital_status" name="marital_status" required>
+                                <option value="โสด">{{ __('consent::messages.modal.form.step1.options.marital_single') }}</option>
+                                <option value="สมรส">{{ __('consent::messages.modal.form.step1.options.marital_married') }}</option>
+                                <option value="สมรสไม่จดทะเบียน">{{ __('consent::messages.modal.form.step1.options.marital_common_law') }}</option>
+                                <option value="หย่า">{{ __('consent::messages.modal.form.step1.options.marital_divorced') }}</option>
+                                <option value="หม้าย">{{ __('consent::messages.modal.form.step1.options.marital_widowed') }}</option>
+                            </select>
                         </div>
 
                         <div class="form-group col-3">
@@ -134,30 +191,7 @@
                             <input type="text" id="id_card" name="id_card" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.id_card_number') }}" maxlength="13" required>
                         </div>
 
-                        <div class="form-group col-6">
-                            <label for="education">{{ __('consent::messages.modal.form.step1.fields.education') }} <span class="required-asterisk">*</span></label>
-                            <select id="education" name="education" required>
-                                <option value="">{{ __('consent::messages.modal.form.step1.options.education_prompt') }}</option>
-                                <option value="มัธยมต้น">{{ __('consent::messages.modal.form.step1.options.education_lower_secondary') }}</option>
-                                <option value="มัธยมปลาย">{{ __('consent::messages.modal.form.step1.options.education_upper_secondary') }}</option>
-                                <option value="อุดมศึกษา">{{ __('consent::messages.modal.form.step1.options.education_higher') }}</option>
-                                <option value="ปริญญาตรี">{{ __('consent::messages.modal.form.step1.options.education_bachelor') }}</option>
-                                <option value="ปริญญาโท">{{ __('consent::messages.modal.form.step1.options.education_master') }}</option>
-                                <option value="ปริญญาเอก">{{ __('consent::messages.modal.form.step1.options.education_doctorate') }}</option>
-                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step1.options.education_other') }}</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-6">
-                            <label for="marital_status">{{ __('consent::messages.modal.form.step1.fields.marital_status') }} <span class="required-asterisk">*</span></label>
-                            <select id="marital_status" name="marital_status" required>
-                                <option value="โสด">{{ __('consent::messages.modal.form.step1.options.marital_single') }}</option>
-                                <option value="สมรส">{{ __('consent::messages.modal.form.step1.options.marital_married') }}</option>
-                                <option value="สมรสไม่จดทะเบียน">{{ __('consent::messages.modal.form.step1.options.marital_common_law') }}</option>
-                                <option value="หย่า">{{ __('consent::messages.modal.form.step1.options.marital_divorced') }}</option>
-                                <option value="หม้าย">{{ __('consent::messages.modal.form.step1.options.marital_widowed') }}</option>
-                            </select>
-                        </div>
+                       
                     </div>
                 </div>
 

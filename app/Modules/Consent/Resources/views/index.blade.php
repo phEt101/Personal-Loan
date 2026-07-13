@@ -91,13 +91,41 @@
                 font-size: 0.875rem;
                 outline: none;
                 transition: all 0.2s ease;
-                height: 42px;
+                min-height: 42px;
+                line-height: 1.2;
                 box-sizing: border-box;
+                -webkit-appearance: none;
+                appearance: none;
             }
             .filter-input:focus {
                 border-color: #10b981;
                 background-color: #ffffff;
                 box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            }
+
+            /* iOS Safari: keep native datepicker but avoid clipped content */
+            input[type="date"].filter-input {
+                padding-right: 0.9rem; /* give space for the picker icon */
+                min-height: 44px; /* a touch-friendlier min height on mobile */
+            }
+
+            /* Hide default inner spin/clear on WebKit form controls when needed */
+            input[type="date"].filter-input::-webkit-clear-button,
+            input[type="date"].filter-input::-webkit-inner-spin-button {
+                display: none;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+            
+            /* Prevent long localized date strings from wrapping to a new line on iPad */
+            input[type="date"].filter-input {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                min-width: 0; /* allow grid/flex items to shrink properly */
+                padding-left: 0.75rem;
+                padding-right: 1rem;
+                text-align: center;
             }
             .search-actions-group {
                 display: flex;
@@ -165,6 +193,17 @@
                 border-radius: 50%;
                 animation: spin 1s linear infinite;
             }
+            /* Prevent auto-link styling for app_no on iOS/WebKit */
+            .no-auto-link a[href^="tel:"], .no-auto-link a[href^="sms:"] {
+                color: inherit !important;
+                text-decoration: none !important;
+                pointer-events: none !important;
+                cursor: default !important;
+            }
+            .no-auto-link {
+                -webkit-user-select: text;
+                -webkit-touch-callout: none;
+            }
             @keyframes spin {
                 0% { transform: rotate(0deg); }
                 100% { transform: rotate(360deg); }
@@ -221,7 +260,7 @@
                     <tbody>
                         @forelse($customers as $customer)
                             <tr>
-                                <td data-label="{{ __('consent::messages.index.table.code') }}">{{ $customer->app_no ?? '-' }}</td>
+                                <td data-label="{{ __('consent::messages.index.table.code') }}" class="no-auto-link">{{ $customer->app_no ?? '-' }}</td>
                                 <td data-label="{{ __('consent::messages.index.table.name') }}">{{ $customer->applicant?->name ?? '-' }}</td>
                                 <td data-label="{{ __('consent::messages.index.table.date') }}">{{ $customer->created_at?->format('d/m/Y') ?? '-' }}</td>
                                 <td data-label="{{ __('consent::messages.index.table.status') }}">
@@ -2097,7 +2136,7 @@
                 setFieldValue('id_type', inferredIdType);
 
                 [
-                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'title', 'name', 'name_en', 'birthdate', 'id_card',
+                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'officer_group', 'title', 'name', 'name_en', 'birthdate', 'id_card',
                     'nationality', 'marital_status', 'education', 'occupation', 'governmentLevel', 'occupationOther',
                     'careerField', 'careerFieldOther', 'residence_status', 'address_room', 'address_no', 'address_floor',
                     'address_village', 'address_building', 'address_soi', 'address_road', 'address_subdistrict',

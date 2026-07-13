@@ -72,6 +72,7 @@ return [
                     'app_date' => 'วันที่เขียนคำขอ',
                     'app_no' => 'เลขที่ใบคำขอ',
                     'officer_name' => 'เจ้าหน้าที่สินเชื่อ',
+                    'officer_group' => 'กลุ่มเจ้าหน้าที่',
                     'officer_phone' => 'เบอร์ติดต่อ',
                     'title' => 'คำนำหน้านาม',
                     'title_other' => 'ระบุคำนำหน้านามอื่นๆ',
@@ -88,6 +89,7 @@ return [
                 'placeholders' => [
                     'officer_name' => 'ระบุชื่อเจ้าหน้าที่สินเชื่อ',
                     'officer_phone' => 'ระบุเบอร์ติดต่อเจ้าหน้าที่',
+                    'officer_group' => 'เลือกกลุ่มเจ้าหน้าที่',
                     'title_other' => 'เช่น ดร. / นพ.',
                     'name_th' => 'ชื่อ และ นามสกุลภาษาไทย',
                     'name_en' => 'NAME - SURNAME IN ENGLISH (UPPERCASE)',
@@ -115,6 +117,9 @@ return [
                     'marital_common_law' => 'สมรสไม่จดทะเบียน',
                     'marital_divorced' => 'หย่า',
                     'marital_widowed' => 'หม้าย',
+                    'officer_group_prompt' => 'เลือกกลุ่มเจ้าหน้าที่',
+                    'group_1' => 'กลุ่ม 1 (บริษัทเฉพาะ)',
+                    'group_2' => 'กลุ่ม 2 (บริษัททั่วไป)',
                 ],
             ],
             'step2' => [

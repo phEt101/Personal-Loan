@@ -11,21 +11,26 @@ body {
 }
 
 .layout {
-    display: grid;
-    grid-template-columns: 260px 1fr;
+    display: block;
     min-height: 100vh;
     transition: all 0.25s ease;
 }
 
 .sidebar {
-    position: relative;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
     background: #ffffff;
     padding: 1.5rem 1rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 100vh;
     transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.sidebar {
+    z-index: 40;
 }
 
 .brand {
@@ -76,6 +81,7 @@ body {
     min-height: 100vh;
     background: #f8f9fa;
     min-width: 0;
+    margin-left: 260px; /* leave space for fixed sidebar */
 }
 
 .menu-button {
@@ -94,6 +100,23 @@ body {
     margin-right: 0.75rem;
     flex-shrink: 0;
     transition: all 0.2s ease;
+}
+
+/* Responsive: collapse sidebar into off-canvas on smaller screens */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    .menu-button {
+        display: inline-flex;
+    }
+    .content {
+        margin-left: 0;
+    }
 }
 
 .menu-button:hover {
@@ -568,7 +591,7 @@ body {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    flex-wrap: wrap;
+
 }
 
 .table-actions-form {

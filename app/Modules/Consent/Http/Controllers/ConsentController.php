@@ -294,6 +294,7 @@ class ConsentController extends Controller
                         'app_no' => $this->getNextAppNo(true),
                         'officer_name' => $validated['officer_name'] ?? null,
                         'officer_phone' => $validated['officer_phone'] ?? null,
+                        'officer_group' => $validated['officer_group'] ?? null,
                         'status' => 'draft',
                     ]);
                     Log::info("Consent saveStep: Created new root draft record", [
@@ -312,7 +313,7 @@ class ConsentController extends Controller
                     ]);
                 } else {
                     Log::warning("Consent saveStep: No consent record found or created for step {$step}");
-                    throw new \Exception("ไม่พบข้อมูลใบคำขอหลัก");
+                    throw new Exception("ไม่พบข้อมูลใบคำขอหลัก");
                 }
 
                 return response()->json([
@@ -400,6 +401,7 @@ class ConsentController extends Controller
             'app_no' => 'เลขที่ใบคำขอ',
             'officer_name' => 'เจ้าหน้าที่สินเชื่อ',
             'officer_phone' => 'เบอร์ติดต่อเจ้าหน้าที่',
+            'officer_group' => 'กลุ่มเจ้าหน้าที่',
             'title' => 'คำนำหน้านาม',
             'title_other' => 'คำนำหน้านามอื่นๆ',
             'name' => 'ชื่อ - สกุล',
@@ -452,6 +454,7 @@ class ConsentController extends Controller
                 'app_no' => ['nullable', 'string', 'max:13'],
                 'officer_name' => ['nullable', 'string', 'max:255'],
                 'officer_phone' => ['nullable', 'string', 'max:20'],
+                'officer_group' => ['nullable', 'string', 'max:50'],
                 'title' => ['required', 'string', 'max:50'],
                 'title_other' => ['nullable', 'required_if:title,อื่นๆ', 'string', 'max:50'],
                 'name' => ['nullable', 'string', 'max:255'],
@@ -660,6 +663,7 @@ class ConsentController extends Controller
                     'app_no' => $validated['app_no'] ?? $consent->app_no,
                     'officer_name' => $validated['officer_name'] ?? $consent->officer_name,
                     'officer_phone' => $validated['officer_phone'] ?? $consent->officer_phone,
+                    'officer_group' => $validated['officer_group'] ?? $consent->officer_group,
                 ]);
 
                 $title = $validated['title'] ?? null;

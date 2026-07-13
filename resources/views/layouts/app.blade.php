@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone=no">
     <title>{{ $title ?? __('messages.layout.title') }}</title>
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
 </head>
