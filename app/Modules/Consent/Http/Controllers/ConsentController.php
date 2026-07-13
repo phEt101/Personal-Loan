@@ -223,6 +223,93 @@ class ConsentController extends Controller
         ]);
     }
 
+    public function listZipContents(ConsentApplication $consent, ConsentDocumentFile $document)
+    {
+        if ((int) $document->application_id !== (int) $consent->id) {
+            abort(404);
+        }
+
+        $disk = Storage::disk($document->disk);
+        if (!$disk->exists($document->path)) {
+            abort(404);
+        }
+
+        $filePath = $disk->path($document->path);
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            return response()->json(['ok' => false, 'message' => 'ไม่สามารถเปิดไฟล์ ZIP ได้'], 500);
+        }
+
+        $entries = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false) continue;
+            $name = $stat['name'];
+            // skip directories
+            if (substr($name, -1) === '/') continue;
+            $entries[] = [
+                'name' => $name,
+                'size' => $stat['size'],
+                'compressed_size' => $stat['comp_size'],
+            ];
+        }
+
+        $zip->close();
+        return response()->json(['ok' => true, 'entries' => $entries]);
+    }
+
+    public function streamZipEntry(Request $request, ConsentApplication $consent, ConsentDocumentFile $document)
+    {
+        if ((int) $document->application_id !== (int) $consent->id) {
+            abort(404);
+        }
+
+        $inner = (string) $request->query('inner', '');
+        if ($inner === '') {
+            return response()->json(['ok' => false, 'message' => 'Missing inner file path'], 400);
+        }
+
+        $disk = Storage::disk($document->disk);
+        if (!$disk->exists($document->path)) {
+            abort(404);
+        }
+
+        $filePath = $disk->path($document->path);
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            return response()->json(['ok' => false, 'message' => 'ไม่สามารถเปิดไฟล์ ZIP ได้'], 500);
+        }
+
+        $stream = $zip->getStream($inner);
+        if ($stream === false) {
+            $zip->close();
+            abort(404);
+        }
+
+        $fileName = basename($inner);
+        // try to infer mime from extension, fallback to binary
+        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $mimeMap = [
+            'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif',
+            'pdf' => 'application/pdf', 'txt' => 'text/plain', 'csv' => 'text/csv'
+        ];
+        $mimeType = $mimeMap[$ext] ?? 'application/octet-stream';
+
+        $response = response()->stream(function () use ($stream, $zip) {
+            while (!feof($stream)) {
+                echo fread($stream, 8192);
+            }
+            fclose($stream);
+            $zip->close();
+        }, 200, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . str_replace('"', '', $fileName) . '"',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+
+        return $response;
+    }
+
     public function destroyIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document)
     {
         if ((int) $document->application_id !== (int) $consent->id) {
@@ -840,6 +927,45 @@ class ConsentController extends Controller
                         'document_type' => $documentType,
                     ]);
 
+                    // If multiple files uploaded for this field, create a ZIP archive and store that as a single document
+                    if (count($files) > 1) {
+                        $disk = Storage::disk('local');
+                        $targetDir = $disk->path('consent/' . $consent->id . '/documents');
+                        if (!is_dir($targetDir)) {
+                            mkdir($targetDir, 0755, true);
+                        }
+
+                        $zipName = $fieldName . '_' . time() . '.zip';
+                        $zipPath = $targetDir . DIRECTORY_SEPARATOR . $zipName;
+
+                        $zip = new \ZipArchive();
+                        if ($zip->open($zipPath, \ZipArchive::CREATE) === true) {
+                            foreach ($files as $file) {
+                                if (!$file) continue;
+                                $name = $file->getClientOriginalName() ?: uniqid('file_');
+                                $contents = file_get_contents($file->getRealPath());
+                                $zip->addFromString($name, $contents);
+                            }
+                            $zip->close();
+
+                            // create DB record pointing to the zip
+                            ConsentDocumentFile::create([
+                                'application_id' => $consent->id,
+                                'document_type' => $documentType,
+                                'disk' => 'local',
+                                'path' => 'consent/' . $consent->id . '/documents/' . $zipName,
+                                'original_name' => $zipName,
+                                'mime_type' => 'application/zip',
+                                'size' => filesize($zipPath),
+                            ]);
+                        } else {
+                            Log::warning('Consent updateConsentByStep: Failed to create zip for ' . $fieldName, ['consent_id' => $consent->id]);
+                        }
+
+                        continue;
+                    }
+
+                    // single file: store normally
                     foreach ($files as $file) {
                         if ($file) {
                             $this->storeUploadedDocument($consent, $file, $documentType);
