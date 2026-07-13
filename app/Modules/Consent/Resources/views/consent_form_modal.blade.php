@@ -23,6 +23,18 @@
                 -webkit-appearance: none;
                 appearance: none;
             }
+            .form-section-title.with-app-no {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .form-section-title .app-no-inline {
+                font-weight: 600;
+                font-size: 0.95rem;
+                color: #333;
+                white-space: nowrap;
+                margin-left: 1rem;
+            }
         </style>
         <form method="POST" action="#" class="consent-form-wrapper" id="consentForm" autocomplete="off" enctype="multipart/form-data">
             @csrf
@@ -77,8 +89,8 @@
                 <!-- Step 1: Application + Officer + Personal Info -->
                 <div class="step-container active" data-step="1">
                     <div class="form-grid">
-                        <div class="form-section-title form-section-title--no-top-margin">
-                            {{ __('consent::messages.modal.form.step1.sections.application') }}
+                        <div class="form-section-title form-section-title--no-top-margin with-app-no">
+                            <div>{{ __('consent::messages.modal.form.step1.sections.application_and_officer') }}</div>
                         </div>
 
                         <div class="form-group col-6">
@@ -89,10 +101,6 @@
                         <div class="form-group col-6">
                             <label for="app_no">{{ __('consent::messages.modal.form.step1.fields.app_no') }}</label>
                             <input type="text" id="app_no" name="app_no" value="{{ $nextAppNo }}" maxlength="13" readonly class="input-readonly">
-                        </div>
-
-                        <div class="form-section-title">
-                            {{ __('consent::messages.modal.form.step1.sections.company_officer') }}
                         </div>
 
                         <div class="form-group col-4">

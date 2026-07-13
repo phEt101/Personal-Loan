@@ -65,6 +65,7 @@ return [
             'step1' => [
                 'sections' => [
                     'application' => 'ข้อมูลใบคำขอ',
+                       'application_and_officer' => 'ข้อมูลใบคำขอและสำหรับเจ้าหน้าที่บริษัท',
                     'company_officer' => 'สำหรับเจ้าหน้าที่บริษัท',
                     'personal_info' => 'ข้อมูลส่วนตัวผู้ขอสินเชื่อ',
                 ],

@@ -65,6 +65,7 @@ return [
             'step1' => [
                 'sections' => [
                     'application' => 'Application Information',
+                    'application_and_officer' => 'Application information and company officer',
                     'company_officer' => 'For Company Officer',
                     'personal_info' => 'Applicant Personal Information',
                 ],
@@ -438,7 +439,7 @@ return [
                 'actions' => [
                     'clear_signature' => 'Clear',
                 ],
-            ],
+                ],
             'steps' => [
                 'personal' => 'Personal Info',
                 'address' => 'Address',
