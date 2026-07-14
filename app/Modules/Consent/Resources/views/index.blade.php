@@ -1258,13 +1258,46 @@
             }
 
             wizardSteps.forEach(step => {
-                step.addEventListener('click', function() {
+                step.addEventListener('click', async function() {
                     const targetStep = parseInt(this.dataset.step);
+                    if (targetStep === currentStep) return;
+
                     // Allow jump back always, allow jump forward only if reached
-                    if (targetStep < currentStep || targetStep <= maxStepReached) {
-                        currentStep = targetStep;
-                        updateWizardUI();
+                    if (!(targetStep < currentStep || targetStep <= maxStepReached)) {
+                        return;
                     }
+
+                    // Prevent multiple clicks
+                    if (this.dataset.saving === '1') return;
+                    this.dataset.saving = '1';
+
+                    // Special handling for Step 7 (Signature) when saving current step
+                    if (currentStep === 7) {
+                        if (signaturePad && signaturePad.isEmpty()) {
+                            alert('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนเปลี่ยนขั้นตอน');
+                            this.dataset.saving = '0';
+                            return;
+                        }
+                        if (signaturePad && !signaturePad.isEmpty()) {
+                            if (signatureDataInput) signatureDataInput.value = JSON.stringify(signaturePad.toData());
+                        }
+                    }
+
+                    // Save current step before navigating
+                    const result = await saveStepData(currentStep);
+                    if (result.ok) {
+                        currentStep = targetStep;
+                        if (currentStep > maxStepReached) maxStepReached = currentStep;
+                        updateWizardUI();
+                    } else {
+                        if (result.errors) {
+                            showValidationErrors(result.errors);
+                        } else {
+                            alert(result.message);
+                        }
+                    }
+
+                    this.dataset.saving = '0';
                 });
             });
 
