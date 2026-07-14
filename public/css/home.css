@@ -400,6 +400,39 @@ body {
     font-size: 0.9rem;
 }
 
+/* Zip viewer buttons and modal entries */
+.file-view-zip-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-left: 0.5rem;
+    padding: 0.28rem 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1;
+    border-radius: 6px;
+    border: 1px solid #1f9d74;
+    background: #ffffff;
+    color: #1f9d74;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.file-view-zip-btn:hover { background:#f0fdf8; }
+.file-view-zip-btn:disabled { opacity:0.6; cursor:default; }
+
+#zipContentsCloseBtn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+    cursor: pointer;
+}
+#zipContentsCloseBtn:hover { background:#f3f4f6; }
+
+.zip-entry-row { padding:0.35rem 0; border-bottom:1px solid #f3f4f6; }
+.zip-entry-row a { color: #0f766e; text-decoration: none; }
+.zip-entry-row a:hover { text-decoration: underline; }
+
 .user-name-compact {
     font-weight: 600;
     color: #1f2937;

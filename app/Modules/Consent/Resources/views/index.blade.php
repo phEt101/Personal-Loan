@@ -1841,8 +1841,16 @@
                             const deleteButton = destroyUrl
                                 ? `<button type="button" class="file-remove-btn" data-destroy-url="${escapeHtml(destroyUrl)}">ลบ</button>`
                                 : '';
+
+                            const isZip = (document?.mimeType === 'application/zip') || (name && name.toLowerCase().endsWith('.zip'));
+                            const docId = document?.id ?? '';
+                            const viewFilesBtn = isZip
+                                ? `<button type="button" class="file-view-zip-btn" data-doc-id="${escapeHtml(docId)}" data-document-url="${escapeHtml(url)}">ดูไฟล์</button>`
+                                : '';
+
                             return `<div class="file-attachment-row">
                                 <a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)}</a>
+                                ${viewFilesBtn}
                                 ${deleteButton}
                             </div>`;
                         })
@@ -2912,4 +2920,90 @@
             });
         });
     </script>
+    
+        <!-- ZIP Contents Modal -->
+        <div id="zipContentsModal" class="modal" style="display:none;">
+            <div class="modal-content modal-sm">
+                <div class="modal-header">
+                    <h3>ไฟล์ใน ZIP</h3>
+                    <button type="button" class="close-btn" id="closeZipContentsModal">&times;</button>
+                </div>
+                <div class="modal-body" id="zipContentsBody" style="max-height:60vh; overflow:auto; padding:1rem;">
+                    <div id="zipContentsList">กำลังโหลด...</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="zipContentsCloseBtn" class="btn">ปิด</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        (function(){
+            const zipContentsModal = document.getElementById('zipContentsModal');
+            const zipContentsList = document.getElementById('zipContentsList');
+            const closeZipContentsModalBtn = document.getElementById('closeZipContentsModal');
+            const zipContentsCloseBtn = document.getElementById('zipContentsCloseBtn');
+
+            function openZipContentsModal(){
+                if (!zipContentsModal) return;
+                zipContentsModal.style.display = 'flex';
+                zipContentsModal.offsetHeight; // reflow
+                zipContentsModal.classList.add('show');
+            }
+
+            function closeZipContentsModal(){
+                if (!zipContentsModal) return;
+                zipContentsModal.classList.remove('show');
+                setTimeout(()=>{ zipContentsModal.style.display='none'; zipContentsList.innerHTML=''; }, 200);
+            }
+
+            if (closeZipContentsModalBtn) closeZipContentsModalBtn.addEventListener('click', closeZipContentsModal);
+            if (zipContentsCloseBtn) zipContentsCloseBtn.addEventListener('click', closeZipContentsModal);
+
+            // Delegate click for ZIP view buttons
+            document.addEventListener('click', async function(e){
+                const btn = e.target.closest('.file-view-zip-btn');
+                if (!btn) return;
+
+                btn.disabled = true;
+                const originalText = btn.textContent;
+                btn.textContent = 'กำลังโหลด...';
+
+                try {
+                    const docId = btn.dataset.docId || '';
+                    const customerId = document.getElementById('consent_id')?.value || '';
+                    if (!docId || !customerId) throw new Error('ไม่พบข้อมูลเอกสารหรือหมายเลขคำขอ');
+
+                    const contentsUrl = `${consentBaseUrl}/${customerId}/income-documents/${docId}/zip-contents`;
+                    const response = await fetch(contentsUrl, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }});
+                    if (!response.ok) {
+                        const text = await response.text();
+                        throw new Error(text || 'ไม่สามารถดึงรายการไฟล์จาก ZIP ได้');
+                    }
+
+                    const data = await response.json();
+                    const entries = Array.isArray(data.entries) ? data.entries : [];
+
+                    if (!entries.length) {
+                        zipContentsList.innerHTML = '<div>ไม่มีไฟล์ภายใน ZIP</div>';
+                    } else {
+                        const itemsHtml = entries.map(function(entry){
+                            const name = entry?.name ?? String(entry);
+                            const encoded = encodeURIComponent(name);
+                            const fileUrl = `${consentBaseUrl}/${customerId}/income-documents/${docId}/zip-file?inner=${encoded}`;
+                            return `<div class="zip-entry-row"><a href="${fileUrl}" target="_blank" rel="noopener">${escapeHtml(name)}</a></div>`;
+                        }).join('');
+                        zipContentsList.innerHTML = itemsHtml;
+                    }
+
+                    openZipContentsModal();
+                } catch (err) {
+                    alert(err.message || 'เกิดข้อผิดพลาด');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            });
+        })();
+        </script>
 @endsection

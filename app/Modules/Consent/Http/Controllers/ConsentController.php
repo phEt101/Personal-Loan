@@ -922,13 +922,13 @@ class ConsentController extends Controller
                     }
 
                     $files = (array) $request->file($fieldName, []);
-                    Log::debug("Consent updateConsentByStep: Processing " . count($files) . " documents", [
+                    Log::debug("Consent updateConsentByStep: Processing " . count($files) . " documents (always zipping)", [
                         'field' => $fieldName,
                         'document_type' => $documentType,
                     ]);
 
-                    // If multiple files uploaded for this field, create a ZIP archive and store that as a single document
-                    if (count($files) > 1) {
+                    // Always create a ZIP archive for this field (even when a single file)
+                    if (count($files) > 0) {
                         $disk = Storage::disk('local');
                         $targetDir = $disk->path('consent/' . $consent->id . '/documents');
                         if (!is_dir($targetDir)) {
@@ -960,15 +960,6 @@ class ConsentController extends Controller
                             ]);
                         } else {
                             Log::warning('Consent updateConsentByStep: Failed to create zip for ' . $fieldName, ['consent_id' => $consent->id]);
-                        }
-
-                        continue;
-                    }
-
-                    // single file: store normally
-                    foreach ($files as $file) {
-                        if ($file) {
-                            $this->storeUploadedDocument($consent, $file, $documentType);
                         }
                     }
                 }
