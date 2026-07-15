@@ -803,9 +803,9 @@
                         </div>
 
                         <div class="form-group col-12 signature-group">
-                            <label>{{ __('consent::messages.modal.form.step7.fields.signature') }} <span class="required-asterisk">*</span></label>
-                            <div class="signature-pad-box">
-                                <canvas id="signaturePad" class="signature-canvas"></canvas>
+                            <div id="signatureLabel" class="signature-label">{{ __('consent::messages.modal.form.step7.fields.signature') }} <span class="required-asterisk">*</span></div>
+                            <div class="signature-pad-box" aria-describedby="signatureLabel">
+                                <canvas id="signaturePad" class="signature-canvas" aria-hidden="false"></canvas>
                                 <button type="button" id="clearSignatureBtn" class="signature-clear-btn">{{ __('consent::messages.modal.form.step7.actions.clear_signature') }}</button>
                             </div>
                             <input type="hidden" id="signatureData" name="signatureData">
@@ -852,12 +852,12 @@
                                                     <input type="file" id="identityDocuments" name="identityDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
                                                     <div class="hidden" id="identityDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
+                                                        <label for="identityDocuments" class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
                                                         <div id="identityDocumentsSelectedList"></div>
                                                     </div>
 
                                                     <div class="hidden" id="identityDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
+                                                        <label for="identityDocuments" class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
                                                         <div id="identityDocumentsExistingList"></div>
                                                     </div>
                                                 </div>
@@ -865,8 +865,8 @@
                                         </tr>
 
                                         <tr class="document-upload-section-row">
-                                            <th>{{ __('consent::messages.modal.form.attachment.income_header') }}</th>
-                                            <th>{{ __('consent::messages.modal.form.attachment.borrower_header') }}</th>
+                                            <th scope="col">{{ __('consent::messages.modal.form.attachment.income_header') }}</th>
+                                            <th scope="col">{{ __('consent::messages.modal.form.attachment.borrower_header') }}</th>
                                         </tr>
 
                                         <tr>
@@ -901,12 +901,12 @@
                                                     <input type="file" id="incomeDocuments" name="incomeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
                                                     <div class="hidden" id="incomeDocumentsSelectedWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
+                                                        <label for="incomeDocuments" class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
                                                         <div id="incomeDocumentsSelectedList"></div>
                                                     </div>
 
                                                     <div class="hidden" id="incomeDocumentsExistingWrapper">
-                                                        <label class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
+                                                        <label for="incomeDocuments" class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
                                                         <div id="incomeDocumentsExistingList"></div>
                                                     </div>
                                                 </div>

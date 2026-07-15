@@ -168,7 +168,6 @@
                                 href="{{ $customers->previousPageUrl() ?: '#' }}"
                                 class="pagination-link {{ $customers->onFirstPage() ? 'is-disabled' : '' }}"
                                 rel="prev"
-                                aria-label="{{ __('consent::messages.pagination.previous') }}"
                                 @if($customers->onFirstPage()) aria-disabled="true" tabindex="-1" @endif
                             >
                                 {{ __('consent::messages.pagination.previous') }}
@@ -178,7 +177,7 @@
                                 @if ($page === $customers->currentPage())
                                     <span class="pagination-current" aria-current="page">{{ $page }}</span>
                                 @else
-                                    <a href="{{ $url }}" class="pagination-link" aria-label="{{ __('consent::messages.pagination.go_to_page', ['page' => $page]) }}">{{ $page }}</a>
+                                    <a href="{{ $url }}" class="pagination-link">{{ $page }}</a>
                                 @endif
                             @endforeach
 
@@ -186,7 +185,6 @@
                                 href="{{ $customers->nextPageUrl() ?: '#' }}"
                                 class="pagination-link {{ $customers->hasMorePages() ? '' : 'is-disabled' }}"
                                 rel="next"
-                                aria-label="{{ __('consent::messages.pagination.next') }}"
                                 @unless($customers->hasMorePages()) aria-disabled="true" tabindex="-1" @endunless
                             >
                                 {{ __('consent::messages.pagination.next') }}
@@ -860,16 +858,16 @@
                 viewCanvas.width = rect.width * window.devicePixelRatio;
                 viewCanvas.height = rect.height * window.devicePixelRatio;
                 
+                // Rescale context for high DPI before initializing SignaturePad
+                const ctx = viewCanvas.getContext('2d');
+                ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
                 const viewSignaturePad = new SignaturePad(viewCanvas, {
                     backgroundColor: 'rgb(255, 255, 255)',
                     penColor: 'rgb(0, 0, 0)',
                     readOnly: true
                 });
-                
-                // Rescale context for high DPI
-                const ctx = viewCanvas.getContext('2d');
-                ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-                
+
                 // Load signature data if available
                 if (signatureData) {
                     try {
@@ -944,12 +942,40 @@
 
                 // Initialize/Resize signature pad when reaching step 7
                 if (currentStep === 7) {
-                    setTimeout(() => {
+                    // Wait until modal is visible and layout is stable before sizing canvas
+                    function waitForModalShown(el, timeout = 500) {
+                        return new Promise((resolve) => {
+                            if (!el) return resolve();
+                            // if already has `show` class and has height, resolve on next frame
+                            if (el.classList.contains('show') && el.offsetHeight > 0) {
+                                return requestAnimationFrame(() => requestAnimationFrame(resolve));
+                            }
+
+                            // listen for transitionend as preferred signal
+                            const onTransition = (e) => {
+                                if (e.target === el) {
+                                    el.removeEventListener('transitionend', onTransition);
+                                    requestAnimationFrame(() => requestAnimationFrame(resolve));
+                                }
+                            };
+
+                            el.addEventListener('transitionend', onTransition);
+
+                            // fallback: timeout then ensure frames
+                            setTimeout(() => {
+                                el.removeEventListener('transitionend', onTransition);
+                                requestAnimationFrame(() => requestAnimationFrame(resolve));
+                            }, timeout);
+                        });
+                    }
+
+                    (async () => {
+                        await waitForModalShown(modal);
                         initSignaturePad();
                         if (signatureDataInput && signatureDataInput.value) {
                             applySignatureData(signatureDataInput.value);
                         }
-                    }, 100);
+                    })();
                 }
             }
 
@@ -990,11 +1016,7 @@
                         return { ok: true, data: result };
                     } else {
                         
-                        return { 
-                            ok: false, 
-                            message: result.message || 'กรุณาตรวจสอบข้อมูลที่กรอก', 
-                            errors: result.errors 
-                        };
+                        return { ok: false, message: result.message || 'กรุณาตรวจสอบข้อมูลที่กรอก', errors: result.errors };
                     }
                 } catch (error) {
                    
@@ -2685,15 +2707,15 @@
                 if (signaturePad) {
                     signaturePad.off(); // Remove old listeners
                 }
-                
+
+                // Rescale context for high DPI before creating SignaturePad
+                const ctx = canvas.getContext('2d');
+                ctx.scale(ratio, ratio);
+
                 signaturePad = new SignaturePad(canvas, {
                     backgroundColor: 'rgb(255, 255, 255)',
                     penColor: 'rgb(0, 0, 0)'
                 });
-                
-                // Rescale context for high DPI
-                const ctx = canvas.getContext('2d');
-                ctx.scale(ratio, ratio);
                 
                 // Save signature data to hidden input (as JSON)
                 signaturePad.addEventListener('endStroke', function() {
