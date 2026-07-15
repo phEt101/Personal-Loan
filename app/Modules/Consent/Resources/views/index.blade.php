@@ -42,173 +42,7 @@
             </div>
         </section>
 
-        <style>
-            .search-filter-card {
-                margin-bottom: 1.5rem;
-                padding: 1.5rem;
-                background: #ffffff;
-                border-radius: 1rem;
-                border: 1px solid rgba(16, 185, 129, 0.12);
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            }
-            .search-filter-form {
-                display: grid;
-                grid-template-columns: 2fr 1fr 1fr 1fr auto;
-                gap: 1rem;
-                align-items: flex-end;
-            }
-            @media (max-width: 1024px) {
-                .search-filter-form {
-                    grid-template-columns: 1fr 1fr;
-                }
-                .search-actions-group {
-                    grid-column: span 2;
-                    justify-content: flex-end;
-                }
-            }
-            @media (max-width: 640px) {
-                .search-filter-form {
-                    grid-template-columns: 1fr;
-                }
-                .search-actions-group {
-                    grid-column: span 1;
-                }
-            }
-            .filter-label {
-                font-size: 0.875rem;
-                font-weight: 600;
-                color: #4b5563;
-                margin-bottom: 0.5rem;
-                display: block;
-            }
-            .filter-input {
-                width: 100%;
-                padding: 0.65rem 0.85rem;
-                border-radius: 0.5rem;
-                border: 1px solid #d1d5db;
-                background-color: #f9fafb;
-                color: #1f2937;
-                font-size: 0.875rem;
-                outline: none;
-                transition: all 0.2s ease;
-                min-height: 42px;
-                line-height: 1.2;
-                box-sizing: border-box;
-                -webkit-appearance: none;
-                appearance: none;
-            }
-            .filter-input:focus {
-                border-color: #10b981;
-                background-color: #ffffff;
-                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
-            }
-
-            /* iOS Safari: keep native datepicker but avoid clipped content */
-            input[type="date"].filter-input {
-                padding-right: 0.9rem; /* give space for the picker icon */
-                min-height: 44px; /* a touch-friendlier min height on mobile */
-            }
-
-            /* Hide default inner spin/clear on WebKit form controls when needed */
-            input[type="date"].filter-input::-webkit-clear-button,
-            input[type="date"].filter-input::-webkit-inner-spin-button {
-                display: none;
-                -webkit-appearance: none;
-                appearance: none;
-            }
-            
-            /* Prevent long localized date strings from wrapping to a new line on iPad */
-            input[type="date"].filter-input {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                min-width: 0; /* allow grid/flex items to shrink properly */
-                padding-left: 0.75rem;
-                padding-right: 1rem;
-                text-align: center;
-            }
-            .search-actions-group {
-                display: flex;
-                gap: 0.5rem;
-                height: 42px;
-                align-items: center;
-            }
-            .search-actions-group .btn {
-                padding: 0.65rem 1.25rem;
-                border-radius: 0.5rem;
-                font-size: 0.875rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                border: 1px solid transparent;
-                height: 100%;
-                text-decoration: none;
-                box-sizing: border-box;
-            }
-            .btn-search {
-                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                color: #ffffff;
-            }
-            .btn-search:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-            }
-            .btn-reset {
-                background: #f3f4f6;
-                color: #4b5563;
-                border-color: #d1d5db;
-            }
-            .btn-reset:hover {
-                background: #e5e7eb;
-                color: #1f2937;
-            }
-            .table-loading-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.7);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10;
-                border-radius: 1rem;
-                opacity: 0;
-                transition: opacity 0.2s ease;
-                pointer-events: none;
-            }
-            .table-loading-overlay.active {
-                opacity: 1;
-                pointer-events: auto;
-            }
-            .loading-spinner {
-                width: 40px;
-                height: 40px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #10b981;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-            }
-            /* Prevent auto-link styling for app_no on iOS/WebKit */
-            .no-auto-link a[href^="tel:"], .no-auto-link a[href^="sms:"] {
-                color: inherit !important;
-                text-decoration: none !important;
-                pointer-events: none !important;
-                cursor: default !important;
-            }
-            .no-auto-link {
-                -webkit-user-select: text;
-                -webkit-touch-callout: none;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
+        {{-- styles moved to public/css/consent.css --}}
 
         <!-- Search & Filter Section -->
         <div class="search-filter-card">
@@ -242,7 +76,7 @@
             </form>
         </div>
 
-        <div class="card" style="position: relative;">
+        <div class="card card--relative">
             <div id="tableLoadingOverlay" class="table-loading-overlay">
                 <div class="loading-spinner"></div>
             </div>
@@ -373,17 +207,17 @@
                 <h3 class="modal-title">{{ __('consent::messages.modal.pdf.title') }}</h3>
                 <button type="button" class="close-btn" id="closePdfModal" aria-label="Close modal">&times;</button>
             </div>
-            <div class="modal-body" style="padding: 0; overflow-y: auto; height: 75vh; background: #f3f4f6;">
-                <div style="padding: 1.5rem;">
-                    <h4 style="margin: 0 0 1rem 0; color: #10b981; font-size: 1.1rem;">1. Sale Sheet</h4>
-                    <div style="height: 70vh; margin-bottom: 2rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #ffffff;">
-                         <iframe src="{{ asset('file/Sale Sheet - BMPver. 2_Personal Loan_App - Eng.pdf') }}#toolbar=1&navpanes=0&view=FitH" width="100%" height="100%" style="border: none;"></iframe>
-                     </div>
- 
-                     <h4 style="margin: 0 0 1rem 0; color: #10b981; font-size: 1.1rem;">2. เงื่อนไขและข้อตกลงการสมัคร</h4>
-                     <div style="height: 70vh; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #ffffff;">
-                         <iframe src="{{ asset('file/ใบสมัคร BMPver. 2_Personal Loan_App - Eng 4-5.pdf') }}#toolbar=1&navpanes=0&view=FitH" width="100%" height="100%" style="border: none;"></iframe>
-                     </div>
+            <div class="modal-body modal-body--pdf">
+                <div class="pdf-content-padding">
+                    <h4 class="pdf-section-title">1. Sale Sheet</h4>
+                    <div class="pdf-iframe-wrapper">
+                         <iframe src="{{ asset('file/Sale Sheet - BMPver. 2_Personal Loan_App - Eng.pdf') }}#toolbar=1&navpanes=0&view=FitH" class="iframe-reset" title="Sale Sheet"></iframe>
+                    </div>
+
+                    <h4 class="pdf-section-title">2. เงื่อนไขและข้อตกลงการสมัคร</h4>
+                    <div class="pdf-iframe-wrapper">
+                         <iframe src="{{ asset('file/ใบสมัคร BMPver. 2_Personal Loan_App - Eng 4-5.pdf') }}#toolbar=1&navpanes=0&view=FitH" class="iframe-reset" title="Terms and Conditions"></iframe>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -531,7 +365,7 @@
                     .map(function(document) {
                         const url = document?.downloadUrl ?? '#';
                         const name = document?.originalName ?? 'ไฟล์แนบ';
-                        return `<div style="margin-bottom: 0.35rem;"><a href="${url}" target="_blank" rel="noopener" style="color: #10b981; text-decoration: none;">${escapeHtml(name)}</a></div>`;
+                        return `<div class="file-link"><a href="${url}" target="_blank" rel="noopener" class="file-link__anchor">${escapeHtml(name)}</a></div>`;
                     })
                     .join('')
                 : '-';
@@ -621,158 +455,158 @@
             
             // App No 13 digits box generator
             const appNoStr = (customer.app_no || '').padEnd(13, ' ');
-            let appNoBoxesHtml = '<div style="display: inline-flex; gap: 3px; align-items: center;">';
+            let appNoBoxesHtml = '<div class="appno-box-container">';
             for (let i = 0; i < 13; i++) {
                 const char = appNoStr[i].trim() ? appNoStr[i] : '&nbsp;';
-                appNoBoxesHtml += `<span style="border: 1.5px solid #1f2937; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-family: \'Courier New\', Courier, monospace; font-weight: bold; background: #ffffff; border-radius: 2px;">${char}</span>`;
+                appNoBoxesHtml += `<span class="appno-box">${char}</span>`;
             }
             appNoBoxesHtml += '</div>';
 
             contentDiv.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px double #10b981; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <div class="consent-header">
                     <div>
-                        <div style="font-size: 1.4rem; font-weight: 700; color: #065f46;">บริษัท บิ๊ก มันนี่ พลัส จำกัด</div>
-                        <div style="font-size: 0.95rem; font-weight: 600; color: #4b5563; margin-top: 0.25rem;">ใบคำขอให้บริการสินเชื่อส่วนบุคคล (Personal Loan)</div>
-                        <div style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.25rem;">App No.: ${customer.app_no || '-'}</div>
+                        <div class="consent-header__title">บริษัท บิ๊ก มันนี่ พลัส จำกัด</div>
+                        <div class="consent-header__subtitle">ใบคำขอให้บริการสินเชื่อส่วนบุคคล (Personal Loan)</div>
+                        <div class="consent-header__meta">App No.: ${customer.app_no || '-'}</div>
                     </div>
-                    <div style="text-align: right; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
-                        <div style="font-size: 0.9rem; font-weight: 600;">วันที่: <span style="border-bottom: 1px dashed #9ca3af; padding: 0 0.5rem;">${appDateFormatted}</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="font-size: 0.9rem; font-weight: 600;">App No.</span>
+                    <div class="consent-header__right">
+                        <div class="consent-meta">วันที่: <span class="meta-value">${appDateFormatted}</span></div>
+                        <div class="consent-appno-row">
+                            <span class="meta-label">App No.</span>
                             ${appNoBoxesHtml}
                         </div>
                     </div>
                 </div>
 
                 <!-- ส่วนที่ 1: สำหรับเจ้าหน้าที่บริษัท -->
-                <div style="margin-bottom: 1.5rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #166534; margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; border-bottom: 1px solid #bbf7d0; padding-bottom: 0.35rem;">ส่วนที่ 1: สำหรับเจ้าหน้าที่บริษัท</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <div class="panel panel--green">
+                    <h4 class="section-title section-title--green">ส่วนที่ 1: สำหรับเจ้าหน้าที่บริษัท</h4>
+                    <table class="consent-detail-table">
                         <tr>
-                            <td style="padding: 0.25rem 0; font-weight: 600; width: 20%;">เจ้าหน้าที่สินเชื่อ:</td>
-                            <td style="padding: 0.25rem 0; color: #1f2937;">${officer_name}</td>
-                            <td style="padding: 0.25rem 0; font-weight: 600; width: 15%; text-align: right;">เบอร์ติดต่อ:</td>
-                            <td style="padding: 0.25rem 0; color: #1f2937; width: 30%; padding-left: 0.5rem;">${officer_phone}</td>
+                            <td class="label">เจ้าหน้าที่สินเชื่อ:</td>
+                            <td class="value">${officer_name}</td>
+                            <td class="label label--right">เบอร์ติดต่อ:</td>
+                            <td class="value value--padded">${officer_phone}</td>
                         </tr>
                     </table>
                 </div>
 
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="color: #10b981; border-left: 4px solid #10b981; padding-left: 0.5rem; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700;">ส่วนที่ 2: ข้อมูลส่วนตัวผู้ขอสินเชื่อ</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">คำนำหน้านาม - ชื่อ - นามสกุล:</td>
-                            <td style="padding: 0.5rem;">${title} ${name}</td>
+                <div class="panel">
+                    <h4 class="section-title section-title--accent">ส่วนที่ 2: ข้อมูลส่วนตัวผู้ขอสินเชื่อ</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">คำนำหน้านาม - ชื่อ - นามสกุล:</td>
+                            <td class="value">${title} ${name}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">Name - Surname (EN):</td>
-                            <td style="padding: 0.5rem; text-transform: uppercase;">${name_en}</td>
+                        <tr>
+                            <td class="label">Name - Surname (EN):</td>
+                            <td class="value value--uppercase">${name_en}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">เลขประจำตัวประชาชน:</td>
-                            <td style="padding: 0.5rem;">${id_card}</td>
+                        <tr>
+                            <td class="label">เลขประจำตัวประชาชน:</td>
+                            <td class="value">${id_card}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">วัน / เดือน / ปีเกิด:</td>
-                            <td style="padding: 0.5rem;">${birthdate}</td>
+                        <tr>
+                            <td class="label">วัน / เดือน / ปีเกิด:</td>
+                            <td class="value">${birthdate}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">สัญชาติ:</td>
-                            <td style="padding: 0.5rem;">สัญชาติ ${nationality}</td>
+                        <tr>
+                            <td class="label">สัญชาติ:</td>
+                            <td class="value">สัญชาติ ${nationality}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">สถานภาพสมรส:</td>
-                            <td style="padding: 0.5rem;">${marital_status}</td>
+                        <tr>
+                            <td class="label">สถานภาพสมรส:</td>
+                            <td class="value">${marital_status}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">การศึกษา:</td>
-                            <td style="padding: 0.5rem;">${education}</td>
+                        <tr>
+                            <td class="label">การศึกษา:</td>
+                            <td class="value">${education}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">อาชีพ:</td>
-                            <td style="padding: 0.5rem;">
+                        <tr>
+                            <td class="label">อาชีพ:</td>
+                            <td class="value">
                                 ${occupation}
                                 ${customer.occupation === 'ข้าราชการ' && customer.governmentLevel ? ` (ระดับ: ${governmentLevel})` : ''}
                                 ${customer.occupation === 'อื่นๆ' && customer.occupationOther ? ` (ระบุ: ${occupationOther})` : ''}
                             </td>
                         </tr>
                         ${customer.careerField ? `
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">สาขาอาชีพ:</td>
-                            <td style="padding: 0.5rem;">
+                        <tr>
+                            <td class="label">สาขาอาชีพ:</td>
+                            <td class="value">
                                 ${careerField}
                                 ${customer.careerField === 'อื่นๆ' && customer.careerFieldOther ? ` (ระบุ: ${careerFieldOther})` : ''}
                             </td>
                         </tr>
                         ` : ''}
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">รายได้รวมต่อเดือน:</td>
-                            <td style="padding: 0.5rem; color: #166534; font-weight: 700;">${income}</td>
+                        <tr>
+                            <td class="label">รายได้รวมต่อเดือน:</td>
+                            <td class="value value--strong">${income}</td>
                         </tr>
                         ${customer.extraIncome && parseInt(customer.extraIncome) > 0 ? `
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">รายได้อื่นๆ:</td>
-                            <td style="padding: 0.5rem;">${extraIncome}</td>
+                        <tr>
+                            <td class="label">รายได้อื่นๆ:</td>
+                            <td class="value">${extraIncome}</td>
                         </tr>
                         ` : ''}
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">แหล่งที่มาของรายได้:</td>
-                            <td style="padding: 0.5rem;">${extraIncomeSource}</td>
+                        <tr>
+                            <td class="label">แหล่งที่มาของรายได้:</td>
+                            <td class="value">${extraIncomeSource}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ประเทศที่มาของรายได้:</td>
-                            <td style="padding: 0.5rem;">${incomeCountry}</td>
+                        <tr>
+                            <td class="label">ประเทศที่มาของรายได้:</td>
+                            <td class="value">${incomeCountry}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ไฟล์หลักฐานการเงิน:</td>
-                            <td style="padding: 0.5rem;">${incomeDocumentsHtml}</td>
+                        <tr>
+                            <td class="label">ไฟล์หลักฐานการเงิน:</td>
+                            <td class="value">${incomeDocumentsHtml}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ภาระหนี้อื่นๆ ในปัจจุบัน:</td>
-                            <td style="padding: 0.5rem;">${hasOtherDebts}</td>
+                        <tr>
+                            <td class="label">ภาระหนี้อื่นๆ ในปัจจุบัน:</td>
+                            <td class="value">${hasOtherDebts}</td>
                         </tr>
                         ${customer.hasOtherDebts === 'มี' ? `
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ยอดผ่อนต่อเดือน:</td>
-                            <td style="padding: 0.5rem;">${otherDebtInstallment}</td>
+                        <tr>
+                            <td class="label">ยอดผ่อนต่อเดือน:</td>
+                            <td class="value">${otherDebtInstallment}</td>
                         </tr>
                         ` : ''}
                     </table>
                 </div>
 
-                <div style="margin-bottom: 1.5rem; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">การชี้แจงการมีสินเชื่อบุคคล</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ปัจจุบันมีวงเงินสินเชื่อส่วนบุคคล และวงเงินที่อยู่ระหว่างขอยื่น/ขอเพิ่มตั้งแต่ 2 เดือนก่อนหน้าจนถึงปัจจุบัน จากสถาบันการเงิน/ผู้ประกอบธุรกิจสินเชื่อบุคคลที่ไม่ใช่สถาบันการเงินมากกว่า 2 แห่งหรือไม่:</td>
-                            <td style="padding: 0.5rem;">${hasExistingLoan || '-'}</td>
+                <div class="panel panel--blue">
+                    <h4 class="section-title">การชี้แจงการมีสินเชื่อบุคคล</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">ปัจจุบันมีวงเงินสินเชื่อส่วนบุคคล และวงเงินที่อยู่ระหว่างขอยื่น/ขอเพิ่มตั้งแต่ 2 เดือนก่อนหน้าจนถึงปัจจุบัน จากสถาบันการเงิน/ผู้ประกอบธุรกิจสินเชื่อบุคคลที่ไม่ใช่สถาบันการเงินมากกว่า 2 แห่งหรือไม่:</td>
+                            <td class="value">${hasExistingLoan || '-'}</td>
                         </tr>
                         ${hasExistingLoan === 'ใช่' ? `
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600;">จำนวนแห่ง:</td>
-                            <td style="padding: 0.5rem;">${existingLoanInstitutionCount}</td>
+                        <tr>
+                            <td class="label">จำนวนแห่ง:</td>
+                            <td class="value">${existingLoanInstitutionCount}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600;">รวมทั้งสิ้น:</td>
-                            <td style="padding: 0.5rem;">${existingLoanTotalAmount}</td>
+                        <tr>
+                            <td class="label">รวมทั้งสิ้น:</td>
+                            <td class="value">${existingLoanTotalAmount}</td>
                         </tr>
                         ` : ''}
                     </table>
-                    <div style="margin-top: 0.75rem; background: #fef9c3; border: 1px solid #facc15; padding: 0.6rem 0.85rem; border-radius: 0.375rem; font-size: 0.85rem; color: #854d0e;">
+                    <div class="panel panel--yellow panel--note">
                         ( หมายเหตุ กรณีกรอกข้อมูลไม่ถูกต้องไม่ครบถ้วน และ/หรือมีรายได้หรือกระเเสเงินสดหมุนเวียนเข้าในบัญชีเงินฝากสถาบันการเงินโดยเฉลี่ยน้อยกว่า 30,000 บาทต่อเดือน โดยมีวงเงินสินเชื่อส่วนบุคคลรวมตั้งแต่ 3 แห่งขึ้นไป บริษัทมีสิทธิปฏิเสธการให้สินเชื่อ หรือกรณีที่ทําสัญญาเงินกู้ ให้ถือว่าบริษัทมีสิทธิลดหรือยกเลิกวงเงินได้ทันที )
                     </div>
                 </div>
 
-                <div style="margin-bottom: 1.5rem; background: #fce7f3; border: 1px solid #f472b6; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #be185d; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #f472b6; padding-bottom: 0.35rem;">ข้อมูลที่อยู่</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">สถานะของการอยู่อาศัย / Residence type:</td>
-                            <td style="padding: 0.5rem;">${residence_status}</td>
+                <div class="panel panel--pink">
+                    <h4 class="section-title">ข้อมูลที่อยู่</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">สถานะของการอยู่อาศัย / Residence type:</td>
+                            <td class="value">${residence_status}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">ที่อยู่ปัจจุบัน / Current address:</td>
-                            <td style="padding: 0.5rem;">
+                        <tr>
+                            <td class="label">ที่อยู่ปัจจุบัน / Current address:</td>
+                            <td class="value">
                                 ${address_building !== '-' ? 'หมู่บ้าน/อาคาร ' + address_building : ''}
                                 ${address_room !== '-' ? ' เลขที่ห้อง ' + address_room : ''}
                                 ${address_floor !== '-' ? ' ชั้น ' + address_floor : ''}
@@ -786,40 +620,40 @@
                                 ${address_postal !== '-' ? ' ' + address_postal : ''}
                             </td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">หมายเลขโทรศัพท์บ้าน:</td>
-                            <td style="padding: 0.5rem;">${phone_home}</td>
+                        <tr>
+                            <td class="label">หมายเลขโทรศัพท์บ้าน:</td>
+                            <td class="value">${phone_home}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">หมายเลขโทรศัพท์มือถือ:</td>
-                            <td style="padding: 0.5rem;">${phone_mobile}</td>
+                        <tr>
+                            <td class="label">หมายเลขโทรศัพท์มือถือ:</td>
+                            <td class="value">${phone_mobile}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #fce7f3;">
-                            <td style="padding: 0.5rem; font-weight: 600;">E-mail:</td>
-                            <td style="padding: 0.5rem;">${email}</td>
+                        <tr>
+                            <td class="label">E-mail:</td>
+                            <td class="value">${email}</td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- Work Address Section -->
-                <div style="margin-bottom: 1.5rem; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">สถานที่ทำงานปัจจุบัน</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ชื่อกิจการ/ที่ทำงาน:</td>
-                            <td style="padding: 0.5rem;">${companyName}</td>
+                <div class="panel panel--blue">
+                    <h4 class="section-title">สถานที่ทำงานปัจจุบัน</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label label--w30">ชื่อกิจการ/ที่ทำงาน:</td>
+                            <td class="value">${companyName}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ประเภทธุรกิจ:</td>
-                            <td style="padding: 0.5rem;">${businessType}</td>
+                        <tr>
+                            <td class="label label--w30">ประเภทธุรกิจ:</td>
+                            <td class="value">${businessType}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">แผนก/ฝ่าย:</td>
-                            <td style="padding: 0.5rem;">${workDepartment}</td>
+                        <tr>
+                            <td class="label label--w30">แผนก/ฝ่าย:</td>
+                            <td class="value">${workDepartment}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่ที่ทำงาน:</td>
-                            <td style="padding: 0.5rem;">
+                        <tr>
+                            <td class="label label--w30">ที่อยู่ที่ทำงาน:</td>
+                            <td class="value">
                                 ${workAddressNo !== '-' ? 'เลขที่ ' + workAddressNo : ''}
                                 ${workAddressFloor !== '-' ? ' ชั้น ' + workAddressFloor : ''}
                                 ${workAddressVillage !== '-' ? ' หมู่ ' + workAddressVillage : ''}
@@ -832,198 +666,180 @@
                                 ${workAddressPostal !== '-' ? ' ' + workAddressPostal : ''}
                             </td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">หมายเลขโทรศัพท์ (ที่ทำงาน):</td>
-                            <td style="padding: 0.5rem;">${workPhone}</td>
+                        <tr>
+                            <td class="label">หมายเลขโทรศัพท์ (ที่ทำงาน):</td>
+                            <td class="value">${workPhone}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e0f2fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">อายุงานรวม:</td>
-                            <td style="padding: 0.5rem;">${workYears} ปี ${workMonths} เดือน</td>
+                        <tr>
+                            <td class="label">อายุงานรวม:</td>
+                            <td class="value">${workYears} ปี ${workMonths} เดือน</td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- Previous Work Section (conditional) -->
                 ${(parseInt(workYears) * 12 + parseInt(workMonths) < 12) ? `
-                <div style="margin-bottom: 1.5rem; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #d97706; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #f59e0b; padding-bottom: 0.35rem;">ที่ทำงานเดิม</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ชื่อที่ทำงานเดิม:</td>
-                            <td style="padding: 0.5rem;">${previousCompanyName}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ตำแหน่ง:</td>
-                            <td style="padding: 0.5rem;">${previousPosition}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">รายได้ต่อเดือน:</td>
-                            <td style="padding: 0.5rem;">${previousIncome}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #fef3c7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่ที่ทำงานเดิม:</td>
-                            <td style="padding: 0.5rem;">${previousWorkAddress}</td>
+                <div class="panel panel--yellow">
+                    <h4 class="section-title">ที่ทำงานเดิม</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">ชื่อที่ทำงานเดิม:</td>
+                            <td class="value">${previousCompanyName}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">หมายเลขโทรศัพท์:</td>
-                            <td style="padding: 0.5rem;">${previousPhone}</td>
+                            <td class="label">ตำแหน่ง:</td>
+                            <td class="value">${previousPosition}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">รายได้ต่อเดือน:</td>
+                            <td class="value">${previousIncome}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">ที่อยู่ที่ทำงานเดิม:</td>
+                            <td class="value">${previousWorkAddress}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">หมายเลขโทรศัพท์:</td>
+                            <td class="value">${previousPhone}</td>
                         </tr>
                     </table>
                 </div>
                 ` : ''}
 
                 <!-- Document Delivery Section -->
-                <div style="margin-bottom: 1.5rem; background: #dcfce7; border: 1px solid #22c55e; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #166534; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #22c55e; padding-bottom: 0.35rem;">ช่องทางการรับเอกสาร</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #dcfce7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ช่องทางการรับเอกสาร:</td>
-                            <td style="padding: 0.5rem;">${documentDelivery}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #dcfce7;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่ตามเอกสารสําคัญ:</td>
-                            <td style="padding: 0.5rem;">${documentAddressText}</td>
+                <div class="panel panel--green panel--compact">
+                    <h4 class="section-title">ช่องทางการรับเอกสาร</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">ช่องทางการรับเอกสาร:</td>
+                            <td class="value">${documentDelivery}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">จังหวัด / รหัสไปรษณีย์:</td>
-                            <td style="padding: 0.5rem;">
-                                ${documentAddressProvince !== '-' ? documentAddressProvince : '-'}
-                                ${documentAddressPostal !== '-' ? ' ' + documentAddressPostal : ''}
-                            </td>
+                            <td class="label">ที่อยู่ตามเอกสารสําคัญ:</td>
+                            <td class="value">${documentAddressText}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">จังหวัด / รหัสไปรษณีย์:</td>
+                            <td class="value">${documentAddressProvince !== '-' ? documentAddressProvince : '-'} ${documentAddressPostal !== '-' ? ' ' + documentAddressPostal : ''}</td>
                         </tr>
                         ${birthPlaceAddress !== '-' ? `
                         <tr>
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่บ้านเกิด:</td>
-                            <td style="padding: 0.5rem;">${birthPlaceAddress}</td>
+                            <td class="label">ที่อยู่บ้านเกิด:</td>
+                            <td class="value">${birthPlaceAddress}</td>
                         </tr>
                         ` : ''}
                     </table>
                 </div>
 
                 <!-- Reference Person Section -->
-                <div style="margin-bottom: 1.5rem; background: #ede9fe; border: 1px solid #a78bfa; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #6d28d9; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #a78bfa; padding-bottom: 0.35rem;">ข้อมูลบุคคลอ้างอิง</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #ede9fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ชื่อ - นามสกุล:</td>
-                            <td style="padding: 0.5rem;">${refName}</td>
+                <div class="panel panel--purple panel--compact">
+                    <h4 class="section-title">ข้อมูลบุคคลอ้างอิง</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">ชื่อ - นามสกุล:</td>
+                            <td class="value">${refName}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #ede9fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ความสัมพันธ์กับผู้กู้:</td>
-                            <td style="padding: 0.5rem;">${refRelation}</td>
+                        <tr>
+                            <td class="label">ความสัมพันธ์กับผู้กู้:</td>
+                            <td class="value">${refRelation}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #ede9fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ที่อยู่:</td>
-                            <td style="padding: 0.5rem;">
-                                ${refAddressNo !== '-' ? 'เลขที่ ' + refAddressNo : ''}
-                                ${refAddressFloor !== '-' ? ' ชั้น ' + refAddressFloor : ''}
-                                ${refAddressVillage !== '-' ? ' หมู่ที่ ' + refAddressVillage : ''}
-                                ${refAddressBuilding !== '-' ? ' ' + refAddressBuilding : ''}
-                                ${refAddressSoi !== '-' ? ' ซอย ' + refAddressSoi : ''}
-                                ${refAddressRoad !== '-' ? ' ถนน ' + refAddressRoad : ''}
-                                ${refAddressSubdistrict !== '-' ? ' แขวง/ตำบล ' + refAddressSubdistrict : ''}
-                                ${refAddressDistrict !== '-' ? ' เขต/อำเภอ ' + refAddressDistrict : ''}
-                                ${refAddressProvince !== '-' ? ' จังหวัด ' + refAddressProvince : ''}
-                                ${refAddressPostal !== '-' ? ' ' + refAddressPostal : ''}
-                            </td>
+                        <tr>
+                            <td class="label">ที่อยู่:</td>
+                            <td class="value">${refAddressNo !== '-' ? 'เลขที่ ' + refAddressNo : ''}${refAddressFloor !== '-' ? ' ชั้น ' + refAddressFloor : ''}${refAddressVillage !== '-' ? ' หมู่ที่ ' + refAddressVillage : ''}${refAddressBuilding !== '-' ? ' ' + refAddressBuilding : ''}${refAddressSoi !== '-' ? ' ซอย ' + refAddressSoi : ''}${refAddressRoad !== '-' ? ' ถนน ' + refAddressRoad : ''}${refAddressSubdistrict !== '-' ? ' แขวง/ตำบล ' + refAddressSubdistrict : ''}${refAddressDistrict !== '-' ? ' เขต/อำเภอ ' + refAddressDistrict : ''}${refAddressProvince !== '-' ? ' จังหวัด ' + refAddressProvince : ''}${refAddressPostal !== '-' ? ' ' + refAddressPostal : ''}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #ede9fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">หมายเลขโทรศัพท์บ้าน:</td>
-                            <td style="padding: 0.5rem;">${refPhoneHome}</td>
+                        <tr>
+                            <td class="label">หมายเลขโทรศัพท์บ้าน:</td>
+                            <td class="value">${refPhoneHome}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #ede9fe;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">หมายเลขโทรศัพท์มือถือ:</td>
-                            <td style="padding: 0.5rem;">${refPhoneMobile}</td>
+                        <tr>
+                            <td class="label">หมายเลขโทรศัพท์มือถือ:</td>
+                            <td class="value">${refPhoneMobile}</td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- Loan request section -->
-                <div style="margin-bottom: 1.5rem; background: #fffbeb; border: 1px solid #f59e0b; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #d97706; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #f59e0b; padding-bottom: 0.35rem;">ความประสงค์ในการสมัครใช้สินเชื่อ</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #fffbeb;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ระยะเวลาผ่อนชำระคืน:</td>
-                            <td style="padding: 0.5rem;">${loanTerm}</td>
+                <div class="panel panel--yellow panel--compact">
+                    <h4 class="section-title">ความประสงค์ในการสมัครใช้สินเชื่อ</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">ระยะเวลาผ่อนชำระคืน:</td>
+                            <td class="value">${loanTerm}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #fffbeb;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">วงเงินสินเชื่อที่ต้องการ:</td>
-                            <td style="padding: 0.5rem;">
-                                ${loanAmountType === 'full' ? 'เต็มจำนวนตามที่บริษัทอนุมัติ' : loanAmountType === 'custom' ? `วงเงินที่ขอกู้/จำนวนทั้งสิ้น: ${customLoanAmount}` : '-'}
-                            </td>
+                        <tr>
+                            <td class="label">วงเงินสินเชื่อที่ต้องการ:</td>
+                            <td class="value">${loanAmountType === 'full' ? 'เต็มจำนวนตามที่บริษัทอนุมัติ' : loanAmountType === 'custom' ? `วงเงินที่ขอกู้/จำนวนทั้งสิ้น: ${customLoanAmount}` : '-'}</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #fffbeb;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">วัตถุประสงค์ในการขอสินเชื่อ:</td>
-                            <td style="padding: 0.5rem;">${loanPurpose}</td>
+                        <tr>
+                            <td class="label">วัตถุประสงค์ในการขอสินเชื่อ:</td>
+                            <td class="value">${loanPurpose}</td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- Bank account section -->
-                <div style="margin-bottom: 1.5rem; background: #f0fdf4; border: 1px solid #22c55e; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #166534; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #22c55e; padding-bottom: 0.35rem;">ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก</h4>
-                    <p style="font-size: 0.85rem; color: #4b5563; margin-bottom: 1rem;">ในกรณีที่บริษัทอนุมัติสินเชื่อ ข้าพเจ้ามีความประสงค์ให้บริษัทโอนเงินกู้เข้าบัญชีของข้าพเจ้า โดยโอนเข้าบัญชีเงินฝากเลขที่ (กรอกข้อมูล)</p>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                        <tr style="border-bottom: 1px solid #f0fdf4;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">เลขที่บัญชี:</td>
-                            <td style="padding: 0.5rem;">${accountNumber}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f0fdf4;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ประเภทบัญชี:</td>
-                            <td style="padding: 0.5rem;">${accountType}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f0fdf4;">
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ธนาคาร:</td>
-                            <td style="padding: 0.5rem;">${bankName}</td>
+                <div class="panel panel--green panel--compact">
+                    <h4 class="section-title">ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก</h4>
+                    <p class="muted">ในกรณีที่บริษัทอนุมัติสินเชื่อ ข้าพเจ้ามีความประสงค์ให้บริษัทโอนเงินกู้เข้าบัญชีของข้าพเจ้า โดยโอนเข้าบัญชีเงินฝากเลขที่ (กรอกข้อมูล)</p>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">เลขที่บัญชี:</td>
+                            <td class="value">${accountNumber}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">ชื่อบัญชี:</td>
-                            <td style="padding: 0.5rem;">${accountName}</td>
+                            <td class="label">ประเภทบัญชี:</td>
+                            <td class="value">${accountType}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">ธนาคาร:</td>
+                            <td class="value">${bankName}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">ชื่อบัญชี:</td>
+                            <td class="value">${accountName}</td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- Payment method section -->
-                <div style="margin-bottom: 1.5rem; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #0369a1; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #0ea5e9; padding-bottom: 0.35rem;">วิธีการชําระเงิน</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <div class="panel panel--blue panel--compact">
+                    <h4 class="section-title">วิธีการชําระเงิน</h4>
+                    <table class="consent-detail-table">
                         <tr>
-                            <td style="padding: 0.5rem; font-weight: 600; width: 30%;">วิธีการชําระเงิน:</td>
-                            <td style="padding: 0.5rem;">${paymentMethod}</td>
+                            <td class="label">วิธีการชําระเงิน:</td>
+                            <td class="value">${paymentMethod}</td>
                         </tr>
                         ${paymentMethod === 'ชําระโดยการหักบัญชี' ? `
                         <tr>
-                            <td colspan="2" style="padding: 0.5rem; font-size: 0.85rem; color: #4b5563; line-height: 1.6; background: #fffbeb; border-radius: 0.375rem; margin-top: 0.5rem; display: block;">
-                                กรณียินยอมหักบัญชี ข้าพเจ้ายินยอมให้สถาบันการเงินหักเงินจากบัญชีเงินเดือนของข้าพเจ้าที่มีอยู่กับสถาบันการเงิน เป็นจํานวนเงิน <strong>${directDebitAmount}</strong> บาท/เดือน จากบัญชีเลขที่ <strong>${directDebitAccountNumber}</strong> เท่านั้น ณ วันครบกําหนดชําระตามที่บริษัทแจ้งให้ทราบ หรือทุกวันที่เงินเดือนออกในแต่ละเดือนแล้วแต่วันใดจะถึงก่อน เพื่อชําระเงินกู้รวมทั้งดอกเบี้ยจนกว่าจะชําระหนี้ให้แก่บริษัทจนเสร็จสิ้น หากบริษัทไม่สามารถหักเงินจากบัญชีดังกล่าวในวันดังกล่าวได้ ข้าพเจ้าตกลงยอมรับให้บริษัทถือว่าเป็นการผิดนัดชําระหนี้และขอรับรองว่าการที่บริษัทหักเงินจากบัญชีของข้าพเจ้าตามใบสมัครฉบับนี้เป็นไปตามคําร้องขอของข้าพเจ้า หากมีความเสียหายหรือผิดพลาดใดๆ เกิดขึ้นแก่บริษัท ข้าพเจ้าตกลงชดใช้ค่าเสียหายให้แก่บริษัททั้งจํานวนทันที
-                            </td>
+                            <td colspan="2"><div class="notice notice--warning">กรณียินยอมหักบัญชี ข้าพเจ้ายินยอมให้สถาบันการเงินหักเงินจากบัญชีเงินเดือนของข้าพเจ้าที่มีอยู่กับสถาบันการเงิน เป็นจํานวนเงิน <strong>${directDebitAmount}</strong> บาท/เดือน จากบัญชีเลขที่ <strong>${directDebitAccountNumber}</strong> เท่านั้น ณ วันครบกําหนดชําระตามที่บริษัทแจ้งให้ทราบ หรือทุกวันที่เงินเดือนออกในแต่ละเดือนแล้วแต่วันใดจะถึงก่อน เพื่อชําระเงินกู้รวมทั้งดอกเบี้ยจนกว่าจะชําระหนี้ให้แก่บริษัทจนเสร็จสิ้น หากบริษัทไม่สามารถหักเงินจากบัญชีดังกล่าวในวันดังกล่าวได้ ข้าพเจ้าตกลงยอมรับให้บริษัทถือว่าเป็นการผิดนัดชําระหนี้และขอรับรองว่าการที่บริษัทหักเงินจากบัญชีของข้าพเจ้าตามใบสมัครฉบับนี้เป็นไปตามคําร้องขอของข้าพเจ้า หากมีความเสียหายหรือผิดพลาดใดๆ เกิดขึ้นแก่บริษัท ข้าพเจ้าตกลงชดใช้ค่าเสียหายให้แก่บริษัททั้งจํานวนทันที</div></td>
                         </tr>
                         ` : ''}
                     </table>
                 </div>
 
-                <!-- Section 5: ข้อความยินยอม -->
-                <div style="margin-bottom: 1.5rem; background: #e5f0ff; border: 1px solid #3b82f6; border-radius: 0.5rem; padding: 0.85rem 1.25rem;">
-                    <h4 style="color: #1e40af; margin: 0 0 1rem 0; font-size: 1.01rem; font-weight: 700; border-bottom: 1px solid #3b82f6; padding-bottom: 0.35rem;">ส่วนที่ 5: ข้อความยินยอม</h4>
-                    <p style="text-align: left; line-height: 1.8; margin-bottom: 1.5rem; text-indent: 3rem;">
-                        ข้าพเจ้าขอรับรองว่าข้อความข้างต้นเป็นความจริงทุกประการ รวมทั้งได้รับทราบเงื่อนไขและหลักเกณฑ์ที่กำหนดในการใช้บริการสินเชื่อ โดยลงนามในใบสมัครสินเชื่อส่วนบุคคล (Personal Loan) นี้ และเมื่อบริษัทอนุมัติสินเชื่อดังกล่าวให้ข้าพเจ้าแล้ว ข้าพเจ้าตกลงปฏิบัติตามภาระผูกพันที่เกิดขึ้นตามสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ที่ปรากฏอยู่ในใบสมัครนี้ รวมทั้งข้อกำหนด/เงื่อนไขในการใช้สินเชื่อภายใต้ชื่อสินเชื่อส่วนบุคคล (Personal Loan) ของบริษัท และให้ถือว่าใบสมัครสินเชื่อส่วนบุคคล (Personal Loan) นี้ เป็นส่วนหนึ่งของสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ด้วย ข้าพเจ้าได้อ่านและเข้าใจข้อกำหนดและเงื่อนไขต่างๆ ที่เกี่ยวข้องถี่ถ้วนแล้ว พร้อมทั้งได้รับสำเนาสัญญาสินเชื่อส่วนบุคคล (Personal Loan) ไว้เรียบร้อยแล้ว จึงลงลายมือชื่อไว้เป็นหลักฐาน
-                    </p>
-                    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
-                        <h5 style="color: #856404; margin: 0 0 0.75rem 0; font-size: 0.95rem; font-weight: 700;">ข้อควรระวัง</h5>
-                        <ul style="margin: 0; padding-left: 1.5rem; list-style-type: disc; color: #856404;">
-                            <li style="margin-bottom: 0.5rem;">บริษัทจะคิดดอกเบี้ยตั้งแต่วันที่ผู้ขอกู้ได้รับเงินกู้ กรณีผิดนัดชำระหรือชำระต่ำกว่ายอดชำระขั้นต่ำจะมีดอกเบี้ยและค่าใช้จ่ายในการติดตามทวงถามหนี้เพิ่ม</li>
-                            <li style="margin-bottom: 0.5rem;">โปรดทำความเข้าใจผลิตภัณฑ์และเงื่อนไขก่อนลงนาม หากมีข้อสงสัยหรือต้องการสอบถามข้อมูลเพิ่มเติม สามารถติดต่อได้ที่โทรศัพท์ 082-257-7997</li>
-                            <li>บริษัทอาจมอบหมายให้ผู้ที่รับมอบหมายจำเป็นที่ต้องดำเนินการทางกฎหมาย หากท่านผิดนัดชำระ หรือไม่ชำระค่างวดอย่างสม่ำเสมอ</li>
-                        </ul>
+                    <div class="panel panel--yellow panel--compact">
+                        <h4 class="section-title">ความประสงค์ในการสมัครใช้สินเชื่อ</h4>
+                        <table class="consent-detail-table">
+                            <tr>
+                                <td class="label">ระยะเวลาผ่อนชำระคืน:</td>
+                                <td class="value">${loanTerm}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">วงเงินสินเชื่อที่ต้องการ:</td>
+                                <td class="value">${loanAmountType === 'full' ? 'เต็มจำนวนตามที่บริษัทอนุมัติ' : loanAmountType === 'custom' ? `วงเงินที่ขอกู้/จำนวนทั้งสิ้น: ${customLoanAmount}` : '-'}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">วัตถุประสงค์ในการขอสินเชื่อ:</td>
+                                <td class="value">${loanPurpose}</td>
+                            </tr>
+                        </table>
                     </div>
-                </div>
-
-                <!-- Signature area -->
-                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-                    <div style="text-align: center; width: 300px;">
-                        <canvas id="viewSignaturePad" style="width: 100%; height: 120px; border: 1px solid #e5e7eb; border-radius: 0.25rem; margin-bottom: 0.5rem; background: #ffffff;"></canvas>
-                        <p style="margin: 0; font-weight: 600;">ลงนามผู้ขอสินเชื่อ</p>
-                        <p style="margin: 0.25rem 0 0.5rem 0; color: #4b5563;">( ${title} ${name} )</p>
-                        <p style="margin: 0; color: #6b7280;">วันที่เซ็น: ${signed_date}</p>
+                <div class="signature-row">
+                    <div class="signature-box">
+                        <canvas id="viewSignaturePad" class="signature-canvas"></canvas>
+                        <p class="signature-label">ลงนามผู้ขอสินเชื่อ</p>
+                        <p class="signature-muted">( ${title} ${name} )</p>
+                        <p class="signature-muted">วันที่เซ็น: ${signed_date}</p>
                     </div>
                 </div>
             `;
@@ -1183,7 +999,8 @@
             }
 
             function clearValidationErrors() {
-                modal?.querySelectorAll('.form-error').forEach(el => el.remove());
+                // remove label and input error markers
+                modal?.querySelectorAll('.label-error').forEach(el => el.classList.remove('label-error'));
                 modal?.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
             }
 
@@ -1192,20 +1009,29 @@
                 let errorMessages = [];
 
                 Object.entries(errors).forEach(([field, messages]) => {
-                    const input = consentForm?.querySelector(`[name="${field}"], [name="${field}[]"]`);
+                    // try to find input/select/textarea by name or id
+                    const input = consentForm?.querySelector(`[name="${field}"], [name="${field}[]"], #${field}`);
                     if (input) {
                         input.classList.add('input-error');
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'form-error';
-                        errorDiv.textContent = messages[0];
-                        input.closest('.form-group')?.appendChild(errorDiv);
-                        
-                        // Collect messages for alert
-                        errorMessages.push(messages[0]);
+
+                        // mark related label (if exists)
+                        const label = modal?.querySelector(`label[for="${field}"]`) || document.querySelector(`label[for="${field}"]`);
+                        if (label) label.classList.add('label-error');
+
+                        // collect first message for alert
+                        if (messages && messages.length) {
+                            errorMessages.push(messages[0]);
+                        }
+                    } else {
+                        // fallback: collect messages even if input not found
+                        if (messages && messages.length) {
+                            errorMessages.push(messages[0]);
+                        }
                     }
                 });
 
                 if (errorMessages.length > 0) {
+                    // keep alert behaviour but avoid creating .form-error DOM nodes
                     alert('กรุณากรอกข้อมูลให้ครบถ้วน:\n- ' + errorMessages.join('\n- '));
                 }
             }

@@ -6,6 +6,7 @@
     <meta name="format-detection" content="telephone=no">
     <title>{{ $title ?? __('messages.layout.title') }}</title>
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/consent.css') }}">
 </head>
 <body>
     <div class="layout">

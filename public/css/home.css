@@ -966,6 +966,7 @@ body {
 
 /* Detailed Modal Sizes & Form Layouts */
 .modal-content.modal-lg {
+    height: 95%;
     max-width: 900px;
     width: 95%;
 }
@@ -1524,6 +1525,8 @@ body {
     position: relative;
     overflow: hidden;
     width: min(100%, 400px);
+    box-sizing: border-box;
+    padding: 0; /* ensure box height matches inner canvas height */
 }
 
 .signature-clear-btn {
@@ -1643,6 +1646,7 @@ body {
 
     .modal-content,
     .modal-content.modal-lg {
+        height: 95%;
         width: 100%;
         max-width: 100%;
         max-height: calc(100vh - 1.5rem);

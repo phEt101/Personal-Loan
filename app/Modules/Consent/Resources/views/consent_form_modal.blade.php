@@ -1,41 +1,7 @@
 <!-- Modal สำหรับสร้างใบยินยอม -->
 <div id="consentModal" class="modal" data-next-app-no="{{ $nextAppNo }}">
     <div class="modal-content modal-lg">
-        <style>
-            /* Prevent date inputs inside modal from wrapping or being clipped on iPad/iOS */
-            #consentModal input[type="date"] {
-                -webkit-appearance: none;
-                appearance: none;
-                min-height: 44px;
-                line-height: 1.2;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                min-width: 0;
-                padding-left: 0.75rem;
-                padding-right: 1rem;
-                text-align: center;
-                box-sizing: border-box;
-            }
-            #consentModal input[type="date"]::-webkit-clear-button,
-            #consentModal input[type="date"]::-webkit-inner-spin-button {
-                display: none;
-                -webkit-appearance: none;
-                appearance: none;
-            }
-            .form-section-title.with-app-no {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .form-section-title .app-no-inline {
-                font-weight: 600;
-                font-size: 0.95rem;
-                color: #333;
-                white-space: nowrap;
-                margin-left: 1rem;
-            }
-        </style>
+        
         <form method="POST" action="#" class="consent-form-wrapper" id="consentForm" autocomplete="off" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="consent_id" id="consent_id" value="">
