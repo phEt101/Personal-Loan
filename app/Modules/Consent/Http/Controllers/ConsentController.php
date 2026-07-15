@@ -22,20 +22,17 @@ use Illuminate\Support\Facades\Storage;
 
 class ConsentController extends Controller
 {
-    public function modalConsentForm()
-    {
+    public function modalConsentForm() {
         $nextAppNo = $this->getNextAppNo();
 
         return view('consent::consent_form_modal', compact('nextAppNo'));
     }
 
-    public function modalConsentView()
-    {
+    public function modalConsentView() {
         return view('consent::consent_view_modal');
     }
 
-    public function postCodeOptions(Request $request)
-    {
+    public function postCodeOptions(Request $request) {
         if (!Schema::hasTable('post_codes')) {
             return response()->json([
                 'provinces' => [],
@@ -127,8 +124,7 @@ class ConsentController extends Controller
         ]);
     }
 
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $query = ConsentApplication::query()
             ->with(['applicant:id,application_id,name']);
 
@@ -172,8 +168,7 @@ class ConsentController extends Controller
         return view('consent::index', compact('customers', 'total', 'approved', 'rejected', 'nextAppNo'));
     }
 
-    public function data(ConsentApplication $consent)
-    {
+    public function data(ConsentApplication $consent) {
         $consent->load([
             'applicant',
             'contact',
@@ -192,8 +187,7 @@ class ConsentController extends Controller
         return response()->json((object) $this->toFrontendData($consent));
     }
 
-    public function downloadIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document)
-    {
+    public function downloadIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document) {
         if ((int) $document->application_id !== (int) $consent->id) {
             abort(404);
         }
@@ -223,8 +217,7 @@ class ConsentController extends Controller
         ]);
     }
 
-    public function listZipContents(ConsentApplication $consent, ConsentDocumentFile $document)
-    {
+    public function listZipContents(ConsentApplication $consent, ConsentDocumentFile $document){
         if ((int) $document->application_id !== (int) $consent->id) {
             abort(404);
         }
@@ -243,10 +236,14 @@ class ConsentController extends Controller
         $entries = [];
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $stat = $zip->statIndex($i);
-            if ($stat === false) continue;
+            if ($stat === false) {
+                continue;
+            }
             $name = $stat['name'];
             // skip directories
-            if (substr($name, -1) === '/') continue;
+            if (substr($name, -1) === '/') {
+                continue;
+            }
             $entries[] = [
                 'name' => $name,
                 'size' => $stat['size'],
@@ -258,8 +255,7 @@ class ConsentController extends Controller
         return response()->json(['ok' => true, 'entries' => $entries]);
     }
 
-    public function streamZipEntry(Request $request, ConsentApplication $consent, ConsentDocumentFile $document)
-    {
+    public function streamZipEntry(Request $request, ConsentApplication $consent, ConsentDocumentFile $document){
         if ((int) $document->application_id !== (int) $consent->id) {
             abort(404);
         }
@@ -295,7 +291,7 @@ class ConsentController extends Controller
         ];
         $mimeType = $mimeMap[$ext] ?? 'application/octet-stream';
 
-        $response = response()->stream(function () use ($stream, $zip) {
+        return response()->stream(function () use ($stream, $zip) {
             while (!feof($stream)) {
                 echo fread($stream, 8192);
             }
@@ -306,12 +302,9 @@ class ConsentController extends Controller
             'Content-Disposition' => 'inline; filename="' . str_replace('"', '', $fileName) . '"',
             'X-Content-Type-Options' => 'nosniff',
         ]);
-
-        return $response;
     }
 
-    public function destroyIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document)
-    {
+    public function destroyIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document){
         if ((int) $document->application_id !== (int) $consent->id) {
             abort(404);
         }
@@ -326,8 +319,7 @@ class ConsentController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function destroy(ConsentApplication $consent)
-    {
+    public function destroy(ConsentApplication $consent){
         $consent->load('applicant:id,application_id,name');
         $name = $consent->applicant?->name;
         $appNo = $consent->app_no;
@@ -346,8 +338,7 @@ class ConsentController extends Controller
             ->with('success', 'ลบใบยินยอมเลขที่ ' . ($appNo ?: '-') . ' ของ ' . $name . ' เรียบร้อยแล้ว');
     }
 
-    public function saveStep(Request $request)
-    {
+    public function saveStep(Request $request){
         $step = (int) $request->input('step', 1);
         $consentId = $request->input('consent_id');
         $consent = null;
@@ -438,8 +429,7 @@ class ConsentController extends Controller
         }
     }
 
-    private function getValidationMessages(): array
-    {
+    private function getValidationMessages(): array{
         return [
             'required' => 'กรุณากรอกข้อมูล :attribute',
             'required_if' => 'กรุณากรอกข้อมูล :attribute',
@@ -456,8 +446,7 @@ class ConsentController extends Controller
         ];
     }
 
-    private function getValidationAttributes(): array
-    {
+    private function getValidationAttributes(): array{
         return [
             'app_date' => 'วันที่เขียนคำขอ',
             'app_no' => 'เลขที่ใบคำขอ',
@@ -507,8 +496,7 @@ class ConsentController extends Controller
         ];
     }
 
-    private function getStepRules(int $step, Request $request): array
-    {
+    private function getStepRules(int $step, Request $request): array {
         return match ($step) {
             1 => [
                 // ข้อมูลใบคำขอ + ข้อมูลส่วนตัว
@@ -664,8 +652,7 @@ class ConsentController extends Controller
         };
     }
 
-    private function updateConsentByStep(ConsentApplication $consent, int $step, array $validated, Request $request): void
-    {
+    private function updateConsentByStep(ConsentApplication $consent, int $step, array $validated, Request $request): void {
         Log::debug("Consent updateConsentByStep: Processing step {$step}", ['id' => $consent->id]);
 
         switch ($step) {
@@ -980,8 +967,7 @@ class ConsentController extends Controller
         }
     }
 
-    private function toFrontendData(ConsentApplication $consent): array
-    {
+    private function toFrontendData(ConsentApplication $consent): array {
         $applicant = $consent->applicant;
         $contact = $consent->contact;
         $home = $consent->homeAddress;
@@ -1153,8 +1139,7 @@ class ConsentController extends Controller
         ]);
     }
 
-    private function storeUploadedDocument(ConsentApplication $consent, mixed $file, string $documentType): void
-    {
+    private function storeUploadedDocument(ConsentApplication $consent, mixed $file, string $documentType): void {
         $disk = 'local';
         $path = $file->store('consent/' . $consent->id . '/documents', $disk);
 
@@ -1169,8 +1154,7 @@ class ConsentController extends Controller
         ]);
     }
 
-    private function getDocumentTypeLabel(?string $documentType): string
-    {
+    private function getDocumentTypeLabel(?string $documentType): string {
         return match ($documentType) {
             'identity_document' => 'เอกสารแสดงตน',
             'income_document' => 'เอกสารแสดงรายได้',
@@ -1212,8 +1196,7 @@ class ConsentController extends Controller
         };
     }
 
-    private function getNextAppNo(bool $lock = false): string
-    {
+    private function getNextAppNo(bool $lock = false): string {
         $query = ConsentApplication::withTrashed()->whereNotNull('app_no');
 
         if ($lock) {
@@ -1223,8 +1206,7 @@ class ConsentController extends Controller
         return $this->incrementAppNo($query->orderByDesc('id')->value('app_no'));
     }
 
-    private function incrementAppNo(?string $appNo): string
-    {
+    private function incrementAppNo(?string $appNo): string {
         return $appNo
             ? str_pad((int) $appNo + 1, 13, '0', STR_PAD_LEFT)
             : '0000000000001';
