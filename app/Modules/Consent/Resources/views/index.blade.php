@@ -211,12 +211,16 @@
                 <div class="pdf-content-padding">
                     <h4 class="pdf-section-title">1. Sale Sheet</h4>
                     <div class="pdf-iframe-wrapper">
-                         <iframe src="{{ asset('file/Sale Sheet - BMPver. 2_Personal Loan_App - Eng.pdf') }}#toolbar=1&navpanes=0&view=FitH" class="iframe-reset" title="Sale Sheet"></iframe>
+                        <object data="{{ asset('file/Sale Sheet - BMPver. 2_Personal Loan_App - Eng.pdf') }}#view=FitH" type="application/pdf" class="iframe-reset" title="Sale Sheet">
+                            <p>เอกสารไม่สามารถแสดงได้ในเบราว์เซอร์นี้ — <a href="{{ asset('file/Sale Sheet - BMPver. 2_Personal Loan_App - Eng.pdf') }}" target="_blank" rel="noopener">คลิกเพื่อดาวน์โหลด/เปิดไฟล์</a></p>
+                        </object>
                     </div>
 
                     <h4 class="pdf-section-title">2. เงื่อนไขและข้อตกลงการสมัคร</h4>
                     <div class="pdf-iframe-wrapper">
-                         <iframe src="{{ asset('file/ใบสมัคร BMPver. 2_Personal Loan_App - Eng 4-5.pdf') }}#toolbar=1&navpanes=0&view=FitH" class="iframe-reset" title="Terms and Conditions"></iframe>
+                        <object data="{{ asset('file/ใบสมัคร BMPver. 2_Personal Loan_App - Eng 4-5.pdf') }}#view=FitH" type="application/pdf" class="iframe-reset" title="Terms and Conditions">
+                            <p>เอกสารไม่สามารถแสดงได้ในเบราว์เซอร์นี้ — <a href="{{ asset('file/ใบสมัคร BMPver. 2_Personal Loan_App - Eng 4-5.pdf') }}" target="_blank" rel="noopener">คลิกเพื่อดาวน์โหลด/เปิดไฟล์</a></p>
+                        </object>
                     </div>
                 </div>
             </div>
