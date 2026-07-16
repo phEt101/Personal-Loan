@@ -207,13 +207,53 @@ class ConsentController extends ConsentFormController
         $loan = $consent->loanRequest;
         $account = $consent->disbursementAccount;
 
-        $hasOtherDebtsValue = $applicant?->has_other_debts;
-        $hasOtherDebts = $hasOtherDebtsValue === null ? null : ($hasOtherDebtsValue ? 'มี' : 'ไม่มี');
+        [$hasOtherDebts, $hasExistingLoan] = $this->resolveDebtAndLoanLabels($applicant);
+        $idType = $this->resolveIdType($applicant);
+        $incomeDocuments = $this->buildIncomeDocuments($consent);
 
-        $hasExistingLoanValue = $applicant?->has_existing_loan;
-        $hasExistingLoan = $hasExistingLoanValue === null ? null : ($hasExistingLoanValue ? 'ใช่' : 'ไม่ใช่');
+        return array_merge($consent->toArray(), $this->buildFrontendPayload($consent, [
+            'applicant' => $applicant,
+            'contact' => $contact,
+            'home' => $home,
+            'work' => $work,
+            'documentAddress' => $documentAddress,
+            'referenceAddress' => $referenceAddress,
+            'employment' => $employment,
+            'previousEmployment' => $previousEmployment,
+            'reference' => $reference,
+            'loan' => $loan,
+            'account' => $account,
+            'idType' => $idType,
+            'hasOtherDebts' => $hasOtherDebts,
+            'hasExistingLoan' => $hasExistingLoan,
+            'incomeDocuments' => $incomeDocuments,
+        ]));
+    }
 
-        $incomeDocuments = $consent
+    private function resolveDebtAndLoanLabels($applicant): array {
+        $hasOtherDebts = null;
+        if ($applicant?->has_other_debts !== null) {
+            $hasOtherDebts = $applicant->has_other_debts ? 'มี' : 'ไม่มี';
+        }
+
+        $hasExistingLoan = null;
+        if ($applicant?->has_existing_loan !== null) {
+            $hasExistingLoan = $applicant->has_existing_loan ? 'ใช่' : 'ไม่ใช่';
+        }
+
+        return [$hasOtherDebts, $hasExistingLoan];
+    }
+
+    private function resolveIdType($applicant): string {
+        if ($applicant?->passport && !$applicant?->id_card) {
+            return 'passport';
+        }
+
+        return 'id_card';
+    }
+
+    private function buildIncomeDocuments(ConsentApplication $consent): array {
+        return $consent
             ->incomeDocuments()
             ->orderBy('id')
             ->get()
@@ -237,8 +277,26 @@ class ConsentController extends ConsentFormController
             })
             ->values()
             ->all();
+    }
 
-        return array_merge($consent->toArray(), [
+    private function buildFrontendPayload(ConsentApplication $consent, array $context): array {
+        $applicant = $context['applicant'] ?? null;
+        $contact = $context['contact'] ?? null;
+        $home = $context['home'] ?? null;
+        $work = $context['work'] ?? null;
+        $documentAddress = $context['documentAddress'] ?? null;
+        $referenceAddress = $context['referenceAddress'] ?? null;
+        $employment = $context['employment'] ?? null;
+        $previousEmployment = $context['previousEmployment'] ?? null;
+        $reference = $context['reference'] ?? null;
+        $loan = $context['loan'] ?? null;
+        $account = $context['account'] ?? null;
+        $idType = $context['idType'] ?? 'id_card';
+        $hasOtherDebts = $context['hasOtherDebts'] ?? null;
+        $hasExistingLoan = $context['hasExistingLoan'] ?? null;
+        $incomeDocuments = $context['incomeDocuments'] ?? [];
+
+        return [
             'id' => $consent->encrypted_id,
             'transaction_date' => $consent->created_at?->format('d/m/Y'),
             'signed_date' => $consent->signed_at?->format('Y-m-d'),
@@ -257,7 +315,7 @@ class ConsentController extends ConsentFormController
             'name_en' => $applicant?->name_en,
             'birthdate' => $applicant?->birthdate?->format('Y-m-d'),
             'nationality' => $applicant?->nationality,
-            'id_type' => $applicant?->id_card ? 'id_card' : ($applicant?->passport ? 'passport' : 'id_card'),
+            'id_type' => $idType,
             'id_card' => $applicant?->id_card ?: $applicant?->passport,
             'education' => $applicant?->education,
             'marital_status' => $applicant?->marital_status,
@@ -363,7 +421,7 @@ class ConsentController extends ConsentFormController
             // 12. ลายเซ็น
             'signature_data' => $consent->signature_data,
             'signatureData' => $consent->signature_data,
-        ]);
+        ];
     }
 
     private function getDocumentTypeLabel(?string $documentType): string {
