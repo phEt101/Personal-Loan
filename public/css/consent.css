@@ -78,10 +78,6 @@
   background: #f3f4f6;
 }
 
-.pdf-content-padding {
-  padding: 1.5rem;
-}
-
 .pdf-section-title {
   margin: 0 0 1rem 0;
   color: #10b981;
@@ -105,11 +101,6 @@
 
 .file-link {
   margin-bottom: 0.35rem;
-}
-
-.file-link__anchor {
-  color: #10b981;
-  text-decoration: none;
 }
 
 .appno-box-container {
@@ -283,69 +274,6 @@
 
 /* Styles extracted from consent modals and consent index to avoid inline CSS */
 
-/* Modal-specific rules (scoped by #consentModal or .consent-modal) */
-.consent-modal input[type="date"] {
-  -webkit-appearance: none;
-  appearance: none;
-  min-height: 44px;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  padding-left: 0.75rem;
-  padding-right: 1rem;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.consent-modal input[type="date"]::-webkit-clear-button,
-.consent-modal input[type="date"]::-webkit-inner-spin-button {
-  display: none;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.consent-modal .form-section-title.with-app-no {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.consent-modal .form-section-title .app-no-inline {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #333;
-  white-space: nowrap;
-  margin-left: 1rem;
-}
-
-.consent-modal .form-group {
-  position: relative;
-}
-
-.consent-modal .form-error {
-  position: absolute;
-  left: 0;
-  bottom: 0.4rem;
-  color: #d9534f;
-  font-size: 0.875rem;
-  line-height: 1;
-  pointer-events: none;
-}
-
-/* Small helpers used in index blade */
-.card--relative {
-  position: relative;
-}
-
-.pdf-modal-body {
-  padding: 0;
-  overflow-y: auto;
-  height: 75vh;
-  background: #f3f4f6;
-}
-
 .pdf-content-padding {
   padding: 1.5rem;
 }
@@ -365,10 +293,6 @@
   background: #ffffff;
 }
 
-.iframe-reset {
-  border: none;
-}
-
 .file-link {
   margin-bottom: 0.35rem;
 }
@@ -376,26 +300,6 @@
 .file-link__anchor {
   color: #10b981;
   text-decoration: none;
-}
-
-.app-no-boxes {
-  display: inline-flex;
-  gap: 3px;
-  align-items: center;
-}
-
-.app-no-box {
-  border: 1.5px solid #1f2937;
-  width: 18px;
-  height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-family: 'Courier New', Courier, monospace;
-  font-weight: bold;
-  background: #ffffff;
-  border-radius: 2px;
 }
 
 .consent-header-row {
@@ -474,11 +378,6 @@
   pointer-events: none;
 }
 
-/* PDF modal / index small helpers */
-.card--relative {
-  position: relative;
-}
-
 .pdf-modal-body {
   padding: 0;
   overflow-y: auto;
@@ -503,19 +402,6 @@
   border-radius: 0.5rem;
   overflow: hidden;
   background: #ffffff;
-}
-
-.iframe-reset {
-  border: none;
-}
-
-.file-link {
-  margin-bottom: 0.35rem;
-}
-
-.file-link__anchor {
-  color: #10b981;
-  text-decoration: none;
 }
 
 .app-no-boxes {
@@ -558,13 +444,6 @@
   font-weight: 600;
   color: #4b5563;
   margin-top: 0.25rem;
-}
-
-/* Small utility */
-.no-auto-link a[href^="tel:"],
-.no-auto-link a[href^="sms:"] {
-  color: inherit;
-  text-decoration: none;
 }
 
 /* Search & filter card (moved from index.blade.php) */
