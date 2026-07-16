@@ -10,14 +10,16 @@ class LoginTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const LOGIN_PATH = '/login';
+
     public function test_root_redirects_to_login(): void
     {
-        $this->get('/')->assertRedirect('/login');
+        $this->get('/')->assertRedirect(self::LOGIN_PATH);
     }
 
     public function test_guest_cannot_access_home(): void
     {
-        $this->get('/home')->assertRedirect('/login');
+        $this->get('/home')->assertRedirect(self::LOGIN_PATH);
     }
 
     public function test_user_can_login_and_logout(): void
@@ -36,7 +38,7 @@ class LoginTest extends TestCase
 
         $this->actingAs($user)
             ->post('/logout')
-            ->assertRedirect('/login');
+            ->assertRedirect(self::LOGIN_PATH);
 
         $this->assertGuest();
     }

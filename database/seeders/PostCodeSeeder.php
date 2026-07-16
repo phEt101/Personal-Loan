@@ -12,11 +12,7 @@ class PostCodeSeeder extends Seeder
     {
         $csvPath = public_path('file/MS_Post code_R2.csv');
 
-        if (!is_file($csvPath)) {
-            return;
-        }
-
-        if (PostCode::query()->exists()) {
+        if (!$this->canSeed($csvPath)) {
             return;
         }
 
@@ -28,7 +24,7 @@ class PostCodeSeeder extends Seeder
         DB::disableQueryLog();
 
         $header = fgetcsv($handle);
-        if (is_array($header) && count($header) > 0) {
+        if (is_array($header) && !empty($header)) {
             $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);
         }
 
@@ -37,29 +33,12 @@ class PostCodeSeeder extends Seeder
         $now = now();
 
         while (($row = fgetcsv($handle)) !== false) {
-            if (!is_array($row) || count($row) < 5) {
+            $mapped = $this->mapRowToPayload($row, $now);
+            if ($mapped === null) {
                 continue;
             }
 
-            $postCode = trim((string) $row[0]);
-            $district = trim((string) $row[1]);
-            $city = trim((string) $row[2]);
-            $province = trim((string) $row[3]);
-            $countryCode = trim((string) $row[4]) ?: 'TH';
-
-            if ($postCode === '' || $district === '' || $city === '' || $province === '') {
-                continue;
-            }
-
-            $batch[] = [
-                'post_code' => $postCode,
-                'district' => $district,
-                'city' => $city,
-                'province' => $province,
-                'country_code' => $countryCode,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
+            $batch[] = $mapped;
 
             if (count($batch) >= $batchSize) {
                 DB::table('post_codes')->insertOrIgnore($batch);
@@ -69,8 +48,39 @@ class PostCodeSeeder extends Seeder
 
         fclose($handle);
 
-        if (count($batch) > 0) {
+        if (!empty($batch)) {
             DB::table('post_codes')->insertOrIgnore($batch);
         }
+    }
+
+    private function canSeed(string $csvPath): bool
+    {
+        return is_file($csvPath) && !PostCode::query()->exists();
+    }
+
+    private function mapRowToPayload(array $row, $now): ?array
+    {
+        if (count($row) < 5) {
+            return null;
+        }
+
+        $postCode = trim((string) $row[0]);
+        $district = trim((string) $row[1]);
+        $city = trim((string) $row[2]);
+        $province = trim((string) $row[3]);
+
+        if ($postCode === '' || $district === '' || $city === '' || $province === '') {
+            return null;
+        }
+
+        return [
+            'post_code' => $postCode,
+            'district' => $district,
+            'city' => $city,
+            'province' => $province,
+            'country_code' => trim((string) $row[4]) ?: 'TH',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
     }
 }
