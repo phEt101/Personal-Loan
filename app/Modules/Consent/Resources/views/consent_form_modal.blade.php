@@ -77,7 +77,7 @@
 
                         <div class="form-group col-4">
                             <label for="officer_phone">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                            <input type="text" id="officer_phone" name="officer_phone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10">
+                            <input type="tel" id="officer_phone" name="officer_phone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10" inputmode="numeric" pattern="[0-9]*" autocomplete="tel" oninput="this.value = this.value.replace(/\D/g,'')">
                         </div>
 
                         <div class="form-group col-4">
@@ -256,7 +256,7 @@
 
                         <div class="form-group col-4">
                             <label for="phone_mobile">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                            <input type="text" id="phone_mobile" name="phone_mobile" placeholder="0XXXXXXXXX">
+                            <input type="tel" id="phone_mobile" name="phone_mobile" placeholder="0XXXXXXXXX">
                         </div>
 
                         <div class="form-group col-4">
@@ -451,7 +451,7 @@
 
                         <div class="form-group col-3">
                             <label for="workPhone">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                            <input type="text" id="workPhone" name="workPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10">
+                            <input type="tel" id="workPhone" name="workPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10">
                         </div>
 
                         <div class="form-group col-4">
@@ -491,7 +491,7 @@
 
                             <div class="form-group col-3">
                                 <label for="previousPhone">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                                <input type="text" id="previousPhone" name="previousPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10">
+                                <input type="tel" id="previousPhone" name="previousPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10">
                             </div>
                         </div>
                     </div>
@@ -591,78 +591,78 @@
                             {{ __('consent::messages.modal.form.step5.sections.reference') }}
                         </div>
 
-                        <div class="form-group col-12">
+                        <div class="form-group col-6">
                             <label for="refName">{{ __('consent::messages.modal.form.step5.fields.ref_name') }} <span class="required-asterisk">*</span></label>
                             <input type="text" id="refName" name="refName" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_name') }}" required>
                         </div>
 
-                        <div class="form-group col-12">
+                        <div class="form-group col-6">
                             <label for="refRelation">{{ __('consent::messages.modal.form.step5.fields.ref_relation') }}</label>
                             <input type="text" id="refRelation" name="refRelation" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_relation') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="refAddressNo">{{ __('consent::messages.modal.form.step5.fields.ref_address_no') }}</label>
                             <input type="text" id="refAddressNo" name="refAddressNo" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_address_no') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="refAddressFloor">{{ __('consent::messages.modal.form.common.address_floor') }}</label>
                             <input type="text" id="refAddressFloor" name="refAddressFloor" placeholder="{{ __('consent::messages.modal.form.common.address_floor') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="refAddressVillage">{{ __('consent::messages.modal.form.common.address_village') }}</label>
                             <input type="text" id="refAddressVillage" name="refAddressVillage" placeholder="{{ __('consent::messages.modal.form.common.address_village') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="refAddressBuilding">{{ __('consent::messages.modal.form.step5.fields.ref_address_building') }}</label>
                             <input type="text" id="refAddressBuilding" name="refAddressBuilding" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_address_building') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="refAddressSoi">{{ __('consent::messages.modal.form.common.address_soi') }}</label>
                             <input type="text" id="refAddressSoi" name="refAddressSoi" placeholder="{{ __('consent::messages.modal.form.common.address_soi') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="refAddressRoad">{{ __('consent::messages.modal.form.common.address_road') }}</label>
                             <input type="text" id="refAddressRoad" name="refAddressRoad" placeholder="{{ __('consent::messages.modal.form.common.address_road') }}">
                         </div>
 
-                        <div class="form-group col-6 address-search-field">
+                        <div class="form-group col-3 address-search-field">
                             <label for="refAddressSubdistrict">{{ __('consent::messages.modal.form.common.subdistrict') }}</label>
                             <input type="text" id="refAddressSubdistrict" name="refAddressSubdistrict" placeholder="{{ __('consent::messages.modal.form.common.search_subdistrict') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="refAddressSubdistrict_dropdown"></div>
                         </div>
 
-                        <div class="form-group col-6 address-search-field">
+                        <div class="form-group col-3 address-search-field">
                             <label for="refAddressDistrict">{{ __('consent::messages.modal.form.common.search_district') }}</label>
                             <input type="text" id="refAddressDistrict" name="refAddressDistrict" placeholder="{{ __('consent::messages.modal.form.common.search_district') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="refAddressDistrict_dropdown"></div>
                         </div>
 
-                        <div class="form-group col-6 address-search-field">
+                        <div class="form-group col-3 address-search-field">
                             <label for="refAddressProvince">{{ __('consent::messages.modal.form.common.province') }}</label>
                             <input type="text" id="refAddressProvince" name="refAddressProvince" placeholder="{{ __('consent::messages.modal.form.common.search_province') }}" autocomplete="off">
                             <div class="address-search-dropdown hidden" id="refAddressProvince_dropdown"></div>
                         </div>
 
-                        <div class="form-group col-6 address-search-field">
+                        <div class="form-group col-3 address-search-field">
                             <label for="refAddressPostal">{{ __('consent::messages.modal.form.common.postal') }}</label>
                             <input type="text" id="refAddressPostal" name="refAddressPostal" placeholder="{{ __('consent::messages.modal.form.common.search_postal') }}" autocomplete="off" inputmode="numeric">
                             <div class="address-search-dropdown hidden" id="refAddressPostal_dropdown"></div>
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="refPhoneHome">{{ __('consent::messages.modal.form.common.phone_home') }}</label>
-                            <input type="text" id="refPhoneHome" name="refPhoneHome" placeholder="{{ __('consent::messages.modal.form.common.phone_home') }}">
+                            <input type="tel" id="refPhoneHome" name="refPhoneHome" placeholder="{{ __('consent::messages.modal.form.common.phone_home') }}">
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-3">
                             <label for="refPhoneMobile">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                            <input type="text" id="refPhoneMobile" name="refPhoneMobile" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}">
+                            <input type="tel" id="refPhoneMobile" name="refPhoneMobile" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}">
                         </div>
 
                         <div class="form-group col-12 note-box">
@@ -678,12 +678,12 @@
                             {{ __('consent::messages.modal.form.step6.sections.loan_preference') }}
                         </div>
 
-                        <div class="form-group col-12">
+                        <div class="form-group col-6">
                             <label for="loanPurpose">{{ __('consent::messages.modal.form.step6.fields.loan_purpose') }} <span class="required-asterisk">*</span></label>
                             <input type="text" id="loanPurpose" name="loanPurpose" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.loan_purpose') }}" required>
                         </div>
 
-                        <div class="form-group col-12">
+                        <div class="form-group col-3">
                             <label for="loanTerm">{{ __('consent::messages.modal.form.step6.fields.loan_term') }} <span class="required-asterisk">*</span></label>
                             <select id="loanTerm" name="loanTerm" required>
                                 <option value="">{{ __('consent::messages.modal.form.step6.options.loan_term_prompt') }}</option>
@@ -698,7 +698,7 @@
                             </select>
                         </div>
 
-                        <div class="form-group col-12">
+                        <div class="form-group col-3">
                             <label for="loanAmountType">{{ __('consent::messages.modal.form.step6.fields.loan_amount_type') }} <span class="required-asterisk">*</span></label>
                             <select id="loanAmountType" name="loanAmountType" required>
                                 <option value="">{{ __('consent::messages.modal.form.step6.options.loan_amount_prompt') }}</option>
@@ -707,7 +707,7 @@
                             </select>
                         </div>
 
-                        <div class="form-group col-12 hidden" id="customLoanAmountWrapper">
+                        <div class="form-group col-3 hidden" id="customLoanAmountWrapper">
                             <label for="customLoanAmount">{{ __('consent::messages.modal.form.step6.fields.custom_loan_amount') }}</label>
                             <input type="number" id="customLoanAmount" name="customLoanAmount" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.custom_loan_amount') }}" min="0">
                         </div>
@@ -726,22 +726,22 @@
                             </p>
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="accountNumber">{{ __('consent::messages.modal.form.step6.fields.account_number') }} <span class="required-asterisk">*</span></label>
                             <input type="text" id="accountNumber" name="accountNumber" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.account_number') }}" required>
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="accountType">{{ __('consent::messages.modal.form.step6.fields.account_type') }} <span class="required-asterisk">*</span></label>
                             <input type="text" id="accountType" name="accountType" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.account_type') }}" required>
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="bankName">{{ __('consent::messages.modal.form.step6.fields.bank_name') }} <span class="required-asterisk">*</span></label>
                             <input type="text" id="bankName" name="bankName" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.bank_name') }}" required>
                         </div>
 
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="accountName">{{ __('consent::messages.modal.form.step6.fields.account_name') }} <span class="required-asterisk">*</span></label>
                             <input type="text" id="accountName" name="accountName" placeholder="{{ __('consent::messages.modal.form.step6.placeholders.account_name') }}" required>
                         </div>
