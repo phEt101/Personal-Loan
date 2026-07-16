@@ -9,7 +9,7 @@
                     <path d="M12 2C14.5013 4.73857 15.8995 8.23859 15.8995 12C15.8995 15.7614 14.5013 19.2614 12 22C9.49872 19.2614 8.1005 15.7614 8.1005 12C8.1005 8.23859 9.49872 4.73857 12 2Z" stroke="#059669" stroke-width="2"/>
                 </svg>
             </span>
-            <select class="locale-select" aria-label="Language switcher" onchange="if (this.value) window.location.href = this.value;">
+            <select id="locale" name="locale" class="locale-select" aria-label="Language switcher" onchange="if (this.value) window.location.href = this.value;">
                 <option value="{{ route('locale.switch', 'th') }}" @selected(app()->getLocale() === 'th')>{{ __('messages.language.th') }}</option>
                 <option value="{{ route('locale.switch', 'en') }}" @selected(app()->getLocale() === 'en')>{{ __('messages.language.en') }}</option>
             </select>
