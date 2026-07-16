@@ -140,19 +140,4 @@ class ConsentDocumentController extends ConsentController
 
         return response()->json(['ok' => true]);
     }
-
-    private function storeUploadedDocument(ConsentApplication $consent, mixed $file, string $documentType): void {
-        $disk = 'local';
-        $path = $file->store('consent/' . $consent->id . '/documents', $disk);
-
-        ConsentDocumentFile::create([
-            'application_id' => $consent->id,
-            'document_type' => $documentType,
-            'disk' => $disk,
-            'path' => $path,
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getClientMimeType(),
-            'size' => $file->getSize(),
-        ]);
-    }
 }

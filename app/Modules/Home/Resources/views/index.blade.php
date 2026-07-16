@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => __('messages.home.title')])
+@extends('layouts.app', ['title' => __('home::messages.home.title')])
 
 @section('content')
 
