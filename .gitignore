@@ -19,3 +19,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Ignore SonarLint connected-mode data
+.sonarlint/
+ 
+# Local docker override
+docker-compose.override.yml

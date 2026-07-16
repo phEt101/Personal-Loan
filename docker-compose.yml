@@ -30,11 +30,12 @@ services:
     restart: unless-stopped
     ports:
       - "3307:3306"
+    env_file: .env
     environment:
-      MYSQL_DATABASE: personal_loan
-      MYSQL_USER: personal_loan_user
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${DB_DATABASE:-personal_loan}
+      MYSQL_USER: ${DB_USERNAME:-personal_loan_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -50,12 +51,13 @@ services:
     restart: unless-stopped
     ports:
       - "8081:80"
+    env_file: .env
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: root
-      MYSQL_ROOT_PASSWORD: root
+      PMA_USER: ${PMA_USER:-root}
+      PMA_PASSWORD: ${PMA_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     depends_on:
       mysql:
         condition: service_healthy
