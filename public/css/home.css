@@ -28,8 +28,6 @@ body {
     flex-direction: column;
     justify-content: space-between;
     transition: transform 0.25s ease, opacity 0.25s ease;
-}
-.sidebar {
     z-index: 40;
 }
 
@@ -447,11 +445,6 @@ body {
     color: #14532d;
 }
 
-.dashboard {
-    display: grid;
-    gap: 1rem;
-}
-
 .home-hero {
     display: flex;
     align-items: stretch;
@@ -499,11 +492,6 @@ body {
     margin: 0;
     color: #4b5563;
     line-height: 1.6;
-}
-
-.footer {
-    color: #64748b;
-    font-size: 0.95rem;
 }
 
 .hero.compact-hero {
