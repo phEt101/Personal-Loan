@@ -1229,7 +1229,7 @@ body {
 
 .file-attachment-row a,
 .file-attachment-row span {
-    word-break: break-word;
+    overflow-wrap: break-word;
     color: #374151;
     font-size: 0.9rem;
     text-decoration: none;
@@ -1726,7 +1726,6 @@ body {
     .document-upload-input-cell .file-attachment-row a,
     .document-upload-input-cell .file-attachment-row span {
         overflow-wrap: anywhere;
-        word-break: break-word;
     }
 
     .document-upload-section-row th {
