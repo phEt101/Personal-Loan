@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ConsentFormController extends Controller {
+    private const OPTION_OTHER = 'อื่นๆ';
 
     public function saveStep(Request $request){
         $step = (int) $request->input('step', 1);
@@ -189,7 +190,7 @@ class ConsentFormController extends Controller {
                 'officer_phone' => ['nullable', 'string', 'max:20'],
                 'officer_group' => ['nullable', 'string', 'max:50'],
                 'title' => ['required', 'string', 'max:50'],
-                'title_other' => ['nullable', 'required_if:title,อื่นๆ', 'string', 'max:50'],
+                'title_other' => ['nullable', 'required_if:title,' . self::OPTION_OTHER, 'string', 'max:50'],
                 'name' => ['nullable', 'string', 'max:255'],
                 'name_en' => ['nullable', 'string', 'max:255'],
                 'birthdate' => ['required', 'date'],
@@ -242,12 +243,12 @@ class ConsentFormController extends Controller {
                 'useHomeAddress' => ['nullable', 'boolean'],
                 'occupation' => ['required', 'string', 'max:100'],
                 'governmentLevel' => ['nullable', 'required_if:occupation,ข้าราชการ', 'string', 'max:100'],
-                'occupationOther' => ['nullable', 'required_if:occupation,อื่นๆ', 'string', 'max:100'],
+                'occupationOther' => ['nullable', 'required_if:occupation,' . self::OPTION_OTHER, 'string', 'max:100'],
                 'careerField' => ['required', 'string', 'max:100'],
-                'careerFieldOther' => ['nullable', 'required_if:careerField,อื่นๆ', 'string', 'max:100'],
+                'careerFieldOther' => ['nullable', 'required_if:careerField,' . self::OPTION_OTHER, 'string', 'max:100'],
                 'companyName' => ['nullable', 'string', 'max:255'],
                 'businessType' => ['required', 'string', 'max:255'],
-                'businessTypeOther' => ['nullable', 'required_if:businessType,อื่นๆ', 'string', 'max:255'],
+                'businessTypeOther' => ['nullable', 'required_if:businessType,' . self::OPTION_OTHER, 'string', 'max:255'],
                 'workAddressBuilding' => ['nullable', 'string', 'max:255'],
                 'workAddressFloor' => ['nullable', 'string', 'max:255'],
                 'workDepartment' => ['nullable', 'string', 'max:255'],
@@ -273,7 +274,7 @@ class ConsentFormController extends Controller {
                 'income' => ['required', 'numeric', 'min:0'],
                 'extraIncome' => ['nullable', 'numeric', 'min:0'],
                 'extraIncomeSource' => ['required', 'string', 'max:255'],
-                'extraIncomeSourceOther' => ['nullable', 'required_if:extraIncomeSource,อื่นๆ', 'string', 'max:255'],
+                'extraIncomeSourceOther' => ['nullable', 'required_if:extraIncomeSource,' . self::OPTION_OTHER, 'string', 'max:255'],
                 'incomeCountry' => ['nullable', 'string', 'max:100'],
                 'hasOtherDebts' => ['required', 'string', 'max:10'],
                 'otherDebtInstallment' => ['nullable', 'required_if:hasOtherDebts,มี', 'numeric', 'min:0'],
@@ -361,7 +362,7 @@ class ConsentFormController extends Controller {
         ]);
 
         $title = $validated['title'] ?? null;
-        if ($title === 'อื่นๆ' && $request->filled('title_other')) {
+        if ($title === self::OPTION_OTHER && $request->filled('title_other')) {
             $title = $request->title_other;
         }
         
@@ -430,15 +431,15 @@ class ConsentFormController extends Controller {
 
     private function handleStep3(ConsentApplication $consent, array $validated, Request $request): void {
         $occupation = $validated['occupation'] ?? null;
-        if ($occupation === 'อื่นๆ' && $request->filled('occupationOther')) {
+        if ($occupation === self::OPTION_OTHER && $request->filled('occupationOther')) {
             $occupation = $request->occupationOther;
         }
         $careerField = $validated['careerField'] ?? null;
-        if ($careerField === 'อื่นๆ' && $request->filled('careerFieldOther')) {
+        if ($careerField === self::OPTION_OTHER && $request->filled('careerFieldOther')) {
             $careerField = $request->careerFieldOther;
         }
         $businessType = $validated['businessType'] ?? null;
-        if ($businessType === 'อื่นๆ' && $request->filled('businessTypeOther')) {
+        if ($businessType === self::OPTION_OTHER && $request->filled('businessTypeOther')) {
             $businessType = $request->businessTypeOther;
         }
 
@@ -599,69 +600,94 @@ class ConsentFormController extends Controller {
         ];
 
         foreach ($uploadFields as $fieldName => $documentType) {
-            if (!$request->hasFile($fieldName)) {
+            $this->processStep8UploadField($consent, $request, $fieldName, $documentType);
+        }
+
+        $status = $this->determineStep8Status($consent);
+        $consent->update(['status' => $status]);
+
+        Log::info("Consent updateConsentByStep: Step 8 completed. Final status: {$status}", ['id' => $consent->id]);
+    }
+
+    private function processStep8UploadField(ConsentApplication $consent, Request $request, string $fieldName, string $documentType): void {
+        if (!$request->hasFile($fieldName)) {
+            return;
+        }
+
+        $files = (array) $request->file($fieldName, []);
+        Log::debug("Consent updateConsentByStep: Processing " . count($files) . " documents (always zipping)", [
+            'field' => $fieldName,
+            'document_type' => $documentType,
+        ]);
+
+        if (count($files) === 0) {
+            return;
+        }
+
+        $zipData = $this->createStep8Zip($consent, $fieldName, $files);
+        if (!$zipData) {
+            Log::warning('Consent updateConsentByStep: Failed to create zip for ' . $fieldName, ['consent_id' => $consent->id]);
+            return;
+        }
+
+        ConsentDocumentFile::create([
+            'application_id' => $consent->id,
+            'document_type' => $documentType,
+            'disk' => 'local',
+            'path' => 'consent/' . $consent->id . '/documents/' . $zipData['zipName'],
+            'original_name' => $zipData['zipName'],
+            'mime_type' => 'application/zip',
+            'size' => filesize($zipData['zipPath']),
+        ]);
+    }
+
+    private function createStep8Zip(ConsentApplication $consent, string $fieldName, array $files): ?array {
+        $disk = Storage::disk('local');
+        $targetDir = $disk->path('consent/' . $consent->id . '/documents');
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+
+        $zipName = $fieldName . '_' . time() . '.zip';
+        $zipPath = $targetDir . DIRECTORY_SEPARATOR . $zipName;
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
+            return null;
+        }
+
+        foreach ($files as $file) {
+            if (!$file) {
                 continue;
             }
 
-            $files = (array) $request->file($fieldName, []);
-            Log::debug("Consent updateConsentByStep: Processing " . count($files) . " documents (always zipping)", [
-                'field' => $fieldName,
-                'document_type' => $documentType,
-            ]);
-
-            // Always create a ZIP archive for this field (even when a single file)
-            if (count($files) > 0) {
-                $disk = Storage::disk('local');
-                $targetDir = $disk->path('consent/' . $consent->id . '/documents');
-                if (!is_dir($targetDir)) {
-                    mkdir($targetDir, 0755, true);
-                }
-
-                $zipName = $fieldName . '_' . time() . '.zip';
-                $zipPath = $targetDir . DIRECTORY_SEPARATOR . $zipName;
-
-                $zip = new \ZipArchive();
-                    if ($zip->open($zipPath, \ZipArchive::CREATE) === true) {
-                    foreach ($files as $file) {
-                        if (!$file) {
-                            continue;
-                        }
-                        $original = (string) ($file->getClientOriginalName() ?: 'file');
-                        $safeOriginal = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
-                        $uniqueName = time() . '_' . uniqid() . '_' . $safeOriginal;
-                        $contents = file_get_contents($file->getRealPath());
-                        $zip->addFromString($uniqueName, $contents);
-                    }
-                    $zip->close();
-
-                    // create DB record pointing to the zip
-                    ConsentDocumentFile::create([
-                        'application_id' => $consent->id,
-                        'document_type' => $documentType,
-                        'disk' => 'local',
-                        'path' => 'consent/' . $consent->id . '/documents/' . $zipName,
-                        'original_name' => $zipName,
-                        'mime_type' => 'application/zip',
-                        'size' => filesize($zipPath),
-                    ]);
-                } else {
-                    Log::warning('Consent updateConsentByStep: Failed to create zip for ' . $fieldName, ['consent_id' => $consent->id]);
-                }
-            }
+            $original = (string) ($file->getClientOriginalName() ?: 'file');
+            $safeOriginal = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
+            $uniqueName = time() . '_' . uniqid() . '_' . $safeOriginal;
+            $contents = file_get_contents($file->getRealPath());
+            $zip->addFromString($uniqueName, $contents);
         }
 
+        $zip->close();
+
+        return [
+            'zipName' => $zipName,
+            'zipPath' => $zipPath,
+        ];
+    }
+
+    private function determineStep8Status(ConsentApplication $consent): string {
         $applicant = $consent->applicant;
         $age = $applicant?->birthdate ? Carbon::parse($applicant->birthdate)->age : 0;
         $income = (float) ($applicant?->income ?? 0);
         $otherDebtInstallment = (float) ($applicant?->other_debt_installment ?? 0);
 
-        $status = 'approved';
-        if ($age < 20 || $age > 50 || $income < 15000 || ($income > 0 && $otherDebtInstallment > ($income / 2))) {
-            $status = 'rejected';
-        }
+        $isRejected = $age < 20
+            || $age > 50
+            || $income < 15000
+            || ($income > 0 && $otherDebtInstallment > ($income / 2));
 
-        $consent->update(['status' => $status]);
-        Log::info("Consent updateConsentByStep: Step 8 completed. Final status: {$status}", ['id' => $consent->id]);
+        return $isRejected ? 'rejected' : 'approved';
     }
 
         protected function getNextAppNo(bool $lock = false): string {
