@@ -591,7 +591,7 @@ body {
 
 .consent-table th,
 .consent-table td {
-    text-align: left;
+    text-align: center;
     padding: 0.65rem 0.85rem;
     border-bottom: 1px solid #eef2f4;
 }
@@ -612,6 +612,7 @@ body {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+    justify-content: center;
 
 }
 
@@ -642,7 +643,6 @@ body {
 
 .empty-cell {
     color: #6b7280;
-    text-align: center;
     padding: 1.25rem;
 }
 
