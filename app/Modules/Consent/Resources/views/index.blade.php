@@ -429,6 +429,11 @@
             const officer_group = customer.officer_group || '';
             const officer_name = customer.officer_name || '-';
             const officer_phone = customer.officer_phone || '-';
+            const productTypeLabelMap = {
+                'personal_unsecured': @json(__('consent::messages.modal.form.step1.options.product_personal_unsecured')),
+                'nano_finance': @json(__('consent::messages.modal.form.step1.options.product_nano_finance')),
+            };
+            const product_type = customer.product_type ? (productTypeLabelMap[customer.product_type] || customer.product_type) : '-';
             
             // Address fields
             const residence_status = customer.residence_status || '-';
@@ -538,6 +543,10 @@
                         <tr>
                             <td class="label">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</td>
                             <td class="value">${officer_group || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.product_type') }}</td>
+                            <td class="value">${product_type}</td>
                         </tr>
                         <tr>
                             <td class="label">{{ __('consent::messages.modal.form.step1.fields.officer_name') }}</td>
@@ -2033,7 +2042,7 @@
                 setFieldValue('id_type', inferredIdType);
 
                 [
-                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'officer_group', 'title', 'name', 'name_en', 'birthdate', 'id_card',
+                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'officer_group', 'product_type', 'title', 'name', 'name_en', 'birthdate', 'id_card',
                     'nationality', 'marital_status', 'education', 'occupation', 'governmentLevel', 'occupationOther',
                     'careerField', 'careerFieldOther', 'residence_status', 'address_room', 'address_no', 'address_floor',
                     'address_village', 'address_building', 'address_soi', 'address_road', 'address_subdistrict',

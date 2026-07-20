@@ -21,6 +21,7 @@ class ConsentApplication extends Model
         'officer_name',
         'officer_phone',
         'officer_group',
+        'product_type',
         'document_delivery',
         'status',
         'signed',

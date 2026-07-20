@@ -70,22 +70,31 @@
                             <input type="text" id="app_no" name="app_no" value="{{ $nextAppNo }}" maxlength="13" readonly class="input-readonly">
                         </div>
 
-                        <div class="form-group col-4">
+                        <div class="form-group col-3">
                             <label for="officer_name">{{ __('consent::messages.modal.form.step1.fields.officer_name') }}</label>
                             <input type="text" id="officer_name" name="officer_name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.officer_name') }}">
                         </div>
 
-                        <div class="form-group col-4">
+                        <div class="form-group col-3">
                             <label for="officer_phone">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
                             <input type="tel" id="officer_phone" name="officer_phone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10" inputmode="numeric" pattern="[0-9]*" autocomplete="tel" oninput="this.value = this.value.replace(/\D/g,'')">
                         </div>
 
-                        <div class="form-group col-4">
+                        <div class="form-group col-3">
                             <label for="officer_group">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</label>
                             <select id="officer_group" name="officer_group">
                                 <option value="">{{ __('consent::messages.modal.form.step1.options.officer_group_prompt') }}</option>
                                 <option value="กลุ่ม 1">{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
                                 <option value="กลุ่ม 2">{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-3">
+                            <label for="product_type">{{ __('consent::messages.modal.form.step1.fields.product_type') }}</label>
+                            <select id="product_type" name="product_type">
+                                <option value="">{{ __('consent::messages.modal.form.step1.options.product_type_prompt') }}</option>
+                                <option value="สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป">{{ __('consent::messages.modal.form.step1.options.product_personal_unsecured') }}</option>
+                                <option value="สินเชื่อนาโนไฟแนนซ์">{{ __('consent::messages.modal.form.step1.options.product_nano_finance') }}</option>
                             </select>
                         </div>
 

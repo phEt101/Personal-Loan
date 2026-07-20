@@ -57,6 +57,7 @@ class ConsentFormController extends Controller {
                         'officer_name' => $validated['officer_name'] ?? null,
                         'officer_phone' => $validated['officer_phone'] ?? null,
                         'officer_group' => $validated['officer_group'] ?? null,
+                        'product_type' => $validated['product_type'] ?? null,
                         'status' => 'draft',
                     ]);
                     Log::info("Consent saveStep: Created new root draft record", [
@@ -137,6 +138,7 @@ class ConsentFormController extends Controller {
             'officer_name' => 'เจ้าหน้าที่สินเชื่อ',
             'officer_phone' => 'เบอร์ติดต่อเจ้าหน้าที่',
             'officer_group' => 'กลุ่มเจ้าหน้าที่',
+            'product_type' => 'ประเภทผลิตภัณฑ์',
             'title' => 'คำนำหน้านาม',
             'title_other' => 'คำนำหน้านามอื่นๆ',
             'name' => 'ชื่อ - สกุล',
@@ -189,6 +191,7 @@ class ConsentFormController extends Controller {
                 'officer_name' => ['nullable', 'string', 'max:255'],
                 'officer_phone' => ['nullable', 'string', 'max:20'],
                 'officer_group' => ['nullable', 'string', 'max:50'],
+                'product_type' => ['nullable', 'string'],
                 'title' => ['required', 'string', 'max:50'],
                 'title_other' => ['nullable', 'required_if:title,' . self::OPTION_OTHER, 'string', 'max:50'],
                 'name' => ['nullable', 'string', 'max:255'],
@@ -359,6 +362,7 @@ class ConsentFormController extends Controller {
             'officer_name' => $validated['officer_name'] ?? $consent->officer_name,
             'officer_phone' => $validated['officer_phone'] ?? $consent->officer_phone,
             'officer_group' => $validated['officer_group'] ?? $consent->officer_group,
+            'product_type' => $validated['product_type'] ?? $consent->product_type,
         ]);
 
         $title = $validated['title'] ?? null;
