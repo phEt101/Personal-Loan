@@ -240,20 +240,7 @@
             saveStep: @json(route('consent.save-step')),
         };
 
-        const consentI18n = {
-            form: {
-                createTitle: @json(__('consent::messages.modal.form.create_title')),
-                editTitle: @json(__('consent::messages.modal.form.edit_title')),
-                submitCreate: @json(__('consent::messages.modal.form.buttons.submit_create')),
-                submitEdit: @json(__('consent::messages.modal.form.buttons.submit_edit')),
-                step1: {
-                    idCardNumber: @json(__('consent::messages.modal.form.step1.fields.id_card_number')),
-                    passportNumber: @json(__('consent::messages.modal.form.step1.fields.passport_number')),
-                    idCardPlaceholder: @json(__('consent::messages.modal.form.step1.placeholders.id_card_number')),
-                    passportPlaceholder: @json(__('consent::messages.modal.form.step1.placeholders.passport_number')),
-                },
-            },
-        };
+        // inline translations used directly where needed; no consentI18n object required
 
         const consentBaseUrl = @json(url('/consent'));
         let modalNextAppNo = '';
@@ -314,6 +301,21 @@
             getModalMount().append(...Array.from(wrapper.children));
         }
 
+        // Ensure JSZip is available for client-side ZIP extraction
+        let jszipLoadPromise = null;
+        function ensureJSZipLoaded() {
+            if (window.JSZip) return Promise.resolve(window.JSZip);
+            if (jszipLoadPromise) return jszipLoadPromise;
+            jszipLoadPromise = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = '{{ asset('js/jszip.min.js') }}';
+                s.onload = () => resolve(window.JSZip);
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+            return jszipLoadPromise;
+        }
+
         // JS Function to show details modal
         async function viewDocument(customer) {
             await ensureViewConsentModalLoaded();
@@ -362,20 +364,69 @@
             const existingLoanInstitutionCount = customer.existingLoanInstitutionCount ?? '-';
             const existingLoanTotalAmount = customer.existingLoanTotalAmount ? parseInt(customer.existingLoanTotalAmount).toLocaleString('th-TH') + ' บาท' : '-';
             const incomeDocuments = Array.isArray(customer.incomeDocuments) ? customer.incomeDocuments : [];
-            const incomeDocumentsHtml = incomeDocuments.length
-                ? incomeDocuments
-                    .map(function(document) {
-                        const url = document?.downloadUrl ?? '#';
-                        const name = document?.originalName ?? 'ไฟล์แนบ';
-                        return `<div class="file-link"><a href="${url}" target="_blank" rel="noopener" class="file-link__anchor">${escapeHtml(name)}</a></div>`;
-                    })
-                    .join('')
-                : '-';
+            // If identityDocuments array is empty, try to heuristically separate identity files
+            // from income files by filename keywords to avoid labelling identity files
+            // as "ไฟล์หลักฐานการเงิน" in the view modal.
+            const identityKeywords = /(id|identity|passport|บัตร|หลักฐาน|身份证|身份证明)/i;
+            const identityCandidates = [];
+            const incomeOnly = [];
+
+            incomeDocuments.forEach(function(doc) {
+                const name = (doc?.originalName || '').toString();
+                if (identityKeywords.test(name)) {
+                    identityCandidates.push(doc);
+                } else {
+                    incomeOnly.push(doc);
+                }
+            });
+            // Helper: build HTML for documents, extracting ZIPs if needed
+            async function buildDocumentsHtml(docs) {
+                if (!Array.isArray(docs) || docs.length === 0) return '-';
+                await ensureJSZipLoaded().catch(() => {});
+                const JSZip = window.JSZip;
+                const parts = [];
+                for (const doc of docs) {
+                    const url = doc?.downloadUrl ?? '#';
+                    const name = doc?.originalName ?? 'ไฟล์แนบ';
+                    const lower = (url || '').toLowerCase();
+                    const nameLower = (name || '').toLowerCase();
+                    if ((lower.endsWith('.zip') || nameLower.endsWith('.zip')) && JSZip) {
+                        try {
+                            const resp = await fetch(url);
+                            if (!resp.ok) {
+                                parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ดาวน์โหลด)</a></div>`);
+                                continue;
+                            }
+                            const blob = await resp.blob();
+                            const zip = await JSZip.loadAsync(blob);
+                            await Promise.all(Object.keys(zip.files).map(async (filename) => {
+                                const fileObj = zip.files[filename];
+                                if (fileObj.dir) return;
+                                const fileData = await fileObj.async('blob');
+                                const fileUrl = URL.createObjectURL(fileData);
+                                parts.push(`<div class="file-link"><a href="${fileUrl}" target="_blank" rel="noopener">${escapeHtml(filename)}</a></div>`);
+                            }));
+                        } catch (e) {
+                            parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
+                        }
+                    } else {
+                        parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="file-link__anchor">${escapeHtml(name)}</a></div>`);
+                    }
+                }
+                return parts.join('') || '-';
+            }
+
+            const incomeDocumentsHtml = await buildDocumentsHtml(incomeOnly);
+            const identityDocuments = Array.isArray(customer.identityDocuments) && customer.identityDocuments.length ? customer.identityDocuments : (identityCandidates.length ? identityCandidates : []);
+            const identityDocumentsHtml = await buildDocumentsHtml(identityDocuments);
+
+            
 
             const signed_at = customer.signed_at || new Date().toISOString().split('T')[0];
             const signedDateFormatted = new Date(signed_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
 
             // Officer & Application Details
+            const officer_group = customer.officer_group || '';
             const officer_name = customer.officer_name || '-';
             const officer_phone = customer.officer_phone || '-';
             
@@ -449,8 +500,8 @@
             const accountType = customer.accountType || '-';
             const accountNumber = customer.accountNumber || '-';
             const paymentMethod = customer.paymentMethod || '-';
-            const directDebitAmount = customer.directDebitAmount ? parseInt(customer.directDebitAmount).toLocaleString('th-TH') : '.....................................';
-            const directDebitAccountNumber = customer.directDebitAccountNumber || '.........................................';
+            const directDebitAmount = customer.directDebitAmount ? parseInt(customer.directDebitAmount).toLocaleString('th-TH') : '-';
+            const directDebitAccountNumber = customer.directDebitAccountNumber || '-';
             // Consent & signature fields
             const signatureData = customer.signatureData || null;
             const signed_date = customer.signed_date ? new Date(customer.signed_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
@@ -467,8 +518,8 @@
             contentDiv.innerHTML = `
                 <div class="consent-header">
                     <div>
-                        <div class="consent-header__title">บริษัท บิ๊ก มันนี่ พลัส จำกัด</div>
-                        <div class="consent-header__subtitle">ใบคำขอให้บริการสินเชื่อส่วนบุคคล (Personal Loan)</div>
+                        <div class="consent-header__title">{{ __('consent::messages.modal.view.company_name') }}</div>
+                        <div class="consent-header__subtitle">{{ __('consent::messages.modal.view.view_document') }}</div>
                         <div class="consent-header__meta">App No.: ${customer.app_no || '-'}</div>
                     </div>
                     <div class="consent-header__right">
@@ -480,52 +531,58 @@
                     </div>
                 </div>
 
-                <!-- ส่วนที่ 1: สำหรับเจ้าหน้าที่บริษัท -->
+                <!-- ส่วนที่ 1: สำหรับเจ้าหน้าที่บริษัท (single column rows) -->
                 <div class="panel panel--green">
-                    <h4 class="section-title section-title--green">ส่วนที่ 1: สำหรับเจ้าหน้าที่บริษัท</h4>
+                    <h4 class="section-title section-title--green">{{ __('consent::messages.modal.form.step1.sections.company_officer') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">เจ้าหน้าที่สินเชื่อ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</td>
+                            <td class="value">${officer_group || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.officer_name') }}</td>
                             <td class="value">${officer_name}</td>
-                            <td class="label label--right">เบอร์ติดต่อ:</td>
-                            <td class="value value--padded">${officer_phone}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.common.phone_number') }}</td>
+                            <td class="value">${officer_phone}</td>
                         </tr>
                     </table>
                 </div>
 
                 <div class="panel">
-                    <h4 class="section-title section-title--accent">ส่วนที่ 2: ข้อมูลส่วนตัวผู้ขอสินเชื่อ</h4>
+                    <h4 class="section-title section-title--accent">{{ __('consent::messages.modal.form.step1.sections.personal_info') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">คำนำหน้านาม - ชื่อ - นามสกุล:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.title') }} - {{ __('consent::messages.modal.form.step1.fields.name_th') }}</td>
                             <td class="value">${title} ${name}</td>
                         </tr>
                         <tr>
-                            <td class="label">Name - Surname (EN):</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.name_en') }}</td>
                             <td class="value value--uppercase">${name_en}</td>
                         </tr>
                         <tr>
-                            <td class="label">เลขประจำตัวประชาชน:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.id_card_number') }}</td>
                             <td class="value">${id_card}</td>
                         </tr>
                         <tr>
-                            <td class="label">วัน / เดือน / ปีเกิด:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.birthdate') }}</td>
                             <td class="value">${birthdate}</td>
                         </tr>
                         <tr>
-                            <td class="label">สัญชาติ:</td>
-                            <td class="value">สัญชาติ ${nationality}</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.nationality') }}</td>
+                            <td class="value">${nationality}</td>
                         </tr>
                         <tr>
-                            <td class="label">สถานภาพสมรส:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.marital_status') }}</td>
                             <td class="value">${marital_status}</td>
                         </tr>
                         <tr>
-                            <td class="label">การศึกษา:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.education') }}</td>
                             <td class="value">${education}</td>
                         </tr>
                         <tr>
-                            <td class="label">อาชีพ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.occupation') }}:</td>
                             <td class="value">
                                 ${occupation}
                                 ${customer.occupation === 'ข้าราชการ' && customer.governmentLevel ? ` (ระดับ: ${governmentLevel})` : ''}
@@ -534,7 +591,7 @@
                         </tr>
                         ${customer.careerField ? `
                         <tr>
-                            <td class="label">สาขาอาชีพ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.career_field') }}:</td>
                             <td class="value">
                                 ${careerField}
                                 ${customer.careerField === 'อื่นๆ' && customer.careerFieldOther ? ` (ระบุ: ${careerFieldOther})` : ''}
@@ -542,34 +599,30 @@
                         </tr>
                         ` : ''}
                         <tr>
-                            <td class="label">รายได้รวมต่อเดือน:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.income') }}:</td>
                             <td class="value value--strong">${income}</td>
                         </tr>
                         ${customer.extraIncome && parseInt(customer.extraIncome) > 0 ? `
                         <tr>
-                            <td class="label">รายได้อื่นๆ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.placeholders.extra_income') }}:</td>
                             <td class="value">${extraIncome}</td>
                         </tr>
                         ` : ''}
                         <tr>
-                            <td class="label">แหล่งที่มาของรายได้:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.extra_income_source') }}:</td>
                             <td class="value">${extraIncomeSource}</td>
                         </tr>
                         <tr>
-                            <td class="label">ประเทศที่มาของรายได้:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.income_country') }}:</td>
                             <td class="value">${incomeCountry}</td>
                         </tr>
                         <tr>
-                            <td class="label">ไฟล์หลักฐานการเงิน:</td>
-                            <td class="value">${incomeDocumentsHtml}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">ภาระหนี้อื่นๆ ในปัจจุบัน:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.has_other_debts') }}:</td>
                             <td class="value">${hasOtherDebts}</td>
                         </tr>
                         ${customer.hasOtherDebts === 'มี' ? `
                         <tr>
-                            <td class="label">ยอดผ่อนต่อเดือน:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.other_debt_installment') }}</td>
                             <td class="value">${otherDebtInstallment}</td>
                         </tr>
                         ` : ''}
@@ -577,37 +630,36 @@
                 </div>
 
                 <div class="panel panel--blue">
-                    <h4 class="section-title">การชี้แจงการมีสินเชื่อบุคคล</h4>
-                    <table class="consent-detail-table">
-                        <tr>
-                            <td class="label">ปัจจุบันมีวงเงินสินเชื่อส่วนบุคคล และวงเงินที่อยู่ระหว่างขอยื่น/ขอเพิ่มตั้งแต่ 2 เดือนก่อนหน้าจนถึงปัจจุบัน จากสถาบันการเงิน/ผู้ประกอบธุรกิจสินเชื่อบุคคลที่ไม่ใช่สถาบันการเงินมากกว่า 2 แห่งหรือไม่:</td>
-                            <td class="value">${hasExistingLoan || '-'}</td>
-                        </tr>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step4.fields.existing_loan_disclosure') }}</h4>
+                    <div class="consent-detail-block">
+                        <p class="consent-claim">
+                            <strong>{{ __('consent::messages.modal.form.step4.questions.existing_loan') }}</strong>
+                        </p>
+                        <p class="consent-value">${hasExistingLoan || '-'}</p>
+
                         ${hasExistingLoan === 'ใช่' ? `
-                        <tr>
-                            <td class="label">จำนวนแห่ง:</td>
-                            <td class="value">${existingLoanInstitutionCount}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">รวมทั้งสิ้น:</td>
-                            <td class="value">${existingLoanTotalAmount}</td>
-                        </tr>
+                        <div class="consent-existing-details">
+                            <p><strong>{{ __('consent::messages.modal.form.step4.fields.existing_loan_institution_count') }}:</strong> ${existingLoanInstitutionCount}</p>
+                            <p><strong>{{ __('consent::messages.modal.form.step4.fields.existing_loan_total_amount') }}:</strong> ${existingLoanTotalAmount}</p>
+                        </div>
                         ` : ''}
-                    </table>
+                    </div>
                     <div class="panel panel--yellow panel--note">
-                        ( หมายเหตุ กรณีกรอกข้อมูลไม่ถูกต้องไม่ครบถ้วน และ/หรือมีรายได้หรือกระเเสเงินสดหมุนเวียนเข้าในบัญชีเงินฝากสถาบันการเงินโดยเฉลี่ยน้อยกว่า 30,000 บาทต่อเดือน โดยมีวงเงินสินเชื่อส่วนบุคคลรวมตั้งแต่ 3 แห่งขึ้นไป บริษัทมีสิทธิปฏิเสธการให้สินเชื่อ หรือกรณีที่ทําสัญญาเงินกู้ ให้ถือว่าบริษัทมีสิทธิลดหรือยกเลิกวงเงินได้ทันที )
+                        <p class="consent-note">
+                            {{ __('consent::messages.modal.form.step4.notes.existing_loan_warning') }}
+                        </p>
                     </div>
                 </div>
 
                 <div class="panel panel--pink">
-                    <h4 class="section-title">ข้อมูลที่อยู่</h4>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step3.sections.address') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">สถานะของการอยู่อาศัย / Residence type:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step2.fields.residence_status') }}</td>
                             <td class="value">${residence_status}</td>
                         </tr>
                         <tr>
-                            <td class="label">ที่อยู่ปัจจุบัน / Current address:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step2.sections.current_address') }}</td>
                             <td class="value">
                                 ${address_building !== '-' ? 'หมู่บ้าน/อาคาร ' + address_building : ''}
                                 ${address_room !== '-' ? ' เลขที่ห้อง ' + address_room : ''}
@@ -623,11 +675,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="label">หมายเลขโทรศัพท์บ้าน:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.common.phone_home') }}</td>
                             <td class="value">${phone_home}</td>
                         </tr>
                         <tr>
-                            <td class="label">หมายเลขโทรศัพท์มือถือ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.common.phone_number') }}</td>
                             <td class="value">${phone_mobile}</td>
                         </tr>
                         <tr>
@@ -639,22 +691,22 @@
 
                 <!-- Work Address Section -->
                 <div class="panel panel--blue">
-                    <h4 class="section-title">สถานที่ทำงานปัจจุบัน</h4>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step3.sections.current_workplace') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label label--w30">ชื่อกิจการ/ที่ทำงาน:</td>
+                            <td class="label label--w30">{{ __('consent::messages.modal.form.step3.fields.company_name') }}</td>
                             <td class="value">${companyName}</td>
                         </tr>
                         <tr>
-                            <td class="label label--w30">ประเภทธุรกิจ:</td>
+                            <td class="label label--w30">{{ __('consent::messages.modal.form.step3.fields.business_type') }}</td>
                             <td class="value">${businessType}</td>
                         </tr>
                         <tr>
-                            <td class="label label--w30">แผนก/ฝ่าย:</td>
+                            <td class="label label--w30">{{ __('consent::messages.modal.form.step3.fields.work_department') }}</td>
                             <td class="value">${workDepartment}</td>
                         </tr>
                         <tr>
-                            <td class="label label--w30">ที่อยู่ที่ทำงาน:</td>
+                            <td class="label label--w30">{{ __('consent::messages.modal.form.step3.fields.work_address') }}</td>
                             <td class="value">
                                 ${workAddressNo !== '-' ? 'เลขที่ ' + workAddressNo : ''}
                                 ${workAddressFloor !== '-' ? ' ชั้น ' + workAddressFloor : ''}
@@ -669,11 +721,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="label">หมายเลขโทรศัพท์ (ที่ทำงาน):</td>
+                            <td class="label">{{ __('consent::messages.modal.form.common.phone_number') }}</td>
                             <td class="value">${workPhone}</td>
                         </tr>
                         <tr>
-                            <td class="label">อายุงานรวม:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.work_experience') }}</td>
                             <td class="value">${workYears} ปี ${workMonths} เดือน</td>
                         </tr>
                     </table>
@@ -682,26 +734,26 @@
                 <!-- Previous Work Section (conditional) -->
                 ${(parseInt(workYears) * 12 + parseInt(workMonths) < 12) ? `
                 <div class="panel panel--yellow">
-                    <h4 class="section-title">ที่ทำงานเดิม</h4>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step3.sections.previous_workplace') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">ชื่อที่ทำงานเดิม:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.previous_company_name') }}</td>
                             <td class="value">${previousCompanyName}</td>
                         </tr>
                         <tr>
-                            <td class="label">ตำแหน่ง:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.previous_position') }}</td>
                             <td class="value">${previousPosition}</td>
                         </tr>
                         <tr>
-                            <td class="label">รายได้ต่อเดือน:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.previous_income') }}</td>
                             <td class="value">${previousIncome}</td>
                         </tr>
                         <tr>
-                            <td class="label">ที่อยู่ที่ทำงานเดิม:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.previous_work_address') }}</td>
                             <td class="value">${previousWorkAddress}</td>
                         </tr>
                         <tr>
-                            <td class="label">หมายเลขโทรศัพท์:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.common.phone_number') }}</td>
                             <td class="value">${previousPhone}</td>
                         </tr>
                     </table>
@@ -710,23 +762,23 @@
 
                 <!-- Document Delivery Section -->
                 <div class="panel panel--green panel--compact">
-                    <h4 class="section-title">ช่องทางการรับเอกสาร</h4>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step2.fields.document_delivery') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">ช่องทางการรับเอกสาร:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step2.fields.document_delivery') }}</td>
                             <td class="value">${documentDelivery}</td>
                         </tr>
                         <tr>
-                            <td class="label">ที่อยู่ตามเอกสารสําคัญ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step2.placeholders.document_address_text') }}</td>
                             <td class="value">${documentAddressText}</td>
                         </tr>
                         <tr>
-                            <td class="label">จังหวัด / รหัสไปรษณีย์:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.common.province') }}/{{ __('consent::messages.modal.form.common.postal') }}</td>
                             <td class="value">${documentAddressProvince !== '-' ? documentAddressProvince : '-'} ${documentAddressPostal !== '-' ? ' ' + documentAddressPostal : ''}</td>
                         </tr>
                         ${birthPlaceAddress !== '-' ? `
                         <tr>
-                            <td class="label">ที่อยู่บ้านเกิด:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step2.placeholders.birth_place_address') }}</td>
                             <td class="value">${birthPlaceAddress}</td>
                         </tr>
                         ` : ''}
@@ -735,26 +787,26 @@
 
                 <!-- Reference Person Section -->
                 <div class="panel panel--purple panel--compact">
-                    <h4 class="section-title">ข้อมูลบุคคลอ้างอิง</h4>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step5.sections.reference') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">ชื่อ - นามสกุล:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step5.fields.ref_name') }}</td>
                             <td class="value">${refName}</td>
                         </tr>
                         <tr>
-                            <td class="label">ความสัมพันธ์กับผู้กู้:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step5.fields.ref_relation') }}</td>
                             <td class="value">${refRelation}</td>
                         </tr>
                         <tr>
-                            <td class="label">ที่อยู่:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.steps.address') }}</td>
                             <td class="value">${refAddressNo !== '-' ? 'เลขที่ ' + refAddressNo : ''}${refAddressFloor !== '-' ? ' ชั้น ' + refAddressFloor : ''}${refAddressVillage !== '-' ? ' หมู่ที่ ' + refAddressVillage : ''}${refAddressBuilding !== '-' ? ' ' + refAddressBuilding : ''}${refAddressSoi !== '-' ? ' ซอย ' + refAddressSoi : ''}${refAddressRoad !== '-' ? ' ถนน ' + refAddressRoad : ''}${refAddressSubdistrict !== '-' ? ' แขวง/ตำบล ' + refAddressSubdistrict : ''}${refAddressDistrict !== '-' ? ' เขต/อำเภอ ' + refAddressDistrict : ''}${refAddressProvince !== '-' ? ' จังหวัด ' + refAddressProvince : ''}${refAddressPostal !== '-' ? ' ' + refAddressPostal : ''}</td>
                         </tr>
                         <tr>
-                            <td class="label">หมายเลขโทรศัพท์บ้าน:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.common.phone_number') }}</td>
                             <td class="value">${refPhoneHome}</td>
                         </tr>
                         <tr>
-                            <td class="label">หมายเลขโทรศัพท์มือถือ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.common.phone_number') }}</td>
                             <td class="value">${refPhoneMobile}</td>
                         </tr>
                     </table>
@@ -762,18 +814,18 @@
 
                 <!-- Loan request section -->
                 <div class="panel panel--yellow panel--compact">
-                    <h4 class="section-title">ความประสงค์ในการสมัครใช้สินเชื่อ</h4>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step6.sections.loan_preference') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">ระยะเวลาผ่อนชำระคืน:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step6.fields.loan_term') }}</td>
                             <td class="value">${loanTerm}</td>
                         </tr>
                         <tr>
-                            <td class="label">วงเงินสินเชื่อที่ต้องการ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step6.fields.loan_amount_type') }}</td>
                             <td class="value">${loanAmountType === 'full' ? 'เต็มจำนวนตามที่บริษัทอนุมัติ' : loanAmountType === 'custom' ? `วงเงินที่ขอกู้/จำนวนทั้งสิ้น: ${customLoanAmount}` : '-'}</td>
                         </tr>
                         <tr>
-                            <td class="label">วัตถุประสงค์ในการขอสินเชื่อ:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step6.fields.loan_purpose') }}</td>
                             <td class="value">${loanPurpose}</td>
                         </tr>
                     </table>
@@ -781,23 +833,23 @@
 
                 <!-- Bank account section -->
                 <div class="panel panel--green panel--compact">
-                    <h4 class="section-title">ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก</h4>
-                    <p class="muted">ในกรณีที่บริษัทอนุมัติสินเชื่อ ข้าพเจ้ามีความประสงค์ให้บริษัทโอนเงินกู้เข้าบัญชีของข้าพเจ้า โดยโอนเข้าบัญชีเงินฝากเลขที่ (กรอกข้อมูล)</p>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step6.sections.first_disbursement') }}</h4>
+                    <p class="muted">{{ __('consent::messages.modal.form.step6.notes.first_disbursement') }}</p>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">เลขที่บัญชี:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step6.fields.account_number') }}</td>
                             <td class="value">${accountNumber}</td>
                         </tr>
                         <tr>
-                            <td class="label">ประเภทบัญชี:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step6.fields.account_type') }}</td>
                             <td class="value">${accountType}</td>
                         </tr>
                         <tr>
-                            <td class="label">ธนาคาร:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step6.fields.bank_name') }}</td>
                             <td class="value">${bankName}</td>
                         </tr>
                         <tr>
-                            <td class="label">ชื่อบัญชี:</td>
+                            <td class="label">{{ __('consent::messages.modal.form.step6.fields.account_name') }}</td>
                             <td class="value">${accountName}</td>
                         </tr>
                     </table>
@@ -805,47 +857,98 @@
 
                 <!-- Payment method section -->
                 <div class="panel panel--blue panel--compact">
-                    <h4 class="section-title">วิธีการชําระเงิน</h4>
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step6.sections.payment_method') }}</h4>
                     <table class="consent-detail-table">
                         <tr>
-                            <td class="label">วิธีการชําระเงิน:</td>
+                        <td class="label">{{ __('consent::messages.modal.form.step2.fields.document_delivery') }}</td>
+                        <td class="value">${documentDelivery}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">{{ __('consent::messages.modal.form.step2.placeholders.document_address_text') }}</td>
+                        <td class="value">${documentAddressText}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">{{ __('consent::messages.modal.form.common.province') }}/{{ __('consent::messages.modal.form.common.postal') }}</td>
+                        <td class="value">${documentAddressProvince !== '-' ? documentAddressProvince : '-'} ${documentAddressPostal !== '-' ? ' ' + documentAddressPostal : ''}</td>
+                    </tr>
+                    ${birthPlaceAddress !== '-' ? `
+                    <tr>
+                        <td class="label">{{ __('consent::messages.modal.form.step2.placeholders.birth_place_address') }}</td>
+                        <td class="value">${birthPlaceAddress}</td>
+                    </tr>
+                    ` : ''}
+                    </table>
+                </div>
+
+                <!-- Payment method section -->
+                <div class="panel panel--blue panel--compact">
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.step6.sections.payment_method') }}</h4>
+                    <table class="consent-detail-table">
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step6.fields.payment_method') }}</td>
                             <td class="value">${paymentMethod}</td>
                         </tr>
                         ${paymentMethod === 'ชําระโดยการหักบัญชี' ? `
                         <tr>
-                            <td colspan="2"><div class="notice notice--warning">กรณียินยอมหักบัญชี ข้าพเจ้ายินยอมให้สถาบันการเงินหักเงินจากบัญชีเงินเดือนของข้าพเจ้าที่มีอยู่กับสถาบันการเงิน เป็นจํานวนเงิน <strong>${directDebitAmount}</strong> บาท/เดือน จากบัญชีเลขที่ <strong>${directDebitAccountNumber}</strong> เท่านั้น ณ วันครบกําหนดชําระตามที่บริษัทแจ้งให้ทราบ หรือทุกวันที่เงินเดือนออกในแต่ละเดือนแล้วแต่วันใดจะถึงก่อน เพื่อชําระเงินกู้รวมทั้งดอกเบี้ยจนกว่าจะชําระหนี้ให้แก่บริษัทจนเสร็จสิ้น หากบริษัทไม่สามารถหักเงินจากบัญชีดังกล่าวในวันดังกล่าวได้ ข้าพเจ้าตกลงยอมรับให้บริษัทถือว่าเป็นการผิดนัดชําระหนี้และขอรับรองว่าการที่บริษัทหักเงินจากบัญชีของข้าพเจ้าตามใบสมัครฉบับนี้เป็นไปตามคําร้องขอของข้าพเจ้า หากมีความเสียหายหรือผิดพลาดใดๆ เกิดขึ้นแก่บริษัท ข้าพเจ้าตกลงชดใช้ค่าเสียหายให้แก่บริษัททั้งจํานวนทันที</div></td>
+                            <td colspan="2"><div class="notice notice--warning">${`{!! __('consent::messages.modal.form.step6.notes.direct_debit') !!}`}</div></td>
                         </tr>
                         ` : ''}
                     </table>
                 </div>
 
                     <div class="panel panel--yellow panel--compact">
-                        <h4 class="section-title">ความประสงค์ในการสมัครใช้สินเชื่อ</h4>
+                        <h4 class="section-title">{{ __('consent::messages.modal.form.step6.sections.loan_preference') }}</h4>
                         <table class="consent-detail-table">
                             <tr>
-                                <td class="label">ระยะเวลาผ่อนชำระคืน:</td>
+                                <td class="label">{{ __('consent::messages.modal.form.step6.fields.loan_term') }}</td>
                                 <td class="value">${loanTerm}</td>
                             </tr>
                             <tr>
-                                <td class="label">วงเงินสินเชื่อที่ต้องการ:</td>
+                                <td class="label">{{ __('consent::messages.modal.form.step6.fields.loan_amount_type') }}</td>
                                 <td class="value">${loanAmountType === 'full' ? 'เต็มจำนวนตามที่บริษัทอนุมัติ' : loanAmountType === 'custom' ? `วงเงินที่ขอกู้/จำนวนทั้งสิ้น: ${customLoanAmount}` : '-'}</td>
                             </tr>
                             <tr>
-                                <td class="label">วัตถุประสงค์ในการขอสินเชื่อ:</td>
+                                <td class="label">{{ __('consent::messages.modal.form.step6.fields.loan_purpose') }}</td>
                                 <td class="value">${loanPurpose}</td>
                             </tr>
                         </table>
                     </div>
+                <!-- Attachments: income & identity documents -->
+                <div class="panel panel--light panel--compact">
+                    <h4 class="section-title">{{ __('consent::messages.modal.form.attachment.section_title') }}</h4>
+                    <div class="consent-detail-table">
+                        <div class="file-attachments-list">
+                            <div><strong>{{ __('consent::messages.modal.form.attachment.income_header') }}</strong></div>
+                            <div>${incomeDocumentsHtml}</div>
+                        </div>
+                        <div class="file-attachments-list" style="margin-top:0.75rem;">
+                            <div><strong>{{ __('consent::messages.modal.form.attachment.identity_header') }}</strong></div>
+                            <div>${identityDocumentsHtml}</div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="signature-row">
                     <div class="signature-box">
                         <canvas id="viewSignaturePad" class="signature-canvas"></canvas>
-                        <p class="signature-label">ลงนามผู้ขอสินเชื่อ</p>
+                        <p class="signature-label">{{ __('consent::messages.modal.form.step7.fields.signature') }}</p>
                         <p class="signature-muted">( ${title} ${name} )</p>
-                        <p class="signature-muted">วันที่เซ็น: ${signed_date}</p>
+                        <p class="signature-muted">{{ __('consent::messages.modal.form.step7.fields.signed_date') }} ${signed_date}</p>
                     </div>
                 </div>
             `;
             
+            // populate direct-debit placeholders inside the rendered notice reliably
+            const ddAmountEl = contentDiv.querySelector('#display_directDebitAmount');
+            if (ddAmountEl) ddAmountEl.innerHTML = directDebitAmount;
+            const ddAccountEl = contentDiv.querySelector('#display_directDebitAccountNumber');
+            if (ddAccountEl) ddAccountEl.innerHTML = directDebitAccountNumber;
+            // fallback: if translation used raw dots instead of elements, replace them inside the notice text
+            const noticeEl = contentDiv.querySelector('.notice');
+            if (noticeEl && (!ddAmountEl || !ddAccountEl)) {
+                noticeEl.innerHTML = noticeEl.innerHTML.replace('.....................................', directDebitAmount).replace('.........................................', directDebitAccountNumber);
+            }
             viewModal.style.display = 'flex';
             viewModal.offsetHeight;
             viewModal.classList.add('show');
@@ -867,6 +970,13 @@
                     penColor: 'rgb(0, 0, 0)',
                     readOnly: true
                 });
+
+                try {
+                    viewCanvas.style.pointerEvents = 'none';
+                    viewCanvas.setAttribute('aria-hidden', 'true');
+                } catch (e) {
+                    // ignore
+                }
 
                 // Load signature data if available
                 if (signatureData) {
@@ -1871,10 +1981,10 @@
                 resetAllDocumentSelections();
                 renderIncomeDocumentsExisting(null);
                 if (consentModalTitle) {
-                    consentModalTitle.textContent = consentI18n.form.createTitle;
+                    consentModalTitle.textContent = @json(__('consent::messages.modal.form.create_title'));
                 }
                 if (consentSubmitBtn) {
-                    consentSubmitBtn.textContent = consentI18n.form.submitCreate;
+                    consentSubmitBtn.textContent = @json(__('consent::messages.modal.form.buttons.submit_create'));
                 }
                 if (appNoInput) {
                     appNoInput.value = modalNextAppNo;
@@ -1910,10 +2020,10 @@
                 refAddressController.reset();
                 setFieldValue('consent_id', customer.id);
                 if (consentModalTitle) {
-                    consentModalTitle.textContent = consentI18n.form.editTitle;
+                    consentModalTitle.textContent = @json(__('consent::messages.modal.form.edit_title'));
                 }
                 if (consentSubmitBtn) {
-                    consentSubmitBtn.textContent = consentI18n.form.submitEdit;
+                    consentSubmitBtn.textContent = @json(__('consent::messages.modal.form.buttons.submit_edit'));
                 }
 
                 const hasPassport = (customer.passport ?? '').toString().trim() !== '';
@@ -2098,16 +2208,16 @@
                 }
 
                 if (idTypeSelect.value === 'passport') {
-                    idNumberLabel.innerHTML = `${consentI18n.form.step1.passportNumber} <span class="required-asterisk">*</span>`;
-                    idCardInput.placeholder = consentI18n.form.step1.passportPlaceholder;
+                    idNumberLabel.innerHTML = `${@json(__('consent::messages.modal.form.step1.fields.passport_number'))} <span class="required-asterisk">*</span>`;
+                    idCardInput.placeholder = @json(__('consent::messages.modal.form.step1.placeholders.passport_number'));
                     idCardInput.maxLength = 20;
                     idCardInput.removeAttribute('inputmode');
                     idCardInput.value = idCardInput.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
                     return;
                 }
 
-                idNumberLabel.innerHTML = `${consentI18n.form.step1.idCardNumber} <span class="required-asterisk">*</span>`;
-                idCardInput.placeholder = consentI18n.form.step1.idCardPlaceholder;
+                idNumberLabel.innerHTML = `${@json(__('consent::messages.modal.form.step1.fields.id_card_number'))} <span class="required-asterisk">*</span>`;
+                idCardInput.placeholder = @json(__('consent::messages.modal.form.step1.placeholders.id_card_number'));
                 idCardInput.maxLength = 13;
                 idCardInput.setAttribute('inputmode', 'numeric');
                 idCardInput.value = idCardInput.value.replace(/[^0-9]/g, '').slice(0, 13);

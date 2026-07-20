@@ -84,8 +84,8 @@
                             <label for="officer_group">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</label>
                             <select id="officer_group" name="officer_group">
                                 <option value="">{{ __('consent::messages.modal.form.step1.options.officer_group_prompt') }}</option>
-                                <option value="group_1">{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
-                                <option value="group_2">{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
+                                <option value="กลุ่ม 1">{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
+                                <option value="กลุ่ม 2">{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
                             </select>
                         </div>
 
@@ -251,12 +251,12 @@
 
                         <div class="form-group col-4">
                             <label for="phone_home">{{ __('consent::messages.modal.form.common.phone_home') }}</label>
-                            <input type="text" id="phone_home" name="phone_home" placeholder="{{ __('consent::messages.modal.form.common.phone_home') }}">
+                            <input type="tel" id="phone_home" name="phone_home" placeholder="{{ __('consent::messages.modal.form.common.phone_home') }}" maxlength="10"  inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/\D/g,'')">
                         </div>
 
                         <div class="form-group col-4">
                             <label for="phone_mobile">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                            <input type="tel" id="phone_mobile" name="phone_mobile" placeholder="0XXXXXXXXX">
+                            <input type="tel" id="phone_mobile" name="phone_mobile" placeholder="0XXXXXXXXX" maxlength="10" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/\D/g,'')">
                         </div>
 
                         <div class="form-group col-4">
@@ -451,7 +451,7 @@
 
                         <div class="form-group col-3">
                             <label for="workPhone">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                            <input type="tel" id="workPhone" name="workPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10">
+                            <input type="tel" id="workPhone" name="workPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/\D/g,'')">
                         </div>
 
                         <div class="form-group col-4">
@@ -657,12 +657,12 @@
 
                         <div class="form-group col-3">
                             <label for="refPhoneHome">{{ __('consent::messages.modal.form.common.phone_home') }}</label>
-                            <input type="tel" id="refPhoneHome" name="refPhoneHome" placeholder="{{ __('consent::messages.modal.form.common.phone_home') }}">
+                            <input type="tel" id="refPhoneHome" name="refPhoneHome" placeholder="{{ __('consent::messages.modal.form.common.phone_home') }}" maxlength="10" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/\D/g,'')">
                         </div>
 
                         <div class="form-group col-3">
                             <label for="refPhoneMobile">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                            <input type="tel" id="refPhoneMobile" name="refPhoneMobile" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}">
+                            <input type="tel" id="refPhoneMobile" name="refPhoneMobile" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/\D/g,'')">
                         </div>
 
                         <div class="form-group col-12 note-box">

@@ -57,6 +57,8 @@ return [
         ],
         'view' => [
             'title' => 'Loan Application and Consent Document',
+            'company_name' => 'Big Money Plus Co., Ltd.',
+            'view_document' => 'Personal Loan Application Form',
             'close' => 'Close',
         ],
         'form' => [
@@ -173,6 +175,9 @@ return [
             'step3' => [
                 'sections' => [
                     'occupation_workplace' => 'Occupation / Workplace',
+                    'address' => 'Address Information',
+                    'current_workplace' => 'Current Workplace',
+                    'previous_workplace' => 'Previous Workplace',
                 ],
                 'fields' => [
                     'use_home_address' => 'Use the same address as residential address',
@@ -186,8 +191,10 @@ return [
                     'business_type_other' => 'Please Specify',
                     'work_building' => 'Building',
                     'work_department' => 'Department/Division',
+                    'work_address' => 'Workplace Address',
                     'work_years' => 'Total Work Experience (Years)',
                     'work_months' => 'Total Work Experience (Months)',
+                    'work_experience' => 'Total Work Experience',
                     'previous_company_name' => 'Previous Company Name',
                     'previous_position' => 'Position',
                     'previous_income' => 'Monthly Income',
@@ -362,7 +369,7 @@ return [
                 ],
                 'notes' => [
                     'loan_amount' => '(If the company cannot approve the amount you selected, the company will approve an amount as deemed appropriate.)',
-                    'first_disbursement' => 'If the company approves the loan, I request the company to transfer the loan to my bank account by depositing to account number (please fill in).',
+                    'first_disbursement' => 'If the company approves the loan, I request the company to transfer the loan to my bank account by depositing to account number.',
                     'direct_debit' => 'In case of account debit authorization, I consent to the financial institution debiting my salary account held with the financial institution in the amount of <strong id="display_directDebitAmount">.....................................</strong> THB/month from account number <strong id="display_directDebitAccountNumber">.........................................</strong> only, on the due date notified by the company or on each salary payment date, whichever comes first, to repay the loan and interest until full settlement. If the company cannot debit such account on the said date, I agree this constitutes default and certify that debiting my account under this application is at my request. If any damage or error occurs to the company, I agree to fully compensate the company immediately.',
                 ],
             ],

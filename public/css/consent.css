@@ -208,7 +208,7 @@
 
 .consent-detail-table .label {
   font-weight: 600;
-  width: 30%;
+  width: 40%;
 }
 
 .consent-detail-table .value {
@@ -637,6 +637,18 @@ input[type="date"].filter-input::-webkit-inner-spin-button {
   border-radius: 0.25rem;
   margin-bottom: 0.5rem;
   background: #ffffff;
+}
+
+/* Modal-specific signature box (smaller) */
+#consentModal .signature-pad-box,
+.consent-modal .signature-pad-box {
+  width: 340px; /* fixed width for modal small signature */
+  height: 200px; /* fixed height so canvas has consistent aspect */
+}
+
+/* Ensure view (preview) signature box uses same sizing class when desired */
+.signature-box .signature-canvas {
+  height: 180px;
 }
 
 .signature-label {

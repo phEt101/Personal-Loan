@@ -13,6 +13,7 @@ return [
     'nav' => [
         'home' => 'Home',
         'consent' => 'Consent',
+        'consent_review' => 'Consent Review',
     ],
     'language' => [
         'th' => 'TH',

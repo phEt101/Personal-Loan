@@ -13,6 +13,7 @@ return [
     'nav' => [
         'home' => 'หน้าหลัก',
         'consent' => 'ใบยินยอม',
+        'consent_review' => 'พิจารณาใบยินยอม',
     ],
     'language' => [
         'th' => 'TH',
