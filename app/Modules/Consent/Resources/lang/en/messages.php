@@ -413,6 +413,13 @@ return [
                 'identity_header' => 'Identity Documents',
                 'income_header' => 'Income Documents',
                 'borrower_header' => "Borrower's Documents",
+                'applicant_photo' => [
+                    'label' => 'Applicant Photo',
+                    'alt' => 'Applicant avatar',
+                    'hint' => 'Allowed file types: png, jpg, jpeg.',
+                    'change' => 'Change avatar',
+                    'remove' => 'Remove photo',
+                ],
                 'common' => [
                     'upload' => 'Upload',
                     'selected_files' => 'Selected files',

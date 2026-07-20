@@ -206,6 +206,7 @@ class ConsentController extends ConsentFormController
         $reference = $consent->reference;
         $loan = $consent->loanRequest;
         $account = $consent->disbursementAccount;
+        $applicantPhoto = $this->buildApplicantPhoto($consent);
 
         [$hasOtherDebts, $hasExistingLoan] = $this->resolveDebtAndLoanLabels($applicant);
         $idType = $this->resolveIdType($applicant);
@@ -227,7 +228,35 @@ class ConsentController extends ConsentFormController
             'hasOtherDebts' => $hasOtherDebts,
             'hasExistingLoan' => $hasExistingLoan,
             'incomeDocuments' => $incomeDocuments,
+            'applicantPhoto' => $applicantPhoto,
         ]));
+    }
+
+    private function buildApplicantPhoto(ConsentApplication $consent): ?array
+    {
+        $document = $consent->incomeDocuments()
+            ->where('document_type', 'applicant_photo')
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$document) {
+            return null;
+        }
+
+        return [
+            'id' => $document->id,
+            'originalName' => $document->original_name,
+            'mimeType' => $document->mime_type,
+            'size' => $document->size,
+            'downloadUrl' => route('consent.applicant-photo.download', [
+                'consent' => $consent->encrypted_id,
+                'document' => $document->id,
+            ]),
+            'destroyUrl' => route('consent.applicant-photo.destroy', [
+                'consent' => $consent->encrypted_id,
+                'document' => $document->id,
+            ]),
+        ];
     }
 
     private function resolveDebtAndLoanLabels($applicant): array {
@@ -295,6 +324,7 @@ class ConsentController extends ConsentFormController
         $hasOtherDebts = $context['hasOtherDebts'] ?? null;
         $hasExistingLoan = $context['hasExistingLoan'] ?? null;
         $incomeDocuments = $context['incomeDocuments'] ?? [];
+        $applicantPhoto = $context['applicantPhoto'] ?? null;
 
         return [
             'id' => $consent->encrypted_id,
@@ -379,6 +409,7 @@ class ConsentController extends ConsentFormController
             'extraIncomeSource' => $applicant?->extra_income_source,
             'incomeCountry' => $applicant?->income_country,
             'incomeDocuments' => $incomeDocuments,
+            'applicantPhoto' => $applicantPhoto,
             'hasOtherDebts' => $hasOtherDebts,
             'otherDebtInstallment' => $applicant?->other_debt_installment,
             'hasExistingLoan' => $hasExistingLoan,

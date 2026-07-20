@@ -413,6 +413,13 @@ return [
                 'identity_header' => 'เอกสารแสดงตน',
                 'income_header' => 'เอกสารแสดงรายได้',
                 'borrower_header' => 'เอกสารของผู้กู้',
+                'applicant_photo' => [
+                    'label' => 'รูปผู้ขอสินเชื่อ',
+                    'alt' => 'รูปผู้ขอสินเชื่อ',
+                    'hint' => 'Allowed file types: png, jpg, jpeg.',
+                    'change' => 'Change avatar',
+                    'remove' => 'Remove photo',
+                ],
                 'common' => [
                     'upload' => 'อัพโหลด',
                     'selected_files' => 'ไฟล์ที่เลือก',

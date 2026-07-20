@@ -138,6 +138,39 @@
   border: 1px solid #bbf7d0;
 }
 
+.consent-photo-inline {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.consent-photo-inline__image-wrap {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 3px solid #10b981;
+  background: #f8fafc;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.12);
+  cursor: zoom-in;
+  text-decoration: none;
+}
+
+.consent-photo-inline__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 640px) {
+  .consent-photo-inline__image-wrap {
+    width: 80px;
+    height: 80px;
+  }
+}
+
 .panel--blue {
   background: #e0f2fe;
   border: 1px solid #0ea5e9;
@@ -257,6 +290,74 @@
 
 .pdf-content-padding {
   padding: 1.5rem;
+}
+
+.applicant-photo-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.applicant-photo-upload {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.applicant-photo-preview {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  overflow: visible;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+}
+
+.applicant-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.applicant-photo-action {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+}
+
+.applicant-photo-edit {
+  top: 8px;
+  right: 0;
+  background: #2848d8;
+  color: #fff;
+}
+
+.applicant-photo-remove {
+  right: 4px;
+  bottom: 4px;
+  background: #fff;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.applicant-photo-hint {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: #8b8fa7;
+  text-align: center;
 }
 
 .pdf-heading {
@@ -538,7 +639,7 @@ input[type="date"].filter-input::-webkit-inner-spin-button {
 }
 
 .btn-search {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
   color: #ffffff;
 }
 

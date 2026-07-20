@@ -102,35 +102,60 @@
                             {{ __('consent::messages.modal.form.step1.sections.personal_info') }}
                         </div>
 
-                        <div class="form-group col-3" id="titleGroup">
-                            <label for="title">{{ __('consent::messages.modal.form.step1.fields.title') }} <span class="required-asterisk">*</span></label>
-                            <select id="title" name="title" required>
-                                <option value="นาย">{{ __('consent::messages.modal.form.step1.options.title_mr') }}</option>
-                                <option value="นาง">{{ __('consent::messages.modal.form.step1.options.title_mrs') }}</option>
-                                <option value="นางสาว">{{ __('consent::messages.modal.form.step1.options.title_ms') }}</option>
-                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.step1.options.title_other') }}</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-3 hidden" id="title_other_wrapper">
-                            <label for="title_other">{{ __('consent::messages.modal.form.step1.fields.title_other') }}</label>
-                            <input type="text" id="title_other" name="title_other" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.title_other') }}">
-                        </div>
-
-                        <div class="form-group col-6" id="nameGroup">
-                            <label for="name">{{ __('consent::messages.modal.form.step1.fields.name_th') }}</label>
-                            <input type="text" id="name" name="name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.name_th') }}" >
+                        <div class="form-group col-3 applicant-photo-group">
+                            <label for="applicantPhoto">{{ __('consent::messages.modal.form.attachment.applicant_photo.label') }}</label>
+                            <div class="applicant-photo-upload" id="applicantPhotoWidget" data-default-src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Crect width='160' height='160' rx='80' fill='%23ffffff'/%3E%3Ccircle cx='80' cy='58' r='36' fill='none' stroke='%23000000' stroke-width='8'/%3E%3Cpath d='M42 138c4-22 20-34 38-34h0c18 0 34 12 38 34' fill='none' stroke='%23000000' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+                                <div class="applicant-photo-preview">
+                                    <img
+                                        id="applicantPhotoAvatarImg"
+                                        src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Crect width='160' height='160' rx='80' fill='%23ffffff'/%3E%3Ccircle cx='80' cy='58' r='36' fill='none' stroke='%23000000' stroke-width='8'/%3E%3Cpath d='M42 138c4-22 20-34 38-34h0c18 0 34 12 38 34' fill='none' stroke='%23000000' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+                                        data-placeholder="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Crect width='160' height='160' rx='80' fill='%23ffffff'/%3E%3Ccircle cx='80' cy='58' r='36' fill='none' stroke='%23000000' stroke-width='8'/%3E%3Cpath d='M42 138c4-22 20-34 38-34h0c18 0 34 12 38 34' fill='none' stroke='%23000000' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+                                        alt="avatar"
+                                    >
+                                    <button type="button" class="applicant-photo-action applicant-photo-edit" id="applicantPhotoEditBtn" title="{{ __('consent::messages.modal.form.attachment.applicant_photo.change') }}">✎</button>
+                                    <button type="button" class="applicant-photo-action applicant-photo-remove hidden" id="applicantPhotoRemoveBtn" title="{{ __('consent::messages.modal.form.attachment.applicant_photo.remove') }}">×</button>
+                                </div>
+                                <div class="applicant-photo-hint">{{ __('consent::messages.modal.form.attachment.applicant_photo.hint') }}</div>
+                                <input type="file" id="applicantPhoto" name="applicantPhoto" accept="image/jpeg,image/png,.jpg,.jpeg,.png" class="hidden">
+                                <div class="hidden" id="applicantPhotoSelectedWrapper"></div>
+                                <div class="hidden" id="applicantPhotoExistingWrapper"></div>
+                            </div>
                         </div>
 
                         <div class="form-group col-9">
-                            <label for="name_en">{{ __('consent::messages.modal.form.step1.fields.name_en') }}</label>
-                            <input type="text" id="name_en" name="name_en" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.name_en') }}">
+                            <div class="form-grid">
+                                <div class="form-group col-3" id="titleGroup">
+                                    <label for="title">{{ __('consent::messages.modal.form.step1.fields.title') }} <span class="required-asterisk">*</span></label>
+                                    <select id="title" name="title" required>
+                                        <option value="นาย">{{ __('consent::messages.modal.form.step1.options.title_mr') }}</option>
+                                        <option value="นาง">{{ __('consent::messages.modal.form.step1.options.title_mrs') }}</option>
+                                        <option value="นางสาว">{{ __('consent::messages.modal.form.step1.options.title_ms') }}</option>
+                                        <option value="อื่นๆ">{{ __('consent::messages.modal.form.step1.options.title_other') }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group col-3 hidden" id="title_other_wrapper">
+                                    <label for="title_other">{{ __('consent::messages.modal.form.step1.fields.title_other') }}</label>
+                                    <input type="text" id="title_other" name="title_other" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.title_other') }}">
+                                </div>
+
+                                <div class="form-group col-9" id="nameGroup">
+                                    <label for="name">{{ __('consent::messages.modal.form.step1.fields.name_th') }}</label>
+                                    <input type="text" id="name" name="name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.name_th') }}" >
+                                </div>
+
+                                <div class="form-group col-8">
+                                    <label for="name_en">{{ __('consent::messages.modal.form.step1.fields.name_en') }}</label>
+                                    <input type="text" id="name_en" name="name_en" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.name_en') }}">
+                                </div>
+
+                                <div class="form-group col-4">
+                                    <label for="birthdate">{{ __('consent::messages.modal.form.step1.fields.birthdate') }} <span class="required-asterisk">*</span></label>
+                                    <input type="date" id="birthdate" name="birthdate" required>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group col-3">
-                            <label for="birthdate">{{ __('consent::messages.modal.form.step1.fields.birthdate') }} <span class="required-asterisk">*</span></label>
-                            <input type="date" id="birthdate" name="birthdate" required>
-                        </div>
 
                         <div class="form-group col-4">
                             <label for="nationality">{{ __('consent::messages.modal.form.step1.fields.nationality') }} <span class="required-asterisk">*</span></label>

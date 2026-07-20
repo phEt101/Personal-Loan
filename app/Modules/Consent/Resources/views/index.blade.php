@@ -286,6 +286,7 @@
             const wrapper = document.createElement('div');
             wrapper.innerHTML = html;
             getModalMount().append(...Array.from(wrapper.children));
+            bindApplicantPhotoWidget();
         }
 
         async function ensureViewConsentModalLoaded() {
@@ -314,6 +315,114 @@
                 document.head.appendChild(s);
             });
             return jszipLoadPromise;
+        }
+
+        function bindApplicantPhotoWidget() {
+            const input = document.getElementById('applicantPhoto');
+            const widget = document.getElementById('applicantPhotoWidget');
+            const avatarImg = document.getElementById('applicantPhotoAvatarImg');
+            const editBtn = document.getElementById('applicantPhotoEditBtn');
+            const removeBtn = document.getElementById('applicantPhotoRemoveBtn');
+
+            if (!input || !widget || !avatarImg || input.dataset.bound === 'true') {
+                return;
+            }
+
+            input.dataset.bound = 'true';
+
+            function resetAvatar() {
+                avatarImg.src = avatarImg.dataset.placeholder || widget.dataset.defaultSrc || '';
+                widget.dataset.destroyUrl = '';
+                widget.dataset.photoState = '';
+                removeBtn?.classList.add('hidden');
+                input.value = '';
+            }
+
+            function showPhoto(src, state) {
+                avatarImg.src = src;
+                widget.dataset.photoState = state;
+                removeBtn?.classList.remove('hidden');
+            }
+
+            editBtn?.addEventListener('click', function() {
+                input.click();
+            });
+
+            input.addEventListener('change', function() {
+                const file = input.files?.[0] ?? null;
+                if (!file) {
+                    resetAvatar();
+                    return;
+                }
+
+                widget.dataset.destroyUrl = '';
+                const reader = new FileReader();
+                reader.onload = function() {
+                    if (input.files?.[0] !== file) {
+                        return;
+                    }
+
+                    showPhoto(String(reader.result || ''), 'selected');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            removeBtn?.addEventListener('click', async function() {
+                const destroyUrl = widget.dataset.destroyUrl || '';
+                const photoState = widget.dataset.photoState || '';
+
+                if (photoState === 'existing' && destroyUrl) {
+                    if (!confirm('ต้องการลบรูปผู้ขอสินเชื่อนี้ใช่ไหม?')) {
+                        return;
+                    }
+
+                    const token = document.querySelector('input[name="_token"]')?.value ?? '';
+                    const response = await fetch(destroyUrl, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        alert('ลบรูปไม่สำเร็จ');
+                        return;
+                    }
+
+                    resetAvatar();
+                    return;
+                }
+
+                resetAvatar();
+            });
+
+            resetAvatar();
+        }
+
+        function renderApplicantPhotoExisting(customer) {
+            const doc = customer?.applicantPhoto ?? null;
+            const widget = document.getElementById('applicantPhotoWidget');
+            const avatarImg = document.getElementById('applicantPhotoAvatarImg');
+            const removeBtn = document.getElementById('applicantPhotoRemoveBtn');
+
+            if (!widget || !avatarImg) {
+                return;
+            }
+
+            if (!doc?.downloadUrl) {
+                widget.dataset.destroyUrl = '';
+                widget.dataset.photoState = '';
+                avatarImg.src = avatarImg.dataset.placeholder || widget.dataset.defaultSrc || '';
+                removeBtn?.classList.add('hidden');
+                return;
+            }
+
+            widget.dataset.destroyUrl = doc.destroyUrl || '';
+            widget.dataset.photoState = 'existing';
+            avatarImg.src = doc.downloadUrl;
+            removeBtn?.classList.remove('hidden');
         }
 
         // JS Function to show details modal
@@ -363,6 +472,8 @@
             const hasExistingLoan = customer.hasExistingLoan || '-';
             const existingLoanInstitutionCount = customer.existingLoanInstitutionCount ?? '-';
             const existingLoanTotalAmount = customer.existingLoanTotalAmount ? parseInt(customer.existingLoanTotalAmount).toLocaleString('th-TH') + ' บาท' : '-';
+            const applicantPhoto = customer.applicantPhoto ?? null;
+            const applicantPhotoSrc = applicantPhoto?.downloadUrl || 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27 viewBox=%270 0 160 160%27%3E%3Crect width=%27160%27 height=%27160%27 rx=%2780%27 fill=%27%23f8fafc%27/%3E%3Ccircle cx=%2780%27 cy=%2758%27 r=%2736%27 fill=%27none%27 stroke=%2710b981%27 stroke-width=%278%27/%3E%3Cpath d=%27M42 138c4-22 20-34 38-34h0c18 0 34 12 38 34%27 fill=%27none%27 stroke=%2710b981%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E';
             const incomeDocuments = Array.isArray(customer.incomeDocuments) ? customer.incomeDocuments : [];
             // If identityDocuments array is empty, try to heuristically separate identity files
             // from income files by filename keywords to avoid labelling identity files
@@ -561,6 +672,11 @@
 
                 <div class="panel">
                     <h4 class="section-title section-title--accent">{{ __('consent::messages.modal.form.step1.sections.personal_info') }}</h4>
+                    <div class="consent-photo-inline">
+                        <a class="consent-photo-inline__image-wrap" href="${escapeHtml(applicantPhotoSrc)}" target="_blank" rel="noopener" title="{{ __('consent::messages.modal.form.attachment.applicant_photo.alt') }}">
+                            <img class="consent-photo-inline__image" src="${escapeHtml(applicantPhotoSrc)}" alt="{{ __('consent::messages.modal.form.attachment.applicant_photo.alt') }}">
+                        </a>
+                    </div>
                     <table class="consent-detail-table">
                         <tr>
                             <td class="label">{{ __('consent::messages.modal.form.step1.fields.title') }} - {{ __('consent::messages.modal.form.step1.fields.name_th') }}</td>
@@ -997,6 +1113,7 @@
                 }
             }
         }
+
 
         document.addEventListener('DOMContentLoaded', async function() {
             document.querySelectorAll('.alert-success').forEach(function(alertEl) {
@@ -2011,6 +2128,7 @@
                 await homeAddressController.reset();
                 await workAddressController.reset();
                 await documentAddressController.reset();
+                renderApplicantPhotoExisting(null);
                 syncConditionalSections();
             }
 
@@ -2136,6 +2254,7 @@
                 }
 
                 renderIncomeDocumentsExisting(customer);
+                renderApplicantPhotoExisting(customer);
 
                 await homeAddressController.setValues({
                     province: customer.address_province,
@@ -2881,14 +3000,6 @@
                 });
                 consentForm.dataset.boundSubmit = 'true';
             }
-
-            // Close modals when clicking outside
-            window.addEventListener('click', function(event) {
-               
-                if (event.target === viewModal) {
-                    closeViewModal();
-                }
-            });
         });
     </script>
     

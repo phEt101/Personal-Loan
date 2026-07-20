@@ -385,6 +385,8 @@ class ConsentFormController extends Controller {
             ]
         );
         Log::debug("Consent updateConsentByStep: Step 1 models updated", ['applicant_id' => $applicant->id]);
+
+        $this->processApplicantPhoto($consent, $request);
     }
 
     private function handleStep2(ConsentApplication $consent, array $validated, Request $request): void {
@@ -613,6 +615,43 @@ class ConsentFormController extends Controller {
         Log::info("Consent updateConsentByStep: Step 8 completed. Final status: {$status}", ['id' => $consent->id]);
     }
 
+    private function processApplicantPhoto(ConsentApplication $consent, Request $request): void
+    {
+        if (!$request->hasFile('applicantPhoto')) {
+            return;
+        }
+
+        $file = $request->file('applicantPhoto');
+        if (!$file) {
+            return;
+        }
+
+        $disk = Storage::disk('local');
+        ConsentDocumentFile::query()
+            ->where('application_id', $consent->id)
+            ->where('document_type', 'applicant_photo')
+            ->get()
+            ->each(function (ConsentDocumentFile $existingDocument) use ($disk) {
+                if ($disk->exists($existingDocument->path)) {
+                    $disk->delete($existingDocument->path);
+                }
+                $existingDocument->delete();
+            });
+
+        $fileName = 'applicant-photo-' . now()->format('YmdHis') . '-' . uniqid() . '.' . strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $path = $file->storeAs("consent/{$consent->encrypted_id}/photos", $fileName, 'local');
+
+        ConsentDocumentFile::create([
+            'application_id' => $consent->id,
+            'document_type' => 'applicant_photo',
+            'disk' => 'local',
+            'path' => $path,
+            'original_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getClientMimeType(),
+            'size' => $file->getSize(),
+        ]);
+    }
+
     private function processStep8UploadField(ConsentApplication $consent, Request $request, string $fieldName, string $documentType): void {
         if (!$request->hasFile($fieldName)) {
             return;
@@ -638,7 +677,7 @@ class ConsentFormController extends Controller {
             'application_id' => $consent->id,
             'document_type' => $documentType,
             'disk' => 'local',
-            'path' => 'consent/' . $consent->id . '/documents/' . $zipData['zipName'],
+            'path' => 'consent/' . $consent->encrypted_id . '/documents/' . $zipData['zipName'],
             'original_name' => $zipData['zipName'],
             'mime_type' => 'application/zip',
             'size' => filesize($zipData['zipPath']),
@@ -647,7 +686,7 @@ class ConsentFormController extends Controller {
 
     private function createStep8Zip(ConsentApplication $consent, string $fieldName, array $files): ?array {
         $disk = Storage::disk('local');
-        $targetDir = $disk->path('consent/' . $consent->id . '/documents');
+        $targetDir = $disk->path('consent/' . $consent->encrypted_id . '/documents');
         if (!is_dir($targetDir)) {
             mkdir($targetDir, 0755, true);
         }
