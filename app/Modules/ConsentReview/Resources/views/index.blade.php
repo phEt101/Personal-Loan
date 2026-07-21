@@ -493,7 +493,7 @@
         
         // PMT Formula: P * r * (1 + r)^n / ((1 + r)^n - 1)
         const pmt = loanAmount * rateMonth * Math.pow(1 + rateMonth, installments) / (Math.pow(1 + rateMonth, installments) - 1);
-        const pmtRounded = Math.ceil(pmt); 
+        const pmtRounded = Math.ceil(pmt);
 
         document.getElementById('res_monthly_payment').value = pmtRounded.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('res_monthly_payment_raw').value = pmt.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -508,7 +508,7 @@
         let totalFee = 0;
         let totalPaid = 0;
         
-        const contractDate = new Date(); 
+        const contractDate = new Date();
         let lastDate = new Date(contractDate);
         
         for (let i = 1; i <= installments; i++) {

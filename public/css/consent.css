@@ -557,20 +557,27 @@
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+  align-items: center;
   min-width: fit-content;
   padding-bottom: 2px;
+  height: 42px;
+  grid-column: span 3;
+  margin-left: auto;
 }
 
 @media (max-width: 1024px) {
   .search-filter-form {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .search-filter-form > div:nth-child(n) {
     grid-column: span 1;
   }
+
   .search-actions-group {
     grid-column: span 2;
     justify-content: center;
+    margin-top: 0.5rem;
   }
 }
 
@@ -578,11 +585,14 @@
   .search-filter-form {
     grid-template-columns: 1fr;
   }
+
   .search-filter-form > div:nth-child(n) {
     grid-column: span 1;
   }
+
   .search-actions-group {
     grid-column: span 1;
+    justify-content: center;
   }
 }
 
@@ -635,13 +645,6 @@ input[type="date"].filter-input::-webkit-inner-spin-button {
   appearance: none;
 }
 
-.search-actions-group {
-  display: flex;
-  gap: 0.5rem;
-  height: 42px;
-  align-items: center;
-}
-
 .search-actions-group .btn {
   padding: 0.65rem 1.25rem;
   border-radius: 0.5rem;
@@ -653,9 +656,10 @@ input[type="date"].filter-input::-webkit-inner-spin-button {
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
-  height: 100%;
+  height: 42px;
   text-decoration: none;
   box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .btn-search {
