@@ -63,18 +63,20 @@
                 </div>
                 <div>
                     <label class="filter-label" for="search_officer_group">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</label>
-                    <select id="search_officer_group" name="officer_group" class="filter-input">
+                    <select id="search_officer_group" name="officer_group_id" class="filter-input">
                         <option value="">{{ __('consent::messages.index.search.officer_group_select') }}</option>
-                        <option value="กลุ่ม 1" {{ request('officer_group') === 'กลุ่ม 1' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
-                        <option value="กลุ่ม 2" {{ request('officer_group') === 'กลุ่ม 2' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
+                        @foreach($officerGroups as $group)
+                            <option value="{{ $group->id }}" {{ request('officer_group_id') == $group->id ? 'selected' : '' }}>{{ app()->getLocale() === 'th' ? $group->name_th : $group->name_en }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="filter-label" for="search_product_type">{{ __('consent::messages.modal.form.step1.fields.product_type') }}</label>
-                    <select id="search_product_type" name="product_type" class="filter-input">
+                    <select id="search_product_type" name="loan_product_id" class="filter-input">
                         <option value="">{{ __('consent::messages.index.search.product_type_select') }}</option>
-                        <option value="สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป" {{ request('product_type') === 'สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.product_personal_unsecured') }}</option>
-                        <option value="สินเชื่อนาโนไฟแนนซ์" {{ request('product_type') === 'สินเชื่อนาโนไฟแนนซ์' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.product_nano_finance') }}</option>
+                        @foreach($loanProducts as $product)
+                            <option value="{{ $product->id }}" {{ request('loan_product_id') == $product->id ? 'selected' : '' }}>{{ app()->getLocale() === 'th' ? $product->name_th : $product->name_en }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div>
@@ -255,6 +257,8 @@
             view: @json(route('consent.modals.view')),
             saveStep: @json(route('consent.save-step')),
         };
+
+        const loanProductsMaster = @json($loanProducts);
 
         // inline translations used directly where needed; no consentI18n object required
 
@@ -553,18 +557,10 @@
             const signedDateFormatted = new Date(signed_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
 
             // Officer & Application Details
-            const officerGroupLabelMap = {
-                'กลุ่ม 1': @json(__('consent::messages.modal.form.step1.options.group_1')),
-                'กลุ่ม 2': @json(__('consent::messages.modal.form.step1.options.group_2')),
-            };
-            const officer_group = customer.officer_group ? (officerGroupLabelMap[customer.officer_group] || customer.officer_group) : '';
+            const officer_group = customer.officer_group_name || '-';
             const officer_name = customer.officer_name || '-';
             const officer_phone = customer.officer_phone || '-';
-            const productTypeLabelMap = {
-                'สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป': @json(__('consent::messages.modal.form.step1.options.product_personal_unsecured')),
-                'สินเชื่อนาโนไฟแนนซ์': @json(__('consent::messages.modal.form.step1.options.product_nano_finance')),
-            };
-            const product_type = customer.product_type ? (productTypeLabelMap[customer.product_type] || customer.product_type) : '-';
+            const product_type = customer.loan_product_name || '-';
             
             // Address fields
             const residence_status = customer.residence_status || '-';
@@ -630,6 +626,7 @@
             const loanTerm = customer.loanTerm ? `${customer.loanTerm} เดือน` : '-';
             const loanAmountType = customer.loanAmountType || '-';
             const customLoanAmount = customer.customLoanAmount ? parseInt(customer.customLoanAmount).toLocaleString('th-TH') + ' บาท' : '-';
+            const calculatedEligibleAmount = customer.calculatedEligibleAmount ? parseInt(customer.calculatedEligibleAmount).toLocaleString('th-TH') + ' บาท' : '-';
             const loanPurpose = customer.loanPurpose || '-';
             const bankName = customer.bankName || '-';
             const accountName = customer.accountName || '-';
@@ -1052,6 +1049,12 @@
                                 <td class="label">{{ __('consent::messages.modal.form.step6.fields.loan_amount_type') }}</td>
                                 <td class="value">${loanAmountType === 'full' ? 'เต็มจำนวนตามที่บริษัทอนุมัติ' : loanAmountType === 'custom' ? `วงเงินที่ขอกู้/จำนวนทั้งสิ้น: ${customLoanAmount}` : '-'}</td>
                             </tr>
+                            ${calculatedEligibleAmount !== '-' ? `
+                            <tr>
+                                <td class="label">{{ __('consent::messages.modal.form.step6.fields.calculated_eligible_amount') }}</td>
+                                <td class="value value--strong" style="color: #059669;">${calculatedEligibleAmount}</td>
+                            </tr>
+                            ` : ''}
                             <tr>
                                 <td class="label">{{ __('consent::messages.modal.form.step6.fields.loan_purpose') }}</td>
                                 <td class="value">${loanPurpose}</td>
@@ -2149,6 +2152,11 @@
                 await workAddressController.reset();
                 await documentAddressController.reset();
                 renderApplicantPhotoExisting(null);
+                
+                if (loanProductIdSelect) {
+                    loanProductIdSelect.dispatchEvent(new Event('change'));
+                }
+
                 syncConditionalSections();
             }
 
@@ -2180,7 +2188,7 @@
                 setFieldValue('id_type', inferredIdType);
 
                 [
-                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'officer_group', 'product_type', 'title', 'name', 'name_en', 'birthdate', 'id_card',
+                    'app_date', 'app_no', 'officer_name', 'officer_phone', 'officer_group_id', 'loan_product_id', 'title', 'name', 'name_en', 'birthdate', 'id_card',
                     'nationality', 'marital_status', 'education', 'occupation', 'governmentLevel', 'occupationOther',
                     'careerField', 'careerFieldOther', 'residence_status', 'address_room', 'address_no', 'address_floor',
                     'address_village', 'address_building', 'address_soi', 'address_road', 'address_subdistrict',
@@ -2189,14 +2197,6 @@
                 ].forEach(function(fieldName) {
                     setFieldValue(fieldName, customer[fieldName]);
                 });
-
-                // Trigger change events to show correct fields
-                if (occupationSelect) {
-                    occupationSelect.dispatchEvent(new Event('change'));
-                }
-                if (careerFieldSelect) {
-                    careerFieldSelect.dispatchEvent(new Event('change'));
-                }
 
                 setFieldValue('id_card', inferredIdNumber);
 
@@ -2316,6 +2316,12 @@
                     setFieldValue('workAddressProvince', customer.workAddressProvince);
                     setFieldValue('workAddressPostal', customer.workAddressPostal);
                 }
+
+                // Trigger change events to show correct fields and filter terms
+                if (occupationSelect) occupationSelect.dispatchEvent(new Event('change'));
+                if (careerFieldSelect) careerFieldSelect.dispatchEvent(new Event('change'));
+                if (loanProductIdSelect) loanProductIdSelect.dispatchEvent(new Event('change'));
+                if (idTypeSelect) idTypeSelect.dispatchEvent(new Event('change'));
             }
 
             // View Modal Elements
@@ -2404,6 +2410,42 @@
                         occupationOtherInput.value = '';
                     }
                 });
+            }
+
+            // Loan Product & Term dynamic logic
+            const loanProductIdSelect = document.getElementById('loan_product_id');
+            const loanTermSelect = document.getElementById('loanTerm');
+
+            if (loanProductIdSelect && loanTermSelect) {
+                const updateLoanTermOptions = () => {
+                    const productId = loanProductIdSelect.value;
+                    const selectedProduct = loanProductsMaster.find(p => p.id == productId);
+                    const maxTerm = selectedProduct ? parseInt(selectedProduct.max_loan_term) : 60;
+                    
+                    Array.from(loanTermSelect.options).forEach(opt => {
+                        if (!opt.value) return; // Skip prompt
+                        const termValue = parseInt(opt.value);
+                        if (termValue > maxTerm) {
+                            opt.disabled = true;
+                            opt.hidden = true;
+                            opt.style.display = 'none';
+                        } else {
+                            opt.disabled = false;
+                            opt.hidden = false;
+                            opt.style.display = '';
+                        }
+                    });
+
+                    // If current selected value is now disabled or hidden, reset to prompt
+                    const currentOpt = loanTermSelect.options[loanTermSelect.selectedIndex];
+                    if (loanTermSelect.value && (currentOpt.disabled || currentOpt.hidden || currentOpt.style.display === 'none')) {
+                        loanTermSelect.value = "";
+                    }
+                };
+
+                loanProductIdSelect.addEventListener('change', updateLoanTermOptions);
+                // Also run once when modal is initialized (for edit mode)
+                updateLoanTermOptions();
             }
 
             // Handle career field

@@ -7,13 +7,15 @@ use Illuminate\Http\Request;
 use App\Modules\Consent\Models\ConsentApplication;
 use App\Modules\Consent\Models\ConsentLoanApproval;
 use App\Modules\Consent\Models\ConsentLoanSchedule;
+use App\Modules\Consent\Models\OfficerGroup;
+use App\Modules\Consent\Models\LoanProduct;
 use Illuminate\Support\Facades\DB;
 
 class ConsentReviewController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ConsentApplication::query()->with(['applicant:id,application_id,name', 'loanRequest']);
+        $query = ConsentApplication::query()->with(['applicant:id,application_id,name', 'loanRequest', 'officerGroup', 'loanProduct']);
 
         if ($request->filled('q')) {
             $q = $request->input('q');
@@ -35,12 +37,12 @@ class ConsentReviewController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        if ($request->filled('officer_group')) {
-            $query->where('officer_group', $request->input('officer_group'));
+        if ($request->filled('officer_group_id')) {
+            $query->where('officer_group_id', $request->input('officer_group_id'));
         }
 
-        if ($request->filled('product_type')) {
-            $query->where('product_type', $request->input('product_type'));
+        if ($request->filled('loan_product_id')) {
+            $query->where('loan_product_id', $request->input('loan_product_id'));
         }
 
         if ($request->filled('date_from')) {
@@ -51,8 +53,10 @@ class ConsentReviewController extends Controller
         }
 
         $customers = $query->orderByDesc('id')->paginate(10)->withQueryString();
+        $officerGroups = OfficerGroup::all();
+        $loanProducts = LoanProduct::all();
 
-        return view('consentreview::index', compact('customers'));
+        return view('consentreview::index', compact('customers', 'officerGroups', 'loanProducts'));
     }
 
     public function data(\App\Modules\Consent\Models\ConsentApplication $consent)
@@ -245,6 +249,10 @@ class ConsentReviewController extends Controller
 
             'officer_name' => $consent->officer_name,
             'officer_phone' => $consent->officer_phone,
+            'officer_group_id' => $consent->officer_group_id,
+            'loan_product_id' => $consent->loan_product_id,
+            'officer_group_name' => app()->getLocale() === 'th' ? $consent->officerGroup?->name_th : $consent->officerGroup?->name_en,
+            'loan_product_name' => app()->getLocale() === 'th' ? $consent->loanProduct?->name_th : $consent->loanProduct?->name_en,
 
             'loanApproval' => $loanApproval,
 
@@ -338,6 +346,7 @@ class ConsentReviewController extends Controller
             'loanTerm' => $loan?->loan_term,
             'loanAmountType' => $loan?->loan_amount_type,
             'customLoanAmount' => $loan?->custom_loan_amount,
+            'calculatedEligibleAmount' => $loan?->calculated_eligible_amount,
 
             'accountNumber' => $account?->account_number,
             'accountType' => $account?->account_type,

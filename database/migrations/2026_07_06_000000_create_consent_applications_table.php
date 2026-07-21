@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('officer_phone', 20)->nullable()->comment('เบอร์โทรเจ้าหน้าที่ผู้รับเรื่อง');
             $table->string('document_delivery', 50)->nullable()->comment('ช่องทางการรับเอกสาร');
             $table->string('status', 20)->default('pending')->comment('สถานะคำขอ');
+            $table->foreignId('loan_product_id')->nullable()->constrained('loan_products')->nullOnDelete();
+            $table->foreignId('officer_group_id')->nullable()->constrained('officer_groups')->nullOnDelete();
             $table->boolean('signed')->default(false)->comment('ระบุว่าเซ็นเอกสารแล้วหรือไม่');
             $table->dateTime('signed_at')->nullable()->comment('วันที่เวลาเซ็นเอกสาร');
             $table->text('signature_data')->nullable()->comment('ข้อมูลลายเซ็น (เช่น base64)');

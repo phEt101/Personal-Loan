@@ -56,8 +56,8 @@ class ConsentFormController extends Controller {
                         'app_no' => $this->getNextAppNo(true),
                         'officer_name' => $validated['officer_name'] ?? null,
                         'officer_phone' => $validated['officer_phone'] ?? null,
-                        'officer_group' => $validated['officer_group'] ?? null,
-                        'product_type' => $validated['product_type'] ?? null,
+                        'officer_group_id' => $validated['officer_group_id'] ?? null,
+                        'loan_product_id' => $validated['loan_product_id'] ?? null,
                         'status' => 'draft',
                     ]);
                     Log::info("Consent saveStep: Created new root draft record", [
@@ -137,8 +137,8 @@ class ConsentFormController extends Controller {
             'app_no' => 'เลขที่ใบคำขอ',
             'officer_name' => 'เจ้าหน้าที่สินเชื่อ',
             'officer_phone' => 'เบอร์ติดต่อเจ้าหน้าที่',
-            'officer_group' => 'กลุ่มเจ้าหน้าที่',
-            'product_type' => 'ประเภทผลิตภัณฑ์',
+            'officer_group_id' => 'กลุ่มเจ้าหน้าที่',
+            'loan_product_id' => 'ประเภทผลิตภัณฑ์',
             'title' => 'คำนำหน้านาม',
             'title_other' => 'คำนำหน้านามอื่นๆ',
             'name' => 'ชื่อ - สกุล',
@@ -190,8 +190,8 @@ class ConsentFormController extends Controller {
                 'app_no' => ['nullable', 'string', 'max:13'],
                 'officer_name' => ['nullable', 'string', 'max:255'],
                 'officer_phone' => ['nullable', 'string', 'max:20'],
-                'officer_group' => ['nullable', 'string', 'max:50'],
-                'product_type' => ['nullable', 'string'],
+                'officer_group_id' => ['nullable', 'integer', 'exists:officer_groups,id'],
+                'loan_product_id' => ['nullable', 'integer', 'exists:loan_products,id'],
                 'title' => ['required', 'string', 'max:50'],
                 'title_other' => ['nullable', 'required_if:title,' . self::OPTION_OTHER, 'string', 'max:50'],
                 'name' => ['nullable', 'string', 'max:255'],
@@ -305,7 +305,22 @@ class ConsentFormController extends Controller {
             6 => [
                 // ความประสงค์กู้/การชำระเงิน
                 'loanPurpose' => ['required', 'string', 'max:255'],
-                'loanTerm' => ['required', 'integer', 'in:4,6,12,18,24,36,48,60'],
+                'loanTerm' => [
+                    'required', 'integer',
+                    function ($attribute, $value, $fail) use ($request) {
+                        $consentId = $request->input('consent_id');
+                        $consent = null;
+                        if ($consentId) {
+                            $id = \Illuminate\Support\Facades\Crypt::decryptString($consentId);
+                            $consent = \App\Modules\Consent\Models\ConsentApplication::find($id);
+                        }
+                        
+                        $product = $consent?->loanProduct;
+                        if ($product && $product->max_loan_term && (int)$value > (int)$product->max_loan_term) {
+                            $fail("ระยะเวลาผ่อนชำระสูงสุดสำหรับสินเชื่อประเภทนี้คือ {$product->max_loan_term} เดือน");
+                        }
+                    }
+                ],
                 'loanAmountType' => ['required', 'string', 'in:full,custom'],
                 'customLoanAmount' => ['nullable', 'required_if:loanAmountType,custom', 'numeric', 'min:0'],
                 'accountNumber' => ['required', 'string', 'max:255'],
@@ -361,8 +376,8 @@ class ConsentFormController extends Controller {
             'app_no' => $validated['app_no'] ?? $consent->app_no,
             'officer_name' => $validated['officer_name'] ?? $consent->officer_name,
             'officer_phone' => $validated['officer_phone'] ?? $consent->officer_phone,
-            'officer_group' => $validated['officer_group'] ?? $consent->officer_group,
-            'product_type' => $validated['product_type'] ?? $consent->product_type,
+            'officer_group_id' => $validated['officer_group_id'] ?? $consent->officer_group_id,
+            'loan_product_id' => $validated['loan_product_id'] ?? $consent->loan_product_id,
         ]);
 
         $title = $validated['title'] ?? null;
@@ -562,6 +577,34 @@ class ConsentFormController extends Controller {
     }
 
     private function handleStep6(ConsentApplication $consent, array $validated, Request $request): void {
+        $product = $consent->loanProduct;
+        $applicant = $consent->applicant;
+        $calculatedAmount = 0;
+
+        if ($product && $applicant) {
+            $totalIncome = (float)($applicant->income ?? 0) + (float)($applicant->extra_income ?? 0);
+
+            // 1. คำนวณตามตัวคูณถ้าระบุเกณฑ์รายได้ (เช่น P-Loan)
+            if ($product->income_threshold) {
+                if ($totalIncome < (float)$product->income_threshold) {
+                    $multiplier = (float)($product->multiplier_low_income ?? 1.5);
+                } else {
+                    $multiplier = (float)($product->multiplier_high_income ?? 5.0);
+                }
+                $calculatedAmount = $totalIncome * $multiplier;
+            }
+
+            // 2. จำกัดวงเงินสูงสุดถ้ามีการระบุ Max Loan Amount (เช่น Nano Finance 100,000 หรือ Cap สำหรับ P-Loan)
+            if ($product->max_loan_amount) {
+                $maxCap = (float)$product->max_loan_amount;
+                if ($calculatedAmount <= 0) {
+                    $calculatedAmount = $maxCap;
+                } else {
+                    $calculatedAmount = min($calculatedAmount, $maxCap);
+                }
+            }
+        }
+
         $loanReq = ConsentLoanRequest::updateOrCreate(
             ['application_id' => $consent->id],
             [
@@ -569,6 +612,7 @@ class ConsentFormController extends Controller {
                 'loan_term' => $validated['loanTerm'] ?? null,
                 'loan_amount_type' => $validated['loanAmountType'] ?? null,
                 'custom_loan_amount' => $validated['customLoanAmount'] ?? null,
+                'calculated_eligible_amount' => $calculatedAmount,
             ]
         );
         

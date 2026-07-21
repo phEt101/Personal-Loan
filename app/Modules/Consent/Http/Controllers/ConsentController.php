@@ -4,6 +4,8 @@ namespace App\Modules\Consent\Http\Controllers;
 
 use App\Modules\Consent\Models\ConsentApplication;
 use App\Modules\Consent\Models\ConsentDocumentFile;
+use App\Modules\Consent\Models\LoanProduct;
+use App\Modules\Consent\Models\OfficerGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -12,8 +14,10 @@ class ConsentController extends ConsentFormController
 {
     public function modalConsentForm() {
         $nextAppNo = $this->getNextAppNo();
+        $loanProducts = LoanProduct::all();
+        $officerGroups = OfficerGroup::where('is_active', true)->get();
 
-        return view('consent::consent_form_modal', compact('nextAppNo'));
+        return view('consent::consent_form_modal', compact('nextAppNo', 'loanProducts', 'officerGroups'));
     }
 
     public function modalConsentView() {
@@ -136,12 +140,12 @@ class ConsentController extends ConsentFormController
             $query->where('status', $request->input('status'));
         }
 
-        if ($request->filled('officer_group')) {
-            $query->where('officer_group', $request->input('officer_group'));
+        if ($request->filled('officer_group_id')) {
+            $query->where('officer_group_id', $request->input('officer_group_id'));
         }
 
-        if ($request->filled('product_type')) {
-            $query->where('product_type', $request->input('product_type'));
+        if ($request->filled('loan_product_id')) {
+            $query->where('loan_product_id', $request->input('loan_product_id'));
         }
 
         if ($request->filled('date_from')) {
@@ -161,7 +165,10 @@ class ConsentController extends ConsentFormController
 
         $nextAppNo = $this->getNextAppNo();
 
-        return view('consent::index', compact('customers', 'total', 'approved', 'rejected', 'nextAppNo'));
+        $loanProducts = LoanProduct::all();
+        $officerGroups = OfficerGroup::where('is_active', true)->get();
+
+        return view('consent::index', compact('customers', 'total', 'approved', 'rejected', 'nextAppNo', 'loanProducts', 'officerGroups'));
     }
 
     public function data(ConsentApplication $consent) {
@@ -343,9 +350,12 @@ class ConsentController extends ConsentFormController
             'app_date' => $consent->app_date?->format('Y-m-d'),
             'app_no' => $consent->app_no,
 
-            // 2. สำหรับเจ้าหน้าที่บริษัท
             'officer_name' => $consent->officer_name,
             'officer_phone' => $consent->officer_phone,
+            'officer_group_id' => $consent->officer_group_id,
+            'loan_product_id' => $consent->loan_product_id,
+            'officer_group_name' => app()->getLocale() === 'th' ? $consent->officerGroup?->name_th : $consent->officerGroup?->name_en,
+            'loan_product_name' => app()->getLocale() === 'th' ? $consent->loanProduct?->name_th : $consent->loanProduct?->name_en,
 
             // 3. ข้อมูลส่วนตัวผู้ขอสินเชื่อ
             'title' => $applicant?->title,
@@ -445,6 +455,7 @@ class ConsentController extends ConsentFormController
             'loanTerm' => $loan?->loan_term,
             'loanAmountType' => $loan?->loan_amount_type,
             'customLoanAmount' => $loan?->custom_loan_amount,
+            'calculatedEligibleAmount' => $loan?->calculated_eligible_amount,
 
             // 10. ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก
             'accountNumber' => $account?->account_number,

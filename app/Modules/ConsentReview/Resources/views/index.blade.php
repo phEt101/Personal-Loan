@@ -19,18 +19,24 @@
             </div>
             <div>
                 <label for="search-officer-group" class="filter-label">{{ __('consentreview::messages.officer_group') }}</label>
-                <select id="search-officer-group" name="officer_group" class="filter-input">
+                <select id="search-officer-group" name="officer_group_id" class="filter-input">
                     <option value="">{{ __('consentreview::messages.officer_group_all') }}</option>
-                    <option value="กลุ่ม 1" {{ request('officer_group') == 'กลุ่ม 1' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
-                    <option value="กลุ่ม 2" {{ request('officer_group') == 'กลุ่ม 2' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
+                    @foreach($officerGroups as $group)
+                        <option value="{{ $group->id }}" {{ request('officer_group_id') == $group->id ? 'selected' : '' }}>
+                            {{ app()->getLocale() === 'th' ? $group->name_th : $group->name_en }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
             <div>
                 <label for="search-product-type" class="filter-label">{{ __('consentreview::messages.product_type') }}</label>
-                <select id="search-product-type" name="product_type" class="filter-input">
+                <select id="search-product-type" name="loan_product_id" class="filter-input">
                     <option value="">{{ __('consentreview::messages.product_type_all') }}</option>
-                    <option value="สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป" {{ request('product_type') == 'สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.product_personal_unsecured') }}</option>
-                    <option value="สินเชื่อนาโนไฟแนนซ์" {{ request('product_type') == 'สินเชื่อนาโนไฟแนนซ์' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.product_nano_finance') }}</option>
+                    @foreach($loanProducts as $product)
+                        <option value="{{ $product->id }}" {{ request('loan_product_id') == $product->id ? 'selected' : '' }}>
+                            {{ app()->getLocale() === 'th' ? $product->name_th : $product->name_en }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
             <div>
@@ -67,8 +73,20 @@
                     <td>{{ $c->app_no }}</td>
                     <td>{{ $c->applicant?->name }}</td>
                     <td>{{ $c->created_at?->format('d/m/Y') }}</td>
-                    <td>{{ $c->officer_group ?? '-' }}</td>
-                    <td>{{ $c->loanRequest?->custom_loan_amount ? number_format($c->loanRequest->custom_loan_amount, 0) . ' บาท' : '-' }}</td>
+                    <td>
+                        {{ app()->getLocale() === 'th' ? ($c->officerGroup?->name_th ?? '-') : ($c->officerGroup?->name_en ?? '-') }}
+                    </td>
+                    <td>
+                        @php
+                            $loanReq = $c->loanRequest;
+                            $displayAmount = match($loanReq?->loan_amount_type) {
+                                'full' => $loanReq->calculated_eligible_amount,
+                                'custom' => $loanReq->custom_loan_amount,
+                                default => null
+                            };
+                        @endphp
+                        {{ $displayAmount ? number_format($displayAmount, 0) . ' บาท' : '-' }}
+                    </td>
                     <td>
                         @if($c->status === 'approved')
                             <span class="badge badge-signed">{{ __('consentreview::messages.status_approved') }}</span>
@@ -229,9 +247,11 @@
 
         const officer_name = customer.officer_name || '-';
         const officer_phone = customer.officer_phone || '-';
-        const officer_group = customer.officer_group || '-';
-        const product_type = customer.product_type || '-';
+        const officer_group = customer.officer_group_name || '-';
+        const product_type = customer.loan_product_name || '-';
         const has_other_debts = customer.hasOtherDebts || '-';
+        const customLoanAmount = customer.customLoanAmount ? parseInt(customer.customLoanAmount).toLocaleString('th-TH') + ' บาท' : '-';
+        const calculatedEligibleAmount = customer.calculatedEligibleAmount ? parseInt(customer.calculatedEligibleAmount).toLocaleString('th-TH') + ' บาท' : '-';
 
         const residence_status = customer.residence_status || '-';
         const address_room = customer.address_room || '-';
@@ -283,6 +303,14 @@
                     <tr>
                         <td class="label">ประเภทผลิตภัณฑ์:</td>
                         <td class="value">${product_type}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">วงเงินกู้ที่ระบุ:</td>
+                        <td class="value">${customLoanAmount}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">วงเงินสูงสุดที่คำนวณได้:</td>
+                        <td class="value value--strong" style="color: #059669;">${calculatedEligibleAmount}</td>
                     </tr>
                     <tr>
                         <td class="label">เลขที่ใบคำขอ:</td>

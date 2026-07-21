@@ -81,20 +81,22 @@
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="officer_group">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</label>
-                            <select id="officer_group" name="officer_group">
+                            <label for="officer_group_id">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</label>
+                            <select id="officer_group_id" name="officer_group_id">
                                 <option value="">{{ __('consent::messages.modal.form.step1.options.officer_group_prompt') }}</option>
-                                <option value="กลุ่ม 1">{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
-                                <option value="กลุ่ม 2">{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
+                                @foreach($officerGroups as $group)
+                                    <option value="{{ $group->id }}">{{ app()->getLocale() === 'th' ? $group->name_th : $group->name_en }}</option>
+                                @endforeach
                             </select>
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="product_type">{{ __('consent::messages.modal.form.step1.fields.product_type') }}</label>
-                            <select id="product_type" name="product_type">
+                            <label for="loan_product_id">{{ __('consent::messages.modal.form.step1.fields.product_type') }}</label>
+                            <select id="loan_product_id" name="loan_product_id">
                                 <option value="">{{ __('consent::messages.modal.form.step1.options.product_type_prompt') }}</option>
-                                <option value="สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป">{{ __('consent::messages.modal.form.step1.options.product_personal_unsecured') }}</option>
-                                <option value="สินเชื่อนาโนไฟแนนซ์">{{ __('consent::messages.modal.form.step1.options.product_nano_finance') }}</option>
+                                @foreach($loanProducts as $product)
+                                    <option value="{{ $product->id }}">{{ app()->getLocale() === 'th' ? $product->name_th : $product->name_en }}</option>
+                                @endforeach
                             </select>
                         </div>
 

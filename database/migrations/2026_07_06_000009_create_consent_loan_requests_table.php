@@ -14,6 +14,7 @@ return new class extends Migration
             $table->integer('loan_term')->nullable()->comment('ระยะเวลากู้ (เดือน)');
             $table->string('loan_amount_type', 20)->nullable()->comment('ประเภทวงเงินกู้');
             $table->decimal('custom_loan_amount', 12, 2)->nullable()->comment('วงเงินกู้ที่ระบุเอง');
+            $table->decimal('calculated_eligible_amount', 12, 2)->nullable()->comment('ยอดวงเงินสูงสุดที่คำนวณได้เบื้องต้น');
             $table->string('loan_purpose', 150)->nullable()->comment('วัตถุประสงค์ในการกู้');
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');

@@ -20,8 +20,8 @@ class ConsentApplication extends Model
         'app_no',
         'officer_name',
         'officer_phone',
-        'officer_group',
-        'product_type',
+        'loan_product_id',
+        'officer_group_id',
         'document_delivery',
         'status',
         'signed',
@@ -33,7 +33,19 @@ class ConsentApplication extends Model
         'app_date' => 'date',
         'signed' => 'boolean',
         'signed_at' => 'datetime',
+        'loan_product_id' => 'integer',
+        'officer_group_id' => 'integer',
     ];
+
+    public function loanProduct()
+    {
+        return $this->belongsTo(LoanProduct::class, 'loan_product_id');
+    }
+
+    public function officerGroup()
+    {
+        return $this->belongsTo(OfficerGroup::class, 'officer_group_id');
+    }
 
     protected static function booted(): void
     {

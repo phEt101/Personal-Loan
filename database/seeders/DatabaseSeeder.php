@@ -18,6 +18,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+        DB::table('users')->truncate();
+        DB::table('post_codes')->truncate();
+        DB::table('loan_products')->truncate();
+        DB::table('officer_groups')->truncate();
+        Schema::enableForeignKeyConstraints();
+
+        $this->call([
+            PostCodeSeeder::class,
+            LoanProductSeeder::class,
+            OfficerGroupSeeder::class,
+        ]);
         User::query()->firstOrCreate(
             ['email' => 'user@bigmoneyplus.co.th'],
             [
