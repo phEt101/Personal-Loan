@@ -14,6 +14,8 @@ return [
             'label' => 'Search',
             'placeholder' => 'Search by Name, App No, ID Card/Passport, Phone',
             'status_select' => 'All Status',
+            'officer_group_select' => 'All Officer Groups',
+            'product_type_select' => 'All Product Types',
             'date_from' => 'From Date',
             'date_to' => 'To Date',
             'submit' => 'Search',

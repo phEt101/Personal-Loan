@@ -136,6 +136,14 @@ class ConsentController extends ConsentFormController
             $query->where('status', $request->input('status'));
         }
 
+        if ($request->filled('officer_group')) {
+            $query->where('officer_group', $request->input('officer_group'));
+        }
+
+        if ($request->filled('product_type')) {
+            $query->where('product_type', $request->input('product_type'));
+        }
+
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->input('date_from'));
         }

@@ -341,7 +341,7 @@
 .applicant-photo-edit {
   top: 8px;
   right: 0;
-  background: #2848d8;
+  background: #10b981;
   color: #fff;
 }
 
@@ -540,29 +540,28 @@
 
 .search-filter-form {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem 1rem;
   align-items: flex-end;
+}
+
+.search-actions-group {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  min-width: fit-content;
+  padding-bottom: 2px;
 }
 
 @media (max-width: 1024px) {
   .search-filter-form {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .search-actions-group {
-    grid-column: span 2;
-    justify-content: flex-end;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 640px) {
   .search-filter-form {
     grid-template-columns: 1fr;
-  }
-
-  .search-actions-group {
-    grid-column: span 1;
   }
 }
 

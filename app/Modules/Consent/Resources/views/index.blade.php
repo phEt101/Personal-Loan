@@ -62,6 +62,22 @@
                     </select>
                 </div>
                 <div>
+                    <label class="filter-label" for="search_officer_group">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</label>
+                    <select id="search_officer_group" name="officer_group" class="filter-input">
+                        <option value="">{{ __('consent::messages.index.search.officer_group_select') }}</option>
+                        <option value="กลุ่ม 1" {{ request('officer_group') === 'กลุ่ม 1' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
+                        <option value="กลุ่ม 2" {{ request('officer_group') === 'กลุ่ม 2' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="filter-label" for="search_product_type">{{ __('consent::messages.modal.form.step1.fields.product_type') }}</label>
+                    <select id="search_product_type" name="product_type" class="filter-input">
+                        <option value="">{{ __('consent::messages.index.search.product_type_select') }}</option>
+                        <option value="สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป" {{ request('product_type') === 'สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.product_personal_unsecured') }}</option>
+                        <option value="สินเชื่อนาโนไฟแนนซ์" {{ request('product_type') === 'สินเชื่อนาโนไฟแนนซ์' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.product_nano_finance') }}</option>
+                    </select>
+                </div>
+                <div>
                     <label class="filter-label" for="search_date_from">{{ __('consent::messages.index.search.date_from') }}</label>
                     <input type="date" id="search_date_from" name="date_from" value="{{ request('date_from') }}" class="filter-input">
                 </div>
@@ -537,12 +553,16 @@
             const signedDateFormatted = new Date(signed_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
 
             // Officer & Application Details
-            const officer_group = customer.officer_group || '';
+            const officerGroupLabelMap = {
+                'กลุ่ม 1': @json(__('consent::messages.modal.form.step1.options.group_1')),
+                'กลุ่ม 2': @json(__('consent::messages.modal.form.step1.options.group_2')),
+            };
+            const officer_group = customer.officer_group ? (officerGroupLabelMap[customer.officer_group] || customer.officer_group) : '';
             const officer_name = customer.officer_name || '-';
             const officer_phone = customer.officer_phone || '-';
             const productTypeLabelMap = {
-                'personal_unsecured': @json(__('consent::messages.modal.form.step1.options.product_personal_unsecured')),
-                'nano_finance': @json(__('consent::messages.modal.form.step1.options.product_nano_finance')),
+                'สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป': @json(__('consent::messages.modal.form.step1.options.product_personal_unsecured')),
+                'สินเชื่อนาโนไฟแนนซ์': @json(__('consent::messages.modal.form.step1.options.product_nano_finance')),
             };
             const product_type = customer.product_type ? (productTypeLabelMap[customer.product_type] || customer.product_type) : '-';
             
@@ -2890,6 +2910,12 @@
                     if (qInput) qInput.value = '';
                     const statusSelect = document.getElementById('search_status');
                     if (statusSelect) statusSelect.value = '';
+                    
+                    const groupSelect = document.getElementById('search_officer_group');
+                    if (groupSelect) groupSelect.value = '';
+                    const productSelect = document.getElementById('search_product_type');
+                    if (productSelect) productSelect.value = '';
+                    
                     const fromInput = document.getElementById('search_date_from');
                     if (fromInput) fromInput.value = '';
                     const toInput = document.getElementById('search_date_to');
