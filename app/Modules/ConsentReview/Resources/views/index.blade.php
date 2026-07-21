@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/review.css') }}">
 <div class="container">
     <div class="search-filter-card">
         <form method="get" class="search-filter-form">
@@ -331,12 +332,305 @@
                     </tr>
                 </table>
             </div>
+
+            <div class="calc-panel">
+                <h4 class="section-title">4. เงื่อนไขการคำนวณ</h4>
+                <div class="calc-grid">
+                    <div class="calc-field">
+                        <label>ดอกเบี้ยเงินกู้</label>
+                        <div class="calc-input-wrapper">
+                            <input type="number" step="0.01" id="calc_interest_rate" value="${customer.loanApproval?.interest_rate ? parseFloat(customer.loanApproval.interest_rate).toFixed(2) : '20.00'}">
+                            <span class="unit">% ต่อปี</span>
+                        </div>
+                    </div>
+                    <div class="calc-field">
+                        <label>ค่าธรรมเนียม</label>
+                        <div class="calc-input-wrapper">
+                            <input type="number" step="0.01" id="calc_fee_rate" value="${customer.loanApproval?.fee_rate ? parseFloat(customer.loanApproval.fee_rate).toFixed(2) : '1.00'}">
+                            <span class="unit">% ต่อปี</span>
+                        </div>
+                    </div>
+                    <div class="calc-field">
+                        <label>วงเงินสินเชื่อ</label>
+                        <div class="calc-input-wrapper">
+                            <input type="number" step="0.01" id="calc_loan_amount" value="${customer.loanApproval?.loan_amount ? parseFloat(customer.loanApproval.loan_amount).toFixed(2) : (customer.loan_amount || '10000.00')}">
+                            <span class="unit">บาท</span>
+                        </div>
+                    </div>
+                    <div class="calc-field">
+                        <label>เบี้ยปรับล่าช้า</label>
+                        <div class="calc-input-wrapper">
+                            <input type="number" step="0.01" id="calc_late_penalty_rate" value="${customer.loanApproval?.late_penalty_rate ? parseFloat(customer.loanApproval.late_penalty_rate).toFixed(2) : '3.00'}">
+                            <span class="unit">% ต่อปี</span>
+                        </div>
+                    </div>
+                    <div class="calc-field">
+                        <label>จำนวนงวดการผ่อน</label>
+                        <div class="calc-input-wrapper">
+                            <input type="number" id="calc_installments" value="${customer.loanApproval?.installments || customer.installments || '12'}">
+                            <span class="unit">งวด</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calc-actions">
+                    <button type="button" class="btn-calc" id="btn_run_calc">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+                        คำนวณ
+                    </button>
+                </div>
+
+                <div class="calc-results">
+                    <div class="result-field">
+                        <label>ค่างวดที่ลูกค้าสามารถจ่ายได้</label>
+                        <div class="calc-input-wrapper">
+                            <input type="text" id="res_monthly_payment" value="${customer.loanApproval?.monthly_payment ? parseFloat(customer.loanApproval.monthly_payment).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" readonly>
+                            <span class="unit">บาท</span>
+                        </div>
+                    </div>
+                    <div class="result-field">
+                        <label>ค่างวดต่อเดือน (ก่อนปัดเศษ)</label>
+                        <div class="calc-input-wrapper">
+                            <input type="text" id="res_monthly_payment_raw" value="${customer.loanApproval?.monthly_payment_raw ? parseFloat(customer.loanApproval.monthly_payment_raw).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" readonly>
+                            <span class="unit">บาท</span>
+                        </div>
+                    </div>
+                    <div class="result-field">
+                        <label>ค่างวดต่อเดือน (หลังปัดเศษ)</label>
+                        <div class="calc-input-wrapper">
+                            <input type="text" id="res_monthly_payment_rounded" value="${customer.loanApproval?.monthly_payment ? parseFloat(customer.loanApproval.monthly_payment).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" readonly>
+                            <span class="unit">บาท</span>
+                        </div>
+                    </div>
+                    <div class="result-field">
+                        <label>ดอกเบี้ยและค่าธรรมเนียมทั้งสัญญา</label>
+                        <div class="calc-input-wrapper">
+                            <input type="text" id="res_total_interest" value="${customer.loanApproval?.total_interest ? parseFloat(customer.loanApproval.total_interest).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" readonly>
+                            <span class="unit">บาท</span>
+                        </div>
+                    </div>
+                    <div class="result-field">
+                        <label>มูลค่าสัญญาเงินกู้</label>
+                        <div class="calc-input-wrapper">
+                            <input type="text" id="res_total_contract" value="${customer.loanApproval?.total_contract_amount ? parseFloat(customer.loanApproval.total_contract_amount).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" readonly>
+                            <span class="unit">บาท</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="schedule-section">
+                    <div class="schedule-title" style="cursor: pointer;" onclick="document.querySelector('.schedule-table-wrapper').classList.toggle('show')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        ตารางภาระหนี้
+                    </div>
+                    <div class="schedule-table-wrapper">
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>งวดที่</th>
+                                    <th>วันครบกำหนดชำระ</th>
+                                    <th>เงินค่างวด</th>
+                                    <th>เงินต้น</th>
+                                    <th>ดอกเบี้ย</th>
+                                    <th>ค่าธรรมเนียม</th>
+                                    <th>เงินต้นคงเหลือ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedule_body">
+                                <!-- Generated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel-actions" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('viewConsentModal').classList.remove('show'); setTimeout(() => document.getElementById('viewConsentModal').style.display='none', 300)">ยกเลิก</button>
+                    <button type="button" class="btn btn-success" id="btn_save_approval" style="background-color: #10b981; border-color: #10b981; color: white; padding: 0.5rem 2rem;">อนุมัติสินเชื่อ</button>
+                </div>
+            </div>
         `;
 
         if (viewModal) {
             viewModal.style.display = 'flex';
-            // use CSS show class for transition
             requestAnimationFrame(() => viewModal.classList.add('show'));
+        }
+
+        // Attach calculation logic
+        const btnCalc = document.getElementById('btn_run_calc');
+        if (btnCalc) {
+            btnCalc.onclick = function() {
+                runLoanCalculation(customer);
+            };
+        }
+
+        // Attach save logic
+        const btnSave = document.getElementById('btn_save_approval');
+        if (btnSave) {
+            btnSave.onclick = function() {
+                saveLoanApproval(customer.id);
+            };
+        }
+
+        // If existing approval, run calculation to show table (or we could render it manually)
+        if (customer.loanApproval) {
+            runLoanCalculation(customer);
+        }
+    }
+
+    function runLoanCalculation(customer) {
+        const loanAmount = parseFloat(document.getElementById('calc_loan_amount').value) || 0;
+        const interestRateYear = parseFloat(document.getElementById('calc_interest_rate').value) || 0;
+        const feeRateYear = parseFloat(document.getElementById('calc_fee_rate').value) || 0;
+        const installments = parseInt(document.getElementById('calc_installments').value) || 0;
+
+        if (loanAmount <= 0 || (interestRateYear + feeRateYear) <= 0 || installments <= 0) {
+            alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+            return;
+        }
+
+        const totalRateYear = interestRateYear + feeRateYear;
+        const rateMonth = (totalRateYear / 100) / 12;
+        
+        // PMT Formula: P * r * (1 + r)^n / ((1 + r)^n - 1)
+        const pmt = loanAmount * rateMonth * Math.pow(1 + rateMonth, installments) / (Math.pow(1 + rateMonth, installments) - 1);
+        const pmtRounded = Math.ceil(pmt); 
+
+        document.getElementById('res_monthly_payment').value = pmtRounded.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('res_monthly_payment_raw').value = pmt.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('res_monthly_payment_rounded').value = pmtRounded.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Generate Schedule
+        const tbody = document.getElementById('schedule_body');
+        tbody.innerHTML = '';
+        
+        let remainingPrincipal = loanAmount;
+        let totalInterest = 0;
+        let totalFee = 0;
+        let totalPaid = 0;
+        
+        const contractDate = new Date(); 
+        let lastDate = new Date(contractDate);
+        
+        for (let i = 1; i <= installments; i++) {
+            const dueDate = new Date(contractDate);
+            dueDate.setMonth(contractDate.getMonth() + i);
+            
+            // คำนวณจำนวนวันในงวดนี้
+            const diffTime = Math.abs(dueDate - lastDate);
+            const daysInPeriod = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let interest = remainingPrincipal * (interestRateYear / 100) * daysInPeriod / 365;
+            let fee = remainingPrincipal * (feeRateYear / 100) * daysInPeriod / 365;
+            
+            // Round to 2 decimals
+            interest = Math.round(interest * 100) / 100;
+            fee = Math.round(fee * 100) / 100;
+            
+            let payment = pmtRounded;
+            if (i === installments) {
+                // งวดสุดท้ายปรับยอดให้เงินต้นเหลือ 0
+                payment = remainingPrincipal + interest + fee;
+            }
+            
+            let principal = payment - interest - fee;
+            principal = Math.round(principal * 100) / 100;
+
+            remainingPrincipal -= principal;
+            remainingPrincipal = Math.round(remainingPrincipal * 100) / 100;
+            if (remainingPrincipal < 0) remainingPrincipal = 0;
+
+            totalInterest += interest;
+            totalFee += fee;
+            totalPaid += payment;
+
+            lastDate = new Date(dueDate);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${i}</td>
+                <td>${dueDate.toLocaleDateString('th-TH')}</td>
+                <td>${payment.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td>${principal.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td>${interest.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td>${fee.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td>${remainingPrincipal.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+            <td colspan="3">ยอดทั้งหมด</td>
+            <td>${loanAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td>${totalInterest.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td>${totalFee.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td>0.00</td>
+        `;
+        tbody.appendChild(totalRow);
+
+        document.getElementById('res_total_interest').value = (totalInterest + totalFee).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('res_total_contract').value = totalPaid.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        // Show table
+        document.querySelector('.schedule-table-wrapper').classList.add('show');
+    }
+
+    async function saveLoanApproval(applicationId) {
+        const data = {
+            application_id: applicationId,
+            interest_rate: document.getElementById('calc_interest_rate').value,
+            fee_rate: document.getElementById('calc_fee_rate').value,
+            loan_amount: document.getElementById('calc_loan_amount').value,
+            late_penalty_rate: document.getElementById('calc_late_penalty_rate').value,
+            installments: document.getElementById('calc_installments').value,
+            monthly_payment: document.getElementById('res_monthly_payment_rounded').value.replace(/,/g, ''),
+            monthly_payment_raw: document.getElementById('res_monthly_payment_raw').value.replace(/,/g, ''),
+            total_interest: document.getElementById('res_total_interest').value.replace(/,/g, ''),
+            total_contract_amount: document.getElementById('res_total_contract').value.replace(/,/g, ''),
+            schedule: []
+        };
+
+        // Extract schedule
+        document.querySelectorAll('#schedule_body tr:not(.total-row)').forEach(row => {
+            const cols = row.querySelectorAll('td');
+            data.schedule.push({
+                installment_no: cols[0].innerText,
+                due_date: cols[1].innerText, // Should probably convert back to Y-m-d
+                payment_amount: cols[2].innerText.replace(/,/g, ''),
+                principal_amount: cols[3].innerText.replace(/,/g, ''),
+                interest_amount: cols[4].innerText.replace(/,/g, ''),
+                fee_amount: cols[5].innerText.replace(/,/g, ''),
+                remaining_principal: cols[6].innerText.replace(/,/g, '')
+            });
+        });
+
+        if (!data.monthly_payment) {
+            alert('กรุณากดคำนวณก่อนบันทึก');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${consentReviewBaseUrl}/${applicationId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert('บันทึกการอนุมัติสำเร็จ');
+                document.getElementById('viewConsentModal').classList.remove('show');
+                // Refresh list
+                location.reload();
+            } else {
+                const err = await response.json();
+                alert('เกิดข้อผิดพลาด: ' + (err.message || 'Unknown error'));
+            }
+        } catch (error) {
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
         }
     }
 

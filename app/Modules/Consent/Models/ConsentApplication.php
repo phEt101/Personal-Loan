@@ -123,4 +123,14 @@ class ConsentApplication extends Model
     {
         return $this->hasOne(ConsentDisbursementAccount::class, 'application_id');
     }
+
+    public function loanApproval(): HasOne
+    {
+        return $this->hasOne(ConsentLoanApproval::class, 'application_id');
+    }
+
+    public function loanSchedules(): HasMany
+    {
+        return $this->hasMany(ConsentLoanSchedule::class, 'application_id');
+    }
 }

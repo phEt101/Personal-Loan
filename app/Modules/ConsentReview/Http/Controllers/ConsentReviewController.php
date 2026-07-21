@@ -5,6 +5,9 @@ namespace App\Modules\ConsentReview\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Consent\Models\ConsentApplication;
+use App\Modules\Consent\Models\ConsentLoanApproval;
+use App\Modules\Consent\Models\ConsentLoanSchedule;
+use Illuminate\Support\Facades\DB;
 
 class ConsentReviewController extends Controller
 {
@@ -75,6 +78,53 @@ class ConsentReviewController extends Controller
     public function modalView()
     {
         return view('consentreview::consent_view_modal');
+    }
+
+    public function approve(Request $request, ConsentApplication $consent)
+    {
+        $data = $request->validate([
+            'interest_rate' => 'required|numeric',
+            'fee_rate' => 'required|numeric',
+            'loan_amount' => 'required|numeric',
+            'late_penalty_rate' => 'required|numeric',
+            'installments' => 'required|integer',
+            'monthly_payment' => 'required|numeric',
+            'monthly_payment_raw' => 'required|numeric',
+            'total_interest' => 'required|numeric',
+            'total_contract_amount' => 'required|numeric',
+            'schedule' => 'required|array',
+        ]);
+
+        DB::transaction(function () use ($consent, $data) {
+            // Update Or Create Approval record (excluding schedule)
+            $approvalData = collect($data)->except('schedule')->toArray();
+            $consent->loanApproval()->updateOrCreate(
+                ['application_id' => $consent->id],
+                $approvalData
+            );
+
+            // Re-create schedule
+            $consent->loanSchedules()->delete();
+            foreach ($data['schedule'] as $item) {
+                // Parse date from d/m/Y to Y-m-d (Carbon default for 'd/m/Y' parse)
+                $dueDate = \Carbon\Carbon::createFromFormat('d/m/Y', $item['due_date'])->format('Y-m-d');
+                
+                $consent->loanSchedules()->create([
+                    'installment_no' => $item['installment_no'],
+                    'due_date' => $dueDate,
+                    'payment_amount' => $item['payment_amount'],
+                    'principal_amount' => $item['principal_amount'],
+                    'interest_amount' => $item['interest_amount'],
+                    'fee_amount' => $item['fee_amount'],
+                    'remaining_principal' => $item['remaining_principal'],
+                ]);
+            }
+
+            // Update application status
+            $consent->update(['status' => 'approved']);
+        });
+
+        return response()->json(['message' => 'Approved successfully']);
     }
 
     private function toFrontendData(\App\Modules\Consent\Models\ConsentApplication $consent): array
@@ -183,6 +233,7 @@ class ConsentReviewController extends Controller
         $hasOtherDebts = $context['hasOtherDebts'] ?? null;
         $hasExistingLoan = $context['hasExistingLoan'] ?? null;
         $incomeDocuments = $context['incomeDocuments'] ?? [];
+        $loanApproval = $consent->loanApproval;
 
         return [
             'id' => $consent->encrypted_id,
@@ -194,6 +245,8 @@ class ConsentReviewController extends Controller
 
             'officer_name' => $consent->officer_name,
             'officer_phone' => $consent->officer_phone,
+
+            'loanApproval' => $loanApproval,
 
             'title' => $applicant?->title,
             'name' => $applicant?->name,
