@@ -17,6 +17,22 @@
                 </select>
             </div>
             <div>
+                <label for="search-officer-group" class="filter-label">{{ __('consentreview::messages.officer_group') }}</label>
+                <select id="search-officer-group" name="officer_group" class="filter-input">
+                    <option value="">{{ __('consentreview::messages.officer_group_all') }}</option>
+                    <option value="กลุ่ม 1" {{ request('officer_group') == 'กลุ่ม 1' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.group_1') }}</option>
+                    <option value="กลุ่ม 2" {{ request('officer_group') == 'กลุ่ม 2' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.group_2') }}</option>
+                </select>
+            </div>
+            <div>
+                <label for="search-product-type" class="filter-label">{{ __('consentreview::messages.product_type') }}</label>
+                <select id="search-product-type" name="product_type" class="filter-input">
+                    <option value="">{{ __('consentreview::messages.product_type_all') }}</option>
+                    <option value="สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป" {{ request('product_type') == 'สินเชื่อส่วนบุคคลไม่มีทรัพย์ทั่วไป' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.product_personal_unsecured') }}</option>
+                    <option value="สินเชื่อนาโนไฟแนนซ์" {{ request('product_type') == 'สินเชื่อนาโนไฟแนนซ์' ? 'selected' : '' }}>{{ __('consent::messages.modal.form.step1.options.product_nano_finance') }}</option>
+                </select>
+            </div>
+            <div>
                 <label for="date-from" class="filter-label">{{ __('consentreview::messages.date_from') }}</label>
                 <input id="date-from" type="date" name="date_from" value="{{ request('date_from') }}" class="filter-input">
             </div>
@@ -30,8 +46,6 @@
             </div>
         </form>
     </div>
-
-
 
     <div class="card consent-table">
         <table class="w-full">
@@ -76,302 +90,325 @@
         </table>
         <div class="p-4">{{ $customers->links() }}</div>
     </div>
+
+    <div id="modalMount"></div>
 </div>
 
-
 <script>
-// AJAX search: submit form via fetch and replace table HTML
-(function () {
-    const form = document.querySelector('.search-filter-form');
-    if (!form) return;
+    // AJAX search: submit form via fetch and replace table HTML
+    (function () {
+        const form = document.querySelector('.search-filter-form');
+        if (!form) return;
 
-    async function submitAjax(e) {
-        e.preventDefault();
-        const params = new URLSearchParams(new FormData(form)).toString();
-        const url = form.getAttribute('action') || window.location.pathname;
-        try {
-            const resp = await fetch(url + (params ? ('?' + params) : ''), {
-                headers: { 'Accept': 'text/html' }
-            });
-            if (!resp.ok) throw new Error('Network response not ok');
-            const text = await resp.text();
-            const doc = new DOMParser().parseFromString(text, 'text/html');
-            const newTable = doc.querySelector('.consent-table');
-            const oldTable = document.querySelector('.consent-table');
-                if (newTable && oldTable) {
-                oldTable.replaceWith(newTable);
-                // reattach handlers after DOM replacement
-                if (typeof attachViewDocsHandlers === 'function') attachViewDocsHandlers();
+        async function submitAjax(e) {
+            e.preventDefault();
+            const params = new URLSearchParams(new FormData(form)).toString();
+            const url = form.getAttribute('action') || window.location.pathname;
+            try {
+                const resp = await fetch(url + (params ? ('?' + params) : ''), {
+                    headers: { 'Accept': 'text/html' }
+                });
+                if (!resp.ok) throw new Error('Network response not ok');
+                const text = await resp.text();
+                const doc = new DOMParser().parseFromString(text, 'text/html');
+                const newTable = doc.querySelector('.consent-table');
+                const oldTable = document.querySelector('.consent-table');
+                    if (newTable && oldTable) {
+                    oldTable.replaceWith(newTable);
+                    // reattach handlers after DOM replacement
+                    if (typeof attachViewDocsHandlers === 'function') attachViewDocsHandlers();
+                }
+                // update URL in address bar
+                const newUrl = url + (params ? ('?' + params) : '');
+                window.history.replaceState({}, '', newUrl);
+            } catch (err) {
+                console.error('AJAX search failed', err);
+                // fallback to full submit
+                form.submit();
             }
-            // update URL in address bar
-            const newUrl = url + (params ? ('?' + params) : '');
-            window.history.replaceState({}, '', newUrl);
-        } catch (err) {
-            console.error('AJAX search failed', err);
-            // fallback to full submit
-            form.submit();
+        }
+
+        form.addEventListener('submit', submitAjax);
+    })();
+
+    const modalEndpoints = {
+        view: @json(route('consentreview.modals.view')),
+    };
+
+    const consentReviewBaseUrl = @json(url('/consent-review'));
+
+    let viewConsentModalLoadPromise = null;
+
+    function getModalMount() {
+        let mount = document.getElementById('modalMount');
+        if (!mount) {
+            mount = document.createElement('div');
+            mount.id = 'modalMount';
+            document.body.appendChild(mount);
+        }
+        return mount;
+    }
+
+    async function loadModalHtml(url) {
+        const response = await fetch(url, { headers: { 'Accept': 'text/html' } });
+        if (!response.ok) throw new Error('Failed to load modal');
+        return response.text();
+    }
+
+    async function ensureViewConsentModalLoaded() {
+        if (document.getElementById('viewConsentModal')) return;
+        if (!viewConsentModalLoadPromise) {
+            viewConsentModalLoadPromise = loadModalHtml(modalEndpoints.view).finally(() => {
+                viewConsentModalLoadPromise = null;
+            });
+        }
+        const html = await viewConsentModalLoadPromise;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        getModalMount().append(...Array.from(wrapper.children));
+        // attach close handlers
+        const modal = document.getElementById('viewConsentModal');
+        if (modal) {
+            modal.querySelectorAll('.view-modal-close, #closeViewConsentFooter').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                });
+            });
+            // also close on backdrop click
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                }
+            });
         }
     }
 
-    form.addEventListener('submit', submitAjax);
-})();
-
-const modalEndpoints = {
-    view: @json(route('consentreview.modals.view')),
-};
-
-const consentReviewBaseUrl = @json(url('/consent-review'));
-
-let viewConsentModalLoadPromise = null;
-
-function getModalMount() {
-    let mount = document.getElementById('modalMount');
-    if (!mount) {
-        mount = document.createElement('div');
-        mount.id = 'modalMount';
-        document.body.appendChild(mount);
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
-    return mount;
-}
 
-async function loadModalHtml(url) {
-    const response = await fetch(url, { headers: { 'Accept': 'text/html' } });
-    if (!response.ok) throw new Error('Failed to load modal');
-    return response.text();
-}
+    async function viewDocument(customer) {
+        await ensureViewConsentModalLoaded();
+        const viewModal = document.getElementById('viewConsentModal');
+        const contentDiv = document.getElementById('viewConsentContent');
 
-async function ensureViewConsentModalLoaded() {
-    if (document.getElementById('viewConsentModal')) return;
-    if (!viewConsentModalLoadPromise) {
-        viewConsentModalLoadPromise = loadModalHtml(modalEndpoints.view).finally(() => {
-            viewConsentModalLoadPromise = null;
-        });
-    }
-    const html = await viewConsentModalLoadPromise;
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = html;
-    getModalMount().append(...Array.from(wrapper.children));
-    // attach close handlers
-    const modal = document.getElementById('viewConsentModal');
-    if (modal) {
-        modal.querySelectorAll('.view-modal-close, #closeViewConsentFooter').forEach(btn => {
-            btn.addEventListener('click', function () {
-                modal.classList.remove('show');
-                modal.style.display = 'none';
-            });
-        });
-        // also close on backdrop click
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) {
-                modal.classList.remove('show');
-                modal.style.display = 'none';
+        let fullCustomer = customer;
+        const customerId = customer?.id || customer;
+        if (customerId) {
+            try {
+                const response = await fetch(`${consentReviewBaseUrl}/${customerId}/data`, { headers: { 'Accept': 'application/json' } });
+                if (response.ok) {
+                    fullCustomer = await response.json();
+                }
+            } catch (error) {
             }
-        });
-    }
-}
-
-function escapeHtml(value) {
-    return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-async function viewDocument(customer) {
-    await ensureViewConsentModalLoaded();
-    const viewModal = document.getElementById('viewConsentModal');
-    const contentDiv = document.getElementById('viewConsentContent');
-
-    let fullCustomer = customer;
-    const customerId = customer?.id || customer;
-    if (customerId) {
-        try {
-            const response = await fetch(`${consentReviewBaseUrl}/${customerId}/data`, { headers: { 'Accept': 'application/json' } });
-            if (response.ok) {
-                fullCustomer = await response.json();
-            }
-        } catch (error) {
         }
-    }
 
-    customer = fullCustomer;
+        customer = fullCustomer;
 
-    // Use same rendering as consent module (simplified copy)
-    const title = customer.title || 'นาย/นาง/นางสาว';
-    const name = customer.name || '-';
-    const name_en = customer.name_en || '-';
-    const birthdate = customer.birthdate ? new Date(customer.birthdate).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
-    const appDateFormatted = customer.app_date ? new Date(customer.app_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
-    const id_card = customer.id_card || customer.passport || '-';
-    const nationality = customer.nationality || '-';
-    const marital_status = customer.marital_status || '-';
-    const education = customer.education || '-';
-    const occupation = customer.occupation || '-';
-    const income = customer.income ? parseInt(customer.income).toLocaleString('th-TH') + ' บาท' : '-';
-    const incomeDocuments = Array.isArray(customer.incomeDocuments) ? customer.incomeDocuments : [];
-    const incomeDocumentsHtml = incomeDocuments.length
-        ? incomeDocuments.map(function (document) {
-            const url = document?.downloadUrl ?? '#';
-            const name = document?.originalName ?? 'ไฟล์แนบ';
-            return `<div class="file-link"><a href="${url}" target="_blank" rel="noopener" class="file-link__anchor">${escapeHtml(name)}</a></div>`;
-        }).join('')
-        : '-';
+        // Use same rendering as consent module (simplified copy)
+        const title = customer.title || 'นาย/นาง/นางสาว';
+        const name = customer.name || '-';
+        const name_en = customer.name_en || '-';
+        const birthdate = customer.birthdate ? new Date(customer.birthdate).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+        const appDateFormatted = customer.app_date ? new Date(customer.app_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+        const id_card = customer.id_card || customer.passport || '-';
+        const nationality = customer.nationality || '-';
+        const marital_status = customer.marital_status || '-';
+        const education = customer.education || '-';
+        const occupation = customer.occupation || '-';
+        const income = customer.income ? parseInt(customer.income).toLocaleString('th-TH') + ' บาท' : '-';
 
-    const officer_name = customer.officer_name || '-';
-    const officer_phone = customer.officer_phone || '-';
+        const officer_name = customer.officer_name || '-';
+        const officer_phone = customer.officer_phone || '-';
+        const officer_group = customer.officer_group || '-';
+        const product_type = customer.product_type || '-';
+        const has_other_debts = customer.hasOtherDebts || '-';
 
-    const residence_status = customer.residence_status || '-';
-    const address_room = customer.address_room || '-';
-    const address_no = customer.address_no || '-';
-    const address_floor = customer.address_floor || '-';
-    const address_village = customer.address_village || '-';
-    const address_building = customer.address_building || '-';
-    const address_soi = customer.address_soi || '-';
-    const address_road = customer.address_road || '-';
-    const address_subdistrict = customer.address_subdistrict || '-';
-    const address_district = customer.address_district || '-';
-    const address_province = customer.address_province || '-';
-    const address_postal = customer.address_postal || '-';
-    const phone_home = customer.phone_home || '-';
-    const phone_mobile = customer.phone_mobile || '-';
+        const residence_status = customer.residence_status || '-';
+        const address_room = customer.address_room || '-';
+        const address_no = customer.address_no || '-';
+        const address_floor = customer.address_floor || '-';
+        const address_village = customer.address_village || '-';
+        const address_building = customer.address_building || '-';
+        const address_soi = customer.address_soi || '-';
+        const address_road = customer.address_road || '-';
+        const address_subdistrict = customer.address_subdistrict || '-';
+        const address_district = customer.address_district || '-';
+        const address_province = customer.address_province || '-';
+        const address_postal = customer.address_postal || '-';
+        const phone_home = customer.phone_home || '-';
+        const phone_mobile = customer.phone_mobile || '-';
 
-    // App No boxes
-    const appNoStr = (customer.app_no || '').padEnd(13, ' ');
-    let appNoBoxesHtml = '<div class="appno-box-container">';
-    for (let i = 0; i < 13; i++) {
-        const char = appNoStr[i].trim() ? appNoStr[i] : '&nbsp;';
-        appNoBoxesHtml += `<span class="appno-box">${char}</span>`;
-    }
-    appNoBoxesHtml += '</div>';
+        // App No boxes
+        const appNoStr = (customer.app_no || '').padEnd(13, ' ');
+        let appNoBoxesHtml = '<div class="appno-box-container">';
+        for (let i = 0; i < 13; i++) {
+            const char = appNoStr[i].trim() ? appNoStr[i] : '&nbsp;';
+            appNoBoxesHtml += `<span class="appno-box">${char}</span>`;
+        }
+        appNoBoxesHtml += '</div>';
 
-    contentDiv.innerHTML = `
-        <div class="consent-header">
-            <div>
-                <div class="consent-header__title">บริษัท บิ๊ก มันนี่ พลัส จำกัด</div>
-                <div class="consent-header__subtitle">ใบคำขอให้บริการสินเชื่อส่วนบุคคล (Personal Loan)</div>
-                <div class="consent-header__meta">App No.: ${customer.app_no || '-'}</div>
-            </div>
-            <div class="consent-header__right">
-                <div class="consent-meta">วันที่: <span class="meta-value">${appDateFormatted}</span></div>
-                <div class="consent-appno-row">
-                    <span class="meta-label">App No.</span>
-                    ${appNoBoxesHtml}
+        contentDiv.innerHTML = `
+            <div class="consent-header">
+                <div>
+                    <div class="consent-header__title">บริษัท บิ๊ก มันนี่ พลัส จำกัด</div>
+                    <div class="consent-header__subtitle">ใบคำขอให้บริการสินเชื่อส่วนบุคคล (Personal Loan)</div>
+                    <div class="consent-header__meta">App No.: ${customer.app_no || '-'}</div>
+                </div>
+                <div class="consent-header__right">
+                    <div class="consent-meta">วันที่: <span class="meta-value">${appDateFormatted}</span></div>
+                    <div class="consent-appno-row">
+                        <span class="meta-label">App No.</span>
+                        ${appNoBoxesHtml}
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="panel">
-            <h4 class="section-title section-title--accent">ส่วนที่ 2: ข้อมูลส่วนตัวผู้ขอสินเชื่อ</h4>
-            <table class="consent-detail-table">
-                <tr>
-                    <td class="label">คำนำหน้านาม - ชื่อ - นามสกุล:</td>
-                    <td class="value">${title} ${name}</td>
-                </tr>
-                <tr>
-                    <td class="label">Name - Surname (EN):</td>
-                    <td class="value value--uppercase">${name_en}</td>
-                </tr>
-                <tr>
-                    <td class="label">เลขประจำตัวประชาชน:</td>
-                    <td class="value">${id_card}</td>
-                </tr>
-                <tr>
-                    <td class="label">วัน / เดือน / ปีเกิด:</td>
-                    <td class="value">${birthdate}</td>
-                </tr>
-                <tr>
-                    <td class="label">รายได้รวมต่อเดือน:</td>
-                    <td class="value value--strong">${income}</td>
-                </tr>
-                <tr>
-                    <td class="label">ไฟล์หลักฐานการเงิน:</td>
-                    <td class="value">${incomeDocumentsHtml}</td>
-                </tr>
-            </table>
-        </div>
-    `;
 
-    if (viewModal) {
-        viewModal.style.display = 'flex';
-        // use CSS show class for transition
-        requestAnimationFrame(() => viewModal.classList.add('show'));
+            <div class="panel">
+                <h4 class="section-title section-title--accent">1. รายละเอียดสัญญา</h4>
+                <table class="consent-detail-table">
+                    <tr>
+                        <td class="label">กลุ่มเจ้าหน้าที่:</td>
+                        <td class="value">${officer_group}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">ประเภทผลิตภัณฑ์:</td>
+                        <td class="value">${product_type}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">เลขที่ใบคำขอ:</td>
+                        <td class="value">${customer.app_no || '-'}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="panel">
+                <h4 class="section-title section-title--accent">ส่วนที่ 2: ข้อมูลส่วนตัวผู้ขอสินเชื่อ</h4>
+                <table class="consent-detail-table">
+                    <tr>
+                        <td class="label">คำนำหน้านาม - ชื่อ - นามสกุล:</td>
+                        <td class="value">${title} ${name}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Name - Surname (EN):</td>
+                        <td class="value value--uppercase">${name_en}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">เลขประจำตัวประชาชน:</td>
+                        <td class="value">${id_card}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">วัน / เดือน / ปีเกิด:</td>
+                        <td class="value">${birthdate}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">สัญชาติ:</td>
+                        <td class="value">${nationality}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">การศึกษา:</td>
+                        <td class="value">${education}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">อาชีพ:</td>
+                        <td class="value">${occupation}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">รายได้รวมต่อเดือน:</td>
+                        <td class="value value--strong">${income}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">ภาระหนี้อื่นๆ ในปัจจุบัน:</td>
+                        <td class="value">${has_other_debts}</td>
+                    </tr>
+                </table>
+            </div>
+        `;
+
+        if (viewModal) {
+            viewModal.style.display = 'flex';
+            // use CSS show class for transition
+            requestAnimationFrame(() => viewModal.classList.add('show'));
+        }
     }
-}
 
-function attachViewDocsHandlers() {
-    document.querySelectorAll('.view-docs').forEach(function (btn) {
-        btn.removeEventListener('click', btn._consentHandler);
-        btn._consentHandler = function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const id = btn.getAttribute('data-id');
-            viewDocument(id);
-        };
-        btn.addEventListener('click', btn._consentHandler);
-    });
-}
+    function attachViewDocsHandlers() {
+        document.querySelectorAll('.view-docs').forEach(function (btn) {
+            btn.removeEventListener('click', btn._consentHandler);
+            btn._consentHandler = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = btn.getAttribute('data-id');
+                viewDocument(id);
+            };
+            btn.addEventListener('click', btn._consentHandler);
+        });
+    }
 
-// Attach on load and after any potential DOM updates
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', attachViewDocsHandlers);
-} else {
-    attachViewDocsHandlers();
-}
-
-function attachPaginationHandlers(container) {
-    const root = container || document;
-    root.querySelectorAll('.pagination a, .consent-table a').forEach(function (link) {
-        link.removeEventListener('click', link._paginationHandler);
-        link._paginationHandler = function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const href = link.getAttribute('href');
-            if (!href) return;
-            fetch(href, { headers: { 'Accept': 'text/html' } })
-                .then(r => r.text())
-                .then(html => {
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                    const newTable = doc.querySelector('.consent-table');
-                    const oldTable = document.querySelector('.consent-table');
-                    if (newTable && oldTable) {
-                        oldTable.replaceWith(newTable);
-                        if (typeof attachViewDocsHandlers === 'function') attachViewDocsHandlers();
-                        if (typeof attachPaginationHandlers === 'function') attachPaginationHandlers(newTable);
-                    }
-                    window.history.replaceState({}, '', href);
-                })
-                .catch(err => {
-                    console.error('Pagination AJAX failed', err);
-                    window.location.href = href; // fallback
-                });
-        };
-        link.addEventListener('click', link._paginationHandler);
-    });
-}
-
-// initial pagination attach
-attachPaginationHandlers();
-</script>
-
-<script>
-// Reset filters without navigating away
-document.getElementById('reset-filters')?.addEventListener('click', function () {
-    const form = document.querySelector('.search-filter-form');
-    if (!form) return;
-    form.querySelectorAll('input[name], select[name]').forEach(el => {
-        if (el.tagName === 'SELECT') el.selectedIndex = 0;
-        else el.value = '';
-    });
-    // Use requestSubmit (triggers submit event and handlers). Fallback to dispatching event.
-    if (typeof form.requestSubmit === 'function') {
-        form.requestSubmit();
+    // Attach on load and after any potential DOM updates
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachViewDocsHandlers);
     } else {
-        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        attachViewDocsHandlers();
     }
-});
-</script>
 
-<div id="modalMount"></div>
+    function attachPaginationHandlers(container) {
+        const root = container || document;
+        root.querySelectorAll('.pagination a, .consent-table a').forEach(function (link) {
+            link.removeEventListener('click', link._paginationHandler);
+            link._paginationHandler = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const href = link.getAttribute('href');
+                if (!href) return;
+                fetch(href, { headers: { 'Accept': 'text/html' } })
+                    .then(r => r.text())
+                    .then(html => {
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const newTable = doc.querySelector('.consent-table');
+                        const oldTable = document.querySelector('.consent-table');
+                        if (newTable && oldTable) {
+                            oldTable.replaceWith(newTable);
+                            if (typeof attachViewDocsHandlers === 'function') attachViewDocsHandlers();
+                            if (typeof attachPaginationHandlers === 'function') attachPaginationHandlers(newTable);
+                        }
+                        window.history.replaceState({}, '', href);
+                    })
+                    .catch(err => {
+                        console.error('Pagination AJAX failed', err);
+                        window.location.href = href; // fallback
+                    });
+            };
+            link.addEventListener('click', link._paginationHandler);
+        });
+    }
+
+    // initial pagination attach
+    attachPaginationHandlers();
+
+    // Reset filters without navigating away
+    document.getElementById('reset-filters')?.addEventListener('click', function () {
+        const form = document.querySelector('.search-filter-form');
+        if (!form) return;
+        form.querySelectorAll('input[name], select[name]').forEach(el => {
+            if (el.tagName === 'SELECT') el.selectedIndex = 0;
+            else el.value = '';
+        });
+        // Use requestSubmit (triggers submit event and handlers). Fallback to dispatching event.
+        if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+    });
+</script>
 
 @endsection
