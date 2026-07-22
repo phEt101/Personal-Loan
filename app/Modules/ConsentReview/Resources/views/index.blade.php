@@ -203,8 +203,8 @@
             if ((lower.endsWith('.zip') || nameLower.endsWith('.zip')) && JSZip) {
                 try {
                     const resp = await fetch(url);
-                    if (!resp.ok) {
-                        parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ดาวน์โหลด)</a></div>`);
+                        if (!resp.ok) {
+                        parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')">${escapeHtml(name)} (ดาวน์โหลด)</a></div>`);
                         continue;
                     }
                     const blob = await resp.blob();
@@ -223,13 +223,13 @@
                         const mime = mimeMap[ext] || 'application/octet-stream';
                         const fileBlob = new Blob([arrayBuf], { type: mime });
                         const fileUrl = URL.createObjectURL(fileBlob);
-                        parts.push(`<div class="file-link"><a href="${fileUrl}" target="_blank" rel="noopener">${escapeHtml(filename)}</a></div>`);
+                        parts.push(`<div class="file-link"><a href="${fileUrl}" onclick="openAttachmentPreview(event, '${fileUrl}', '${mime}', '${escapeHtml(filename)}')">${escapeHtml(filename)}</a></div>`);
                     }));
                 } catch (e) {
-                    parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
+                    parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
                 }
             } else {
-                parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="file-link__anchor">${escapeHtml(name)}</a></div>`);
+                parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')" class="file-link__anchor">${escapeHtml(name)}</a></div>`);
             }
         }
         return parts.join('') || '-';
