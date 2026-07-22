@@ -376,7 +376,15 @@
 }
 
 .file-link {
+  width: 100%;
   margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.file-remove-btn {
+  margin-left: 8px;
 }
 
 .file-link__anchor {

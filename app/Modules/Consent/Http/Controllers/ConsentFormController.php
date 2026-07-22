@@ -750,6 +750,21 @@ class ConsentFormController extends Controller {
             return;
         }
 
+        // If there is an existing ZIP document for this document type, append files to it (rezip).
+        $existingZip = $consent->incomeDocuments()
+            ->where('document_type', $documentType)
+            ->where('mime_type', 'application/zip')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($existingZip) {
+            $success = $this->appendToExistingZip($consent, $existingZip, $files);
+            if (!$success) {
+                Log::warning('Consent updateConsentByStep: Failed to append to existing zip for ' . $fieldName, ['consent_id' => $consent->id, 'document_id' => $existingZip->id]);
+            }
+            return;
+        }
+
         $zipData = $this->createStep8Zip($consent, $fieldName, $files);
         if (!$zipData) {
             Log::warning('Consent updateConsentByStep: Failed to create zip for ' . $fieldName, ['consent_id' => $consent->id]);
@@ -765,6 +780,66 @@ class ConsentFormController extends Controller {
             'mime_type' => 'application/zip',
             'size' => filesize($zipData['zipPath']),
         ]);
+    }
+
+    /**
+     * Append uploaded files into an existing zip stored by ConsentDocumentFile.
+     * Returns true on success.
+     */
+    private function appendToExistingZip(ConsentApplication $consent, ConsentDocumentFile $existingZip, array $files): bool
+    {
+        $disk = Storage::disk($existingZip->disk);
+        if (!$disk->exists($existingZip->path)) {
+            return false;
+        }
+
+        $origPath = $disk->path($existingZip->path);
+        $zip = new \ZipArchive();
+        if ($zip->open($origPath) !== true) {
+            return false;
+        }
+
+        // Collect existing entry names to avoid collisions
+        $existingNames = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false) continue;
+            $entry = $stat['name'];
+            if (substr($entry, -1) === '/') continue;
+            $existingNames[] = $entry;
+        }
+
+        // Add new files with index-based prefix to avoid collisions
+        $startIndex = count($existingNames) + 1;
+        foreach ($files as $index => $file) {
+            if (!$file) continue;
+            $original = (string) ($file->getClientOriginalName() ?: 'file');
+            $entryName = sprintf('%02d_%s', $startIndex + $index, $this->normalizeZipEntryName($original));
+            $contents = file_get_contents($file->getRealPath());
+            // If entry already exists (unlikely), append a uniq suffix
+            $tryName = $entryName;
+            $k = 1;
+            while (in_array($tryName, $existingNames, true)) {
+                $tryName = $entryName . '_' . $k;
+                $k++;
+            }
+            $zip->addFromString($tryName, $contents);
+            $existingNames[] = $tryName;
+        }
+
+        $zip->close();
+
+        // update model metadata
+        try {
+            $newSize = filesize($origPath);
+            $existingZip->size = $newSize;
+            $existingZip->mime_type = 'application/zip';
+            $existingZip->save();
+        } catch (\Exception $e) {
+            Log::warning('Consent appendToExistingZip: failed to update metadata', ['err' => $e->getMessage()]);
+        }
+
+        return true;
     }
 
     private function createStep8Zip(ConsentApplication $consent, string $fieldName, array $files): ?array {

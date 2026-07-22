@@ -249,6 +249,19 @@
         </div>
     </div>
 
+    <!-- Attachment Preview Modal (separate from PDF consent modal) -->
+    <div id="attachmentPreviewModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">Preview</h3>
+                <button type="button" class="close-btn" id="closeAttachmentPreviewModal" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body modal-body--pdf">
+                <div class="pdf-content-padding" id="attachmentPreviewContent"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('js/signature_pad.umd.min.js') }}"></script>
 
     <script>
@@ -335,6 +348,179 @@
                 document.head.appendChild(s);
             });
             return jszipLoadPromise;
+        }
+
+        function guessZipMimeType(filename) {
+            const ext = (String(filename || '').split('.').pop() || '').toLowerCase();
+            const mimeMap = {
+                'png': 'image/png', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'gif': 'image/gif',
+                'pdf': 'application/pdf', 'txt': 'text/plain', 'csv': 'text/csv', 'xls': 'application/vnd.ms-excel',
+                'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            };
+
+            return mimeMap[ext] || 'application/octet-stream';
+        }
+
+        async function expandZipDocument(url, fallbackName) {
+            const resp = await fetch(url);
+            if (!resp.ok) {
+                return [{ type: 'fallback', url, name: fallbackName }];
+            }
+
+            const blob = await resp.blob();
+            const zip = await window.JSZip.loadAsync(blob);
+            const items = [];
+
+            await Promise.all(Object.keys(zip.files).map(async (filename) => {
+                const fileObj = zip.files[filename];
+                if (fileObj.dir) return;
+
+                const fileData = await fileObj.async('arraybuffer');
+                const fileBlob = new Blob([fileData], { type: guessZipMimeType(filename) });
+                const fileUrl = URL.createObjectURL(fileBlob);
+                items.push({ type: 'file', url: fileUrl, name: filename, mime: guessZipMimeType(filename) });
+            }));
+
+            return items;
+        }
+
+        async function renderDocumentLinksHtml(documents) {
+            if (!Array.isArray(documents) || !documents.length) {
+                return '';
+            }
+
+            await ensureJSZipLoaded().catch(() => {});
+            const JSZip = window.JSZip;
+            const rows = [];
+
+            for (const document of documents) {
+                const url = document?.downloadUrl ?? '#';
+                const name = document?.originalName ?? 'ไฟล์แนบ';
+                const lower = (url || '').toLowerCase();
+                const nameLower = (name || '').toLowerCase();
+
+                if ((lower.endsWith('.zip') || nameLower.endsWith('.zip')) && JSZip) {
+                    try {
+                        const zipItems = await expandZipDocument(url, name);
+                        zipItems.forEach((item) => {
+                            if (item.type === 'fallback') {
+                                rows.push(`<div class="file-link"><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)} (ดาวน์โหลด)</a></div>`);
+                                return;
+                            }
+
+                            // Provide a delete button for each entry
+                            const deleteBtn = `<button type="button" class="file-remove-btn" onclick="deleteZipEntryByDoc('${escapeHtml(url)}', ${document?.id || 0}, '${escapeHtml(item.name)}')">ลบ</button>`;
+                            rows.push(`<div class="file-link"><a href="${item.url}" data-mime="${escapeHtml(item.mime)}" onclick="openAttachmentPreview(event, '${escapeHtml(item.url)}', '${escapeHtml(item.mime)}', '${escapeHtml(item.name)}')">${escapeHtml(item.name)}</a> ${deleteBtn}</div>`);
+                        });
+                    } catch (error) {
+                        rows.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
+                    }
+                } else {
+                    rows.push(`<div class="file-link"><a href="${escapeHtml(url)}" data-mime="${guessZipMimeType(name)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')" class="file-link__anchor">${escapeHtml(name)}</a></div>`);
+                }
+            }
+
+            return rows.join('');
+        }
+
+        // Delete a single entry inside a ZIP. Uses the document's download URL to construct
+        // the zip-entry delete endpoint: <downloadUrl>/zip-entry?inner=<encodedName>
+        async function deleteZipEntryByDoc(downloadUrl, docId, innerName) {
+            if (!confirm('ต้องการลบไฟล์นี้จาก ZIP ใช่หรือไม่?')) return;
+            const token = document.querySelector('input[name="_token"]')?.value ?? '';
+            try {
+                const base = (downloadUrl || '').replace(/\/?$/, '');
+                const url = `${base}/zip-entry?inner=${encodeURIComponent(innerName)}`;
+                const resp = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                if (!resp.ok) {
+                    alert('ลบรายการภายใน ZIP ไม่สำเร็จ');
+                    return;
+                }
+
+                const data = await resp.json().catch(() => ({}));
+
+                // Remove the element from the DOM if present
+                // find link with the inner name and remove its parent
+                const anchors = Array.from(document.querySelectorAll('.file-link a'));
+                for (const a of anchors) {
+                    if (a.textContent.trim() === innerName.trim()) {
+                        const parent = a.closest('.file-link');
+                        if (parent) parent.remove();
+                        break;
+                    }
+                }
+
+                // If server deleted the whole ZIP, also remove the existing-files wrapper and clear list
+                if (data.deleted_zip) {
+                    const idWrap = document.getElementById('identityDocumentsExistingWrapper');
+                    const incWrap = document.getElementById('incomeDocumentsExistingWrapper');
+                    if (idWrap) {
+                        const list = document.getElementById('identityDocumentsExistingList');
+                        if (list) list.innerHTML = '';
+                        idWrap.classList.add('hidden');
+                    }
+                    if (incWrap) {
+                        const list = document.getElementById('incomeDocumentsExistingList');
+                        if (list) list.innerHTML = '';
+                        incWrap.classList.add('hidden');
+                    }
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert('เกิดข้อผิดพลาดขณะลบ');
+            }
+        }
+
+        // Preview attachment in modal instead of opening new tab
+        window.openAttachmentPreview = function(ev, url, mime, name) {
+            try {
+                ev && ev.preventDefault();
+            } catch (e) {}
+            const modal = document.getElementById('attachmentPreviewModal');
+            const body = document.getElementById('attachmentPreviewContent');
+            if (!modal || !body) {
+                window.open(url, '_blank', 'noopener');
+                return;
+            }
+            body.innerHTML = '';
+            const titleHtml = `<h4 style="margin-top:0;margin-bottom:8px">${escapeHtml(name)}</h4>`;
+            if ((mime || '').startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                body.innerHTML = titleHtml;
+                body.appendChild(img);
+            } else if ((mime || '').includes('pdf') || url.toLowerCase().endsWith('.pdf')) {
+                const iframe = document.createElement('iframe');
+                iframe.src = url;
+                iframe.style.width = '100%';
+                iframe.style.height = '70vh';
+                iframe.setAttribute('title', name || 'Preview');
+                body.innerHTML = titleHtml;
+                body.appendChild(iframe);
+            } else {
+                // other types: offer download link
+                body.innerHTML = titleHtml + `<a href="${url}" download="${escapeHtml(name)}">ดาวน์โหลดไฟล์</a>`;
+            }
+            modal.style.display = 'flex';
+            modal.offsetHeight; // reflow
+            modal.classList.add('show');
+            // bind close buttons
+            document.getElementById('closeAttachmentPreviewModal')?.addEventListener('click', () => {
+                modal.classList.remove('show'); modal.style.display = 'none'; body.innerHTML = '';
+            });
+            document.getElementById('attachmentPreviewCloseFooter')?.addEventListener('click', () => {
+                modal.classList.remove('show'); modal.style.display = 'none'; body.innerHTML = '';
+            });
         }
 
         function bindApplicantPhotoWidget() {
@@ -523,20 +709,15 @@
                     const nameLower = (name || '').toLowerCase();
                     if ((lower.endsWith('.zip') || nameLower.endsWith('.zip')) && JSZip) {
                         try {
-                            const resp = await fetch(url);
-                            if (!resp.ok) {
-                                parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ดาวน์โหลด)</a></div>`);
-                                continue;
-                            }
-                            const blob = await resp.blob();
-                            const zip = await JSZip.loadAsync(blob);
-                            await Promise.all(Object.keys(zip.files).map(async (filename) => {
-                                const fileObj = zip.files[filename];
-                                if (fileObj.dir) return;
-                                const fileData = await fileObj.async('blob');
-                                const fileUrl = URL.createObjectURL(fileData);
-                                parts.push(`<div class="file-link"><a href="${fileUrl}" target="_blank" rel="noopener">${escapeHtml(filename)}</a></div>`);
-                            }));
+                            const zipItems = await expandZipDocument(url, name);
+                            zipItems.forEach((item) => {
+                                if (item.type === 'fallback') {
+                                    parts.push(`<div class="file-link"><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)} (ดาวน์โหลด)</a></div>`);
+                                    return;
+                                }
+
+                                parts.push(`<div class="file-link"><a href="${item.url}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a></div>`);
+                            });
                         } catch (e) {
                             parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
                         }
@@ -1944,28 +2125,14 @@
                     }
 
                     groupState.existingWrapper.classList.remove('hidden');
-                    groupState.existingList.innerHTML = groupedDocuments
-                        .map(function(document) {
-                            const url = document?.downloadUrl ?? '#';
-                            const name = document?.originalName ?? 'ไฟล์แนบ';
-                            const destroyUrl = document?.destroyUrl ?? '';
-                            const deleteButton = destroyUrl
-                                ? `<button type="button" class="file-remove-btn" data-destroy-url="${escapeHtml(destroyUrl)}">ลบ</button>`
-                                : '';
+                    // Remove whole-ZIP delete buttons here — per-entry delete is handled on expanded items
+                    const deleteButtonsHtml = '';
 
-                            const isZip = (document?.mimeType === 'application/zip') || (name && name.toLowerCase().endsWith('.zip'));
-                            const docId = document?.id ?? '';
-                            const viewFilesBtn = isZip
-                                ? `<button type="button" class="file-view-zip-btn" data-doc-id="${escapeHtml(docId)}" data-document-url="${escapeHtml(url)}">ดูไฟล์</button>`
-                                : '';
-
-                            return `<div class="file-attachment-row">
-                                <a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)}</a>
-                                ${viewFilesBtn}
-                                ${deleteButton}
-                            </div>`;
-                        })
-                        .join('');
+                    renderDocumentLinksHtml(groupedDocuments).then(function(linksHtml) {
+                        groupState.existingList.innerHTML = linksHtml
+                            ? `<div class="file-attachment-row">${linksHtml}${deleteButtonsHtml}</div>`
+                            : '';
+                    });
                 });
             }
 
@@ -2046,37 +2213,7 @@
                     });
                 }
 
-                if (groupState.existingList && groupState.existingWrapper) {
-                    groupState.existingList.addEventListener('click', async function(event) {
-                        const button = event.target.closest('[data-destroy-url]');
-                        if (!button) return;
-
-                        const destroyUrl = button.dataset.destroyUrl;
-                        if (!destroyUrl) return;
-                        if (!confirm('ต้องการลบไฟล์นี้ใช่ไหม?')) return;
-
-                        const token = document.querySelector('input[name="_token"]')?.value ?? '';
-                        const response = await fetch(destroyUrl, {
-                            method: 'DELETE',
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': token,
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                        });
-
-                        if (!response.ok) {
-                            alert('ลบไฟล์ไม่สำเร็จ');
-                            return;
-                        }
-
-                        button.closest('.file-attachment-row')?.remove();
-                        if (!groupState.existingList.querySelector('.file-attachment-row')) {
-                            groupState.existingWrapper.classList.add('hidden');
-                            groupState.existingList.innerHTML = '';
-                        }
-                    });
-                }
+                // existingList click handlers are handled per-entry when expanding ZIPs
             });
 
             function syncConditionalSections() {
@@ -3071,89 +3208,4 @@
         });
     </script>
     
-        <!-- ZIP Contents Modal -->
-        <div id="zipContentsModal" class="modal" style="display:none;">
-            <div class="modal-content modal-sm">
-                <div class="modal-header">
-                    <h3>ไฟล์ใน ZIP</h3>
-                    <button type="button" class="close-btn" id="closeZipContentsModal">&times;</button>
-                </div>
-                <div class="modal-body" id="zipContentsBody" style="max-height:60vh; overflow:auto; padding:1rem;">
-                    <div id="zipContentsList">กำลังโหลด...</div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" id="zipContentsCloseBtn" class="btn">ปิด</button>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            (function(){
-                const zipContentsModal = document.getElementById('zipContentsModal');
-                const zipContentsList = document.getElementById('zipContentsList');
-                const closeZipContentsModalBtn = document.getElementById('closeZipContentsModal');
-                const zipContentsCloseBtn = document.getElementById('zipContentsCloseBtn');
-
-                function openZipContentsModal(){
-                    if (!zipContentsModal) return;
-                    zipContentsModal.style.display = 'flex';
-                    zipContentsModal.offsetHeight; // reflow
-                    zipContentsModal.classList.add('show');
-                }
-
-                function closeZipContentsModal(){
-                    if (!zipContentsModal) return;
-                    zipContentsModal.classList.remove('show');
-                    setTimeout(()=>{ zipContentsModal.style.display='none'; zipContentsList.innerHTML=''; }, 200);
-                }
-
-                if (closeZipContentsModalBtn) closeZipContentsModalBtn.addEventListener('click', closeZipContentsModal);
-                if (zipContentsCloseBtn) zipContentsCloseBtn.addEventListener('click', closeZipContentsModal);
-
-                // Delegate click for ZIP view buttons
-                document.addEventListener('click', async function(e){
-                    const btn = e.target.closest('.file-view-zip-btn');
-                    if (!btn) return;
-
-                    btn.disabled = true;
-                    const originalText = btn.textContent;
-                    btn.textContent = 'กำลังโหลด...';
-
-                    try {
-                        const docId = btn.dataset.docId || '';
-                        const customerId = document.getElementById('consent_id')?.value || '';
-                        if (!docId || !customerId) throw new Error('ไม่พบข้อมูลเอกสารหรือหมายเลขคำขอ');
-
-                        const contentsUrl = `${consentBaseUrl}/${customerId}/income-documents/${docId}/zip-contents`;
-                        const response = await fetch(contentsUrl, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }});
-                        if (!response.ok) {
-                            const text = await response.text();
-                            throw new Error(text || 'ไม่สามารถดึงรายการไฟล์จาก ZIP ได้');
-                        }
-
-                        const data = await response.json();
-                        const entries = Array.isArray(data.entries) ? data.entries : [];
-
-                        if (!entries.length) {
-                            zipContentsList.innerHTML = '<div>ไม่มีไฟล์ภายใน ZIP</div>';
-                        } else {
-                            const itemsHtml = entries.map(function(entry){
-                                const name = entry?.name ?? String(entry);
-                                const encoded = encodeURIComponent(name);
-                                const fileUrl = `${consentBaseUrl}/${customerId}/income-documents/${docId}/zip-file?inner=${encoded}`;
-                                return `<div class="zip-entry-row"><a href="${fileUrl}" target="_blank" rel="noopener">${escapeHtml(name)}</a></div>`;
-                            }).join('');
-                            zipContentsList.innerHTML = itemsHtml;
-                        }
-
-                        openZipContentsModal();
-                    } catch (err) {
-                        alert(err.message || 'เกิดข้อผิดพลาด');
-                    } finally {
-                        btn.disabled = false;
-                        btn.textContent = originalText;
-                    }
-                });
-            })();
-        </script>
 @endsection

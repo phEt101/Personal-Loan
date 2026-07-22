@@ -86,119 +86,6 @@ class ConsentDocumentController extends ConsentController
         ]);
     }
 
-    public function listZipContents(ConsentApplication $consent, ConsentDocumentFile $document){
-        if ((int) $document->application_id !== (int) $consent->id) {
-            abort(404);
-        }
-
-        $disk = Storage::disk($document->disk);
-        if (!$disk->exists($document->path)) {
-            abort(404);
-        }
-
-        $filePath = $disk->path($document->path);
-        $zip = new \ZipArchive();
-        if ($zip->open($filePath) !== true) {
-            return response()->json(['ok' => false, 'message' => 'ไม่สามารถเปิดไฟล์ ZIP ได้'], 500);
-        }
-
-        $entries = [];
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $stat = $zip->statIndex($i);
-            if ($stat === false) {
-                continue;
-            }
-            $name = $stat['name'];
-            // skip directories
-            if (substr($name, -1) === '/') {
-                continue;
-            }
-            $decoded = $this->decodeZipEntryName($name);
-            $entries[] = [
-                'name' => $decoded,
-                'original_name' => $name,
-                'size' => $stat['size'],
-                'compressed_size' => $stat['comp_size'],
-            ];
-        }
-
-        $zip->close();
-        return response()->json(['ok' => true, 'entries' => $entries]);
-    }
-
-    public function streamZipEntry(Request $request, ConsentApplication $consent, ConsentDocumentFile $document){
-        if ((int) $document->application_id !== (int) $consent->id) {
-            abort(404);
-        }
-
-        $inner = (string) $request->query('inner', '');
-        if ($inner === '') {
-            return response()->json(['ok' => false, 'message' => 'Missing inner file path'], 400);
-        }
-
-        $disk = Storage::disk($document->disk);
-        if (!$disk->exists($document->path)) {
-            abort(404);
-        }
-
-        $filePath = $disk->path($document->path);
-        $zip = new \ZipArchive();
-        if ($zip->open($filePath) !== true) {
-            return response()->json(['ok' => false, 'message' => 'ไม่สามารถเปิดไฟล์ ZIP ได้'], 500);
-        }
-
-        // Zip entries may have filenames stored in legacy encodings (CP437, Windows-874, etc.).
-        // The client requests by the decoded UTF-8 name, so find the matching entry by
-        // decoding each entry and comparing. Then open the stream using the original
-        // entry name as stored in the archive.
-        $found = false;
-        $originalEntryName = null;
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $stat = $zip->statIndex($i);
-            if ($stat === false) continue;
-            $entryName = $stat['name'];
-            if (substr($entryName, -1) === '/') continue; // skip dirs
-            $decoded = $this->decodeZipEntryName($entryName);
-            if ($decoded === $inner) {
-                $found = true;
-                $originalEntryName = $entryName;
-                break;
-            }
-        }
-
-        if (!$found) {
-            $zip->close();
-            abort(404);
-        }
-
-        $stream = $zip->getStream($originalEntryName);
-        if ($stream === false) {
-            $zip->close();
-            abort(404);
-        }
-
-        $fileName = basename($decoded);
-        // try to infer mime from extension, fallback to binary
-        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-        $mimeMap = [
-            'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif',
-            'pdf' => 'application/pdf', 'txt' => 'text/plain', 'csv' => 'text/csv'
-        ];
-        $mimeType = $mimeMap[$ext] ?? 'application/octet-stream';
-
-        return response()->stream(function () use ($stream, $zip) {
-            while (!feof($stream)) {
-                echo fread($stream, 8192);
-            }
-            fclose($stream);
-            $zip->close();
-        }, 200, [
-            'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . str_replace('"', '', $fileName) . '"',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
-    }
-
     public function destroyIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document){
         if ((int) $document->application_id !== (int) $consent->id) {
             abort(404);
@@ -214,8 +101,138 @@ class ConsentDocumentController extends ConsentController
         return response()->json(['ok' => true]);
     }
 
-    public function destroyApplicantPhoto(ConsentApplication $consent, ConsentDocumentFile $document): JsonResponse
-    {
+    /**
+     * Remove one or more entries from an existing ZIP document.
+     * Expects query param `inner[]` (multiple) or `inner` (single) which are the decoded
+     * filenames as returned by `listZipContents`.
+     */
+    public function destroyZipEntry(Request $request, ConsentApplication $consent, ConsentDocumentFile $document) {
+        if ((int) $document->application_id !== (int) $consent->id) {
+            abort(404);
+        }
+
+        $inners = $request->query('inner');
+        if (is_null($inners) || $inners === '') {
+            return response()->json(['ok' => false, 'message' => 'Missing inner file(s) to delete'], 400);
+        }
+
+        // Normalize to array
+        if (!is_array($inners)) {
+            $inners = [$inners];
+        }
+
+        $disk = Storage::disk($document->disk);
+        if (!$disk->exists($document->path)) {
+            abort(404);
+        }
+
+        $origPath = $disk->path($document->path);
+
+        $zip = new \ZipArchive();
+        if ($zip->open($origPath) !== true) {
+            return response()->json(['ok' => false, 'message' => 'ไม่สามารถเปิดไฟล์ ZIP ได้'], 500);
+        }
+
+        // Build set of original entry names to remove by matching decoded names
+        $toRemove = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false) continue;
+            $entryName = $stat['name'];
+            if (substr($entryName, -1) === '/') continue;
+            $decoded = $this->decodeZipEntryName($entryName);
+            if (in_array($decoded, $inners, true)) {
+                $toRemove[] = $entryName;
+            }
+        }
+
+        if (empty($toRemove)) {
+            $zip->close();
+            return response()->json(['ok' => false, 'message' => 'No matching entries found'], 404);
+        }
+
+        // If removing these entries would leave zero non-directory files, delete the
+        // entire ZIP file and database record instead of creating an empty zip.
+        $remainingCount = 0;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false) continue;
+            $entryName = $stat['name'];
+            if (substr($entryName, -1) === '/') continue;
+            if (!in_array($entryName, $toRemove, true)) {
+                $remainingCount++;
+            }
+        }
+
+        if ($remainingCount === 0) {
+            // close zip then delete original
+            $zip->close();
+            try {
+                if ($disk->exists($document->path)) {
+                    $disk->delete($document->path);
+                }
+                $document->delete();
+            } catch (\Exception $e) {
+                return response()->json(['ok' => false, 'message' => 'ไม่สามารถลบไฟล์ ZIP ได้'], 500);
+            }
+
+            return response()->json(['ok' => true, 'deleted_zip' => true]);
+        }
+
+        // Create a temporary ZIP file and copy entries except those to remove
+        $tmpFile = tempnam(sys_get_temp_dir(), 'rezip_');
+        $newZip = new \ZipArchive();
+        if ($newZip->open($tmpFile, \ZipArchive::CREATE) !== true) {
+            $zip->close();
+            return response()->json(['ok' => false, 'message' => 'ไม่สามารถสร้างไฟล์ชั่วคราวได้'], 500);
+        }
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false) continue;
+            $entryName = $stat['name'];
+            // preserve directories
+            if (substr($entryName, -1) === '/') {
+                $newZip->addEmptyDir($entryName);
+                continue;
+            }
+            if (in_array($entryName, $toRemove, true)) {
+                continue; // skip
+            }
+
+            $stream = $zip->getStream($entryName);
+            if ($stream === false) continue;
+            $contents = stream_get_contents($stream);
+            fclose($stream);
+            $newZip->addFromString($entryName, $contents);
+        }
+
+        $zip->close();
+        $newZip->close();
+
+        // Replace original file with new zip
+        try {
+            // overwrite
+            $disk->put($document->path, file_get_contents($tmpFile));
+
+            // update model metadata
+            $newSize = $disk->size($document->path);
+            $document->size = $newSize;
+            $document->mime_type = $disk->mimeType($document->path) ?: $document->mime_type;
+            // keep original_name as-is (it's the stored zip filename)
+            $document->save();
+
+            // cleanup tmp
+            @unlink($tmpFile);
+        } catch (\Exception $e) {
+            @unlink($tmpFile);
+            return response()->json(['ok' => false, 'message' => 'ไม่สามารถอัพเดตไฟล์ ZIP ได้'], 500);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function destroyApplicantPhoto(ConsentApplication $consent, ConsentDocumentFile $document): JsonResponse {
         if ((int) $document->application_id !== (int) $consent->id || $document->document_type !== 'applicant_photo') {
             abort(404);
         }

@@ -20,7 +20,6 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/consent/{consent}/applicant-photo/{document}', [ConsentDocumentController::class, 'downloadApplicantPhoto'])->name('consent.applicant-photo.download');
     Route::delete('/consent/{consent}/applicant-photo/{document}', [ConsentDocumentController::class, 'destroyApplicantPhoto'])->name('consent.applicant-photo.destroy');
     Route::get('/consent/{consent}/income-documents/{document}', [ConsentDocumentController::class, 'downloadIncomeDocument'])->name('consent.income-documents.download');
-    Route::get('/consent/{consent}/income-documents/{document}/zip-contents', [ConsentDocumentController::class, 'listZipContents'])->name('consent.income-documents.zip-contents');
-    Route::get('/consent/{consent}/income-documents/{document}/zip-file', [ConsentDocumentController::class, 'streamZipEntry'])->name('consent.income-documents.zip-file');
+    Route::delete('/consent/{consent}/income-documents/{document}/zip-entry', [ConsentDocumentController::class, 'destroyZipEntry'])->name('consent.income-documents.zip-entry.destroy');
     Route::delete('/consent/{consent}/income-documents/{document}', [ConsentDocumentController::class, 'destroyIncomeDocument'])->name('consent.income-documents.destroy');
 });
