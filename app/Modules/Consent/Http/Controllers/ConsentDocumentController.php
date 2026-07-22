@@ -113,8 +113,10 @@ class ConsentDocumentController extends ConsentController
             if (substr($name, -1) === '/') {
                 continue;
             }
+            $decoded = $this->decodeZipEntryName($name);
             $entries[] = [
-                'name' => $name,
+                'name' => $decoded,
+                'original_name' => $name,
                 'size' => $stat['size'],
                 'compressed_size' => $stat['comp_size'],
             ];
@@ -145,13 +147,37 @@ class ConsentDocumentController extends ConsentController
             return response()->json(['ok' => false, 'message' => 'ไม่สามารถเปิดไฟล์ ZIP ได้'], 500);
         }
 
-        $stream = $zip->getStream($inner);
+        // Zip entries may have filenames stored in legacy encodings (CP437, Windows-874, etc.).
+        // The client requests by the decoded UTF-8 name, so find the matching entry by
+        // decoding each entry and comparing. Then open the stream using the original
+        // entry name as stored in the archive.
+        $found = false;
+        $originalEntryName = null;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if ($stat === false) continue;
+            $entryName = $stat['name'];
+            if (substr($entryName, -1) === '/') continue; // skip dirs
+            $decoded = $this->decodeZipEntryName($entryName);
+            if ($decoded === $inner) {
+                $found = true;
+                $originalEntryName = $entryName;
+                break;
+            }
+        }
+
+        if (!$found) {
+            $zip->close();
+            abort(404);
+        }
+
+        $stream = $zip->getStream($originalEntryName);
         if ($stream === false) {
             $zip->close();
             abort(404);
         }
 
-        $fileName = basename($inner);
+        $fileName = basename($decoded);
         // try to infer mime from extension, fallback to binary
         $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
         $mimeMap = [
@@ -230,6 +256,35 @@ class ConsentDocumentController extends ConsentController
             'mime_type' => $file->getClientMimeType(),
             'size' => $file->getSize(),
         ]);
+    }
+
+    /**
+     * Normalize/convert a ZIP entry name to UTF-8 for display.
+     * Try common source encodings (CP437, CP866, WINDOWS-874) and fall back to the original.
+     */
+    private function decodeZipEntryName(string $name): string
+    {
+        // If already valid UTF-8, return as-is
+        if (mb_check_encoding($name, 'UTF-8')) {
+            return $name;
+        }
+
+        $candidates = ['CP437', 'CP866', 'WINDOWS-874', 'ISO-8859-1'];
+        foreach ($candidates as $enc) {
+            $converted = @mb_convert_encoding($name, 'UTF-8', $enc);
+            if ($converted !== false && mb_check_encoding($converted, 'UTF-8')) {
+                return $converted;
+            }
+        }
+
+        // Last resort: try iconv from CP437
+        $converted = @iconv('CP437', 'UTF-8//TRANSLIT', $name);
+        if ($converted !== false && mb_check_encoding($converted, 'UTF-8')) {
+            return $converted;
+        }
+
+        // Fallback to original string
+        return $name;
     }
 
     private function buildApplicantPhotoPayload(ConsentApplication $consent, ConsentDocumentFile $document): array

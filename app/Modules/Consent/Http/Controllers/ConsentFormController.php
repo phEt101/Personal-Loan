@@ -388,9 +388,9 @@ class ConsentFormController extends Controller {
         return [
             // แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
             'incomeDocuments' => ['nullable', 'array'],
-            'incomeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+            'incomeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
             'identityDocuments' => ['nullable', 'array'],
-            'identityDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+            'identityDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ];
     }
 
@@ -782,16 +782,15 @@ class ConsentFormController extends Controller {
             return null;
         }
 
-        foreach ($files as $file) {
+        foreach ($files as $index => $file) {
             if (!$file) {
                 continue;
             }
 
             $original = (string) ($file->getClientOriginalName() ?: 'file');
-            $safeOriginal = preg_replace('/[^A-Za-z0-9._-]/', '_', $original);
-            $uniqueName = time() . '_' . uniqid() . '_' . $safeOriginal;
+            $entryName = sprintf('%02d_%s', $index + 1, $this->normalizeZipEntryName($original));
             $contents = file_get_contents($file->getRealPath());
-            $zip->addFromString($uniqueName, $contents);
+            $zip->addFromString($entryName, $contents);
         }
 
         $zip->close();
@@ -800,6 +799,17 @@ class ConsentFormController extends Controller {
             'zipName' => $zipName,
             'zipPath' => $zipPath,
         ];
+    }
+
+    private function normalizeZipEntryName(string $name): string
+    {
+        $name = trim($name);
+        $name = str_replace(["\0", '/', '\\'], '_', $name);
+        $name = preg_replace('/[[:cntrl:]]+/u', '', $name);
+        $name = preg_replace('/\s+/u', ' ', $name);
+        $name = preg_replace('/\.+$/u', '', $name);
+
+        return $name !== '' ? $name : 'file';
     }
 
     private function determineStep8Status(ConsentApplication $consent): string {

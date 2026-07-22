@@ -174,6 +174,67 @@
         return response.text();
     }
 
+    // Ensure JSZip is available for client-side ZIP extraction
+    let jszipLoadPromise = null;
+    function ensureJSZipLoaded() {
+        if (window.JSZip) return Promise.resolve(window.JSZip);
+        if (jszipLoadPromise) return jszipLoadPromise;
+        jszipLoadPromise = new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = '{{ asset('js/jszip.min.js') }}';
+            s.onload = () => resolve(window.JSZip);
+            s.onerror = reject;
+            document.head.appendChild(s);
+        });
+        return jszipLoadPromise;
+    }
+
+    // Helper: build HTML for documents, extracting ZIPs if needed
+    async function buildDocumentsHtml(docs) {
+        if (!Array.isArray(docs) || docs.length === 0) return '-';
+        await ensureJSZipLoaded().catch(() => {});
+        const JSZip = window.JSZip;
+        const parts = [];
+        for (const doc of docs) {
+            const url = doc?.downloadUrl ?? '#';
+            const name = doc?.originalName ?? 'ไฟล์แนบ';
+            const lower = (url || '').toLowerCase();
+            const nameLower = (name || '').toLowerCase();
+            if ((lower.endsWith('.zip') || nameLower.endsWith('.zip')) && JSZip) {
+                try {
+                    const resp = await fetch(url);
+                    if (!resp.ok) {
+                        parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ดาวน์โหลด)</a></div>`);
+                        continue;
+                    }
+                    const blob = await resp.blob();
+                    const zip = await JSZip.loadAsync(blob);
+                    await Promise.all(Object.keys(zip.files).map(async (filename) => {
+                        const fileObj = zip.files[filename];
+                        if (fileObj.dir) return;
+                        const arrayBuf = await fileObj.async('arraybuffer');
+                        // guess mime type from extension
+                        const ext = (filename.split('.').pop() || '').toLowerCase();
+                        const mimeMap = {
+                            'png': 'image/png', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'gif': 'image/gif',
+                            'pdf': 'application/pdf', 'txt': 'text/plain', 'csv': 'text/csv', 'xls': 'application/vnd.ms-excel',
+                            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        };
+                        const mime = mimeMap[ext] || 'application/octet-stream';
+                        const fileBlob = new Blob([arrayBuf], { type: mime });
+                        const fileUrl = URL.createObjectURL(fileBlob);
+                        parts.push(`<div class="file-link"><a href="${fileUrl}" target="_blank" rel="noopener">${escapeHtml(filename)}</a></div>`);
+                    }));
+                } catch (e) {
+                    parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
+                }
+            } else {
+                parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="file-link__anchor">${escapeHtml(name)}</a></div>`);
+            }
+        }
+        return parts.join('') || '-';
+    }
+
     async function ensureViewConsentModalLoaded() {
         if (document.getElementById('viewConsentModal')) return;
         if (!viewConsentModalLoadPromise) {
@@ -279,6 +340,30 @@
         }
         appNoBoxesHtml += '</div>';
 
+        // Render attachments (incomeDocuments) by expanding ZIPs when possible
+        let attachmentsHtml = '';
+        if (Array.isArray(customer.incomeDocuments) && customer.incomeDocuments.length) {
+            const identityKeywords = /(id|identity|passport|บัตร|หลักฐาน|身份证|身份证明)/i;
+            const identityCandidates = [];
+            const incomeOnly = [];
+            customer.incomeDocuments.forEach(function(doc) {
+                const name = (doc?.originalName || '').toString();
+                if (identityKeywords.test(name)) identityCandidates.push(doc);
+                else incomeOnly.push(doc);
+            });
+
+            const incomeDocumentsHtml = await buildDocumentsHtml(incomeOnly);
+            const identityDocumentsHtml = await buildDocumentsHtml(identityCandidates);
+
+            attachmentsHtml = `
+                <div class="panel">
+                    <h4 class="section-title">เอกสารแนบ</h4>
+                    ${incomeOnly.length ? `<div class="attachments-group"><strong>เอกสารแสดงรายได้</strong>${incomeDocumentsHtml}</div>` : ''}
+                    ${identityCandidates.length ? `<div class="attachments-group"><strong>เอกสารแสดงตน</strong>${identityDocumentsHtml}</div>` : ''}
+                </div>
+            `;
+        }
+
         contentDiv.innerHTML = `
             <div class="consent-header">
                 <div>
@@ -296,7 +381,7 @@
             </div>
 
             <div class="panel">
-                <h4 class="section-title section-title--accent">1. รายละเอียดสัญญา</h4>
+                <h4 class="section-title section-title--accent">รายละเอียดสัญญา</h4>
                 <table class="consent-detail-table">
                     <tr>
                         <td class="label">กลุ่มเจ้าหน้าที่:</td>
@@ -321,8 +406,10 @@
                 </table>
             </div>
 
+            </div>
+
             <div class="panel">
-                <h4 class="section-title section-title--accent">ส่วนที่ 2: ข้อมูลส่วนตัวผู้ขอสินเชื่อ</h4>
+                <h4 class="section-title section-title--accent">ข้อมูลส่วนตัวผู้ขอสินเชื่อ</h4>
                 <table class="consent-detail-table">
                     <tr>
                         <td class="label">คำนำหน้านาม - ชื่อ - นามสกุล:</td>
@@ -372,7 +459,7 @@
             </div>
 
             <div class="calc-panel">
-                <h4 class="section-title">4. เงื่อนไขการคำนวณ</h4>
+                <h4 class="section-title">เงื่อนไขการคำนวณ</h4>
                 <div class="calc-grid">
                     <div class="calc-field">
                         <label>ดอกเบี้ยเงินกู้</label>
@@ -481,9 +568,9 @@
                     </div>
                 </div>
 
+                ${attachmentsHtml}
+
                 <div class="panel-actions" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('viewConsentModal').classList.remove('show'); setTimeout(() => document.getElementById('viewConsentModal').style.display='none', 300)">ยกเลิก</button>
-                    <button type="button" class="btn btn-success" id="btn_save_approval" style="background-color: #10b981; border-color: #10b981; color: white; padding: 0.5rem 2rem;">อนุมัติสินเชื่อ</button>
                 </div>
             </div>
         `;

@@ -30,7 +30,8 @@ return [
     'modal' => [
         'view' => [
             'title' => 'Loan Application and Consent Document',
-            'close' => 'Close'
+            'close' => 'Close',
+            'approve' => 'Save Review'
         ]
     ]
 ];

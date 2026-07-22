@@ -14,6 +14,7 @@
         </div>
         <div class="modal-footer view-modal-footer">
             <button type="button" class="action-btn outline" id="closeViewConsentFooter">{{ __('consentreview::messages.modal.view.close') }}</button>
+            <button type="button" class="action-btn primary" id="btn_save_approval">{{ __('consentreview::messages.modal.view.approve') }}</button>
         </div>
     </div>
 </div>

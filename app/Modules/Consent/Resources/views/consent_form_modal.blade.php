@@ -117,7 +117,7 @@
                                     <button type="button" class="applicant-photo-action applicant-photo-edit" id="applicantPhotoEditBtn" title="{{ __('consent::messages.modal.form.attachment.applicant_photo.change') }}">✎</button>
                                     <button type="button" class="applicant-photo-action applicant-photo-remove hidden" id="applicantPhotoRemoveBtn" title="{{ __('consent::messages.modal.form.attachment.applicant_photo.remove') }}">×</button>
                                 </div>
-                                <div class="applicant-photo-hint">{{ __('consent::messages.modal.form.attachment.applicant_photo.hint') }}</div>
+                                <div class="applicant-photo-hint">{{ __('consent::messages.modal.form.attachment.applicant_photo.hint_full') }}</div>
                                 <input type="file" id="applicantPhoto" name="applicantPhoto" accept="image/jpeg,image/png,.jpg,.jpeg,.png" class="hidden">
                                 <div class="hidden" id="applicantPhotoSelectedWrapper"></div>
                                 <div class="hidden" id="applicantPhotoExistingWrapper"></div>
@@ -883,7 +883,7 @@
                                                 <div class="upload-stack">
                                                     <label for="identityDocuments" class="custom-file-upload compact">
                                                         <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
-                                                        <p>PDF, JPG, PNG</p>
+                                                        <p>{{ __('consent::messages.modal.form.attachment.common.allowed_types') }}: PDF, JPG, PNG — {{ __('consent::messages.modal.form.attachment.common.per_file_max_10mb') }}</p>
                                                     </label>
                                                     <input type="file" id="identityDocuments" name="identityDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
@@ -932,7 +932,7 @@
                                                 <div class="upload-stack">
                                                     <label for="incomeDocuments" class="custom-file-upload compact">
                                                         <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
-                                                        <p>PDF, JPG, PNG</p>
+                                                        <p>{{ __('consent::messages.modal.form.attachment.common.allowed_types') }}: PDF, JPG, PNG — {{ __('consent::messages.modal.form.attachment.common.per_file_max_10mb') }}</p>
                                                     </label>
                                                     <input type="file" id="incomeDocuments" name="incomeDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
 
