@@ -184,174 +184,214 @@ class ConsentFormController extends Controller {
 
     private function getStepRules(int $step, Request $request): array {
         return match ($step) {
-            1 => [
-                // ข้อมูลใบคำขอ + ข้อมูลส่วนตัว
-                'app_date' => ['nullable', 'date'],
-                'app_no' => ['nullable', 'string', 'max:13'],
-                'officer_name' => ['nullable', 'string', 'max:255'],
-                'officer_phone' => ['nullable', 'string', 'max:20'],
-                'officer_group_id' => ['nullable', 'integer', 'exists:officer_groups,id'],
-                'loan_product_id' => ['nullable', 'integer', 'exists:loan_products,id'],
-                'title' => ['required', 'string', 'max:50'],
-                'title_other' => ['nullable', 'required_if:title,' . self::OPTION_OTHER, 'string', 'max:50'],
-                'name' => ['nullable', 'string', 'max:255'],
-                'name_en' => ['nullable', 'string', 'max:255'],
-                'birthdate' => ['required', 'date'],
-                'nationality' => ['required', 'string', 'max:50'],
-                'id_type' => ['required', 'in:id_card,passport'],
-                'id_card' => [
-                    'required', 'string', 'max:20',
-                    function ($attribute, $value, $fail) use ($request) {
-                        $documentType = $request->input('id_type', 'id_card');
-                        $normalizedValue = strtoupper(trim((string) $value));
-                        if ($documentType === 'passport') {
-                            if (!preg_match('/^[A-Z0-9]{6,20}$/', $normalizedValue)) {
-                                $fail('กรุณากรอกเลขหนังสือเดินทางเป็นตัวอักษรภาษาอังกฤษหรือตัวเลข 6-20 หลัก');
-                            }
-                            return;
-                        }
-                        if (!preg_match('/^\d{13}$/', $normalizedValue)) {
-                            $fail('กรุณากรอกเลขบัตรประจำตัวประชาชน 13 หลัก');
-                        }
-                    },
-                ],
-                'education' => ['required', 'string', 'max:50'],
-                'marital_status' => ['required', 'string', 'max:50'],
-            ],
-            2 => [
-                // ที่อยู่ปัจจุบัน
-                'residence_status' => ['required', 'string', 'max:255'],
-                'address_building' => ['nullable', 'string', 'max:255'],
-                'address_room' => ['nullable', 'string', 'max:255'],
-                'address_floor' => ['nullable', 'string', 'max:255'],
-                'address_no' => ['nullable', 'string', 'max:255'],
-                'address_village' => ['nullable', 'string', 'max:255'],
-                'address_soi' => ['nullable', 'string', 'max:255'],
-                'address_road' => ['nullable', 'string', 'max:255'],
-                'address_subdistrict' => ['nullable', 'string', 'max:255'],
-                'address_district' => ['nullable', 'string', 'max:255'],
-                'address_province' => ['nullable', 'string', 'max:255'],
-                'address_postal' => ['nullable', 'string', 'max:255'],
-                'phone_home' => ['nullable', 'string', 'max:255'],
-                'phone_mobile' => ['nullable', 'string', 'max:20', 'regex:/^\d{9,10}$/'],
-                'email' => ['nullable', 'email', 'max:255'],
-                'documentDelivery' => ['required', 'string', 'max:255'],
-                'documentAddressText' => ['nullable', 'string'],
-                'documentAddressProvince' => ['nullable', 'string', 'max:255'],
-                'documentAddressPostal' => ['nullable', 'string', 'max:255'],
-                'birthPlaceAddress' => ['nullable', 'string'],
-            ],
-            3 => [
-                // ข้อมูลอาชีพ/สถานที่ทำงาน
-                'useHomeAddress' => ['nullable', 'boolean'],
-                'occupation' => ['required', 'string', 'max:100'],
-                'governmentLevel' => ['nullable', 'required_if:occupation,ข้าราชการ', 'string', 'max:100'],
-                'occupationOther' => ['nullable', 'required_if:occupation,' . self::OPTION_OTHER, 'string', 'max:100'],
-                'careerField' => ['required', 'string', 'max:100'],
-                'careerFieldOther' => ['nullable', 'required_if:careerField,' . self::OPTION_OTHER, 'string', 'max:100'],
-                'companyName' => ['nullable', 'string', 'max:255'],
-                'businessType' => ['required', 'string', 'max:255'],
-                'businessTypeOther' => ['nullable', 'required_if:businessType,' . self::OPTION_OTHER, 'string', 'max:255'],
-                'workAddressBuilding' => ['nullable', 'string', 'max:255'],
-                'workAddressFloor' => ['nullable', 'string', 'max:255'],
-                'workDepartment' => ['nullable', 'string', 'max:255'],
-                'workAddressNo' => ['nullable', 'string', 'max:255'],
-                'workAddressVillage' => ['nullable', 'string', 'max:255'],
-                'workAddressSoi' => ['nullable', 'string', 'max:255'],
-                'workAddressRoad' => ['nullable', 'string', 'max:255'],
-                'workAddressSubdistrict' => ['nullable', 'string', 'max:255'],
-                'workAddressDistrict' => ['nullable', 'string', 'max:255'],
-                'workAddressProvince' => ['nullable', 'string', 'max:255'],
-                'workAddressPostal' => ['nullable', 'string', 'max:255'],
-                'workPhone' => ['nullable', 'string', 'max:255'],
-                'workYears' => ['nullable', 'integer', 'min:0'],
-                'workMonths' => ['nullable', 'integer', 'min:0', 'max:11'],
-                'previousCompanyName' => ['nullable', 'string', 'max:255'],
-                'previousPosition' => ['nullable', 'string', 'max:255'],
-                'previousIncome' => ['nullable', 'numeric'],
-                'previousWorkAddress' => ['nullable', 'string'],
-                'previousPhone' => ['nullable', 'string', 'max:255'],
-            ],
-            4 => [
-                // รายได้
-                'income' => ['required', 'numeric', 'min:0'],
-                'extraIncome' => ['nullable', 'numeric', 'min:0'],
-                'extraIncomeSource' => ['required', 'string', 'max:255'],
-                'extraIncomeSourceOther' => ['nullable', 'required_if:extraIncomeSource,' . self::OPTION_OTHER, 'string', 'max:255'],
-                'incomeCountry' => ['nullable', 'string', 'max:100'],
-                'hasOtherDebts' => ['required', 'string', 'max:10'],
-                'otherDebtInstallment' => ['nullable', 'required_if:hasOtherDebts,มี', 'numeric', 'min:0'],
-                'hasExistingLoan' => ['required', 'string', 'in:ใช่,ไม่ใช่'],
-                'existingLoanInstitutionCount' => ['nullable', 'required_if:hasExistingLoan,ใช่', 'integer', 'min:1'],
-                'existingLoanTotalAmount' => ['nullable', 'required_if:hasExistingLoan,ใช่', 'numeric', 'min:0'],
-            ],
-            5 => [
-                // บุคคลอ้างอิง
-                'refName' => ['required', 'string', 'max:255'],
-                'refRelation' => ['nullable', 'string', 'max:255'],
-                'refAddressNo' => ['nullable', 'string', 'max:255'],
-                'refAddressFloor' => ['nullable', 'string', 'max:255'],
-                'refAddressVillage' => ['nullable', 'string', 'max:255'],
-                'refAddressBuilding' => ['nullable', 'string', 'max:255'],
-                'refAddressSoi' => ['nullable', 'string', 'max:255'],
-                'refAddressRoad' => ['nullable', 'string', 'max:255'],
-                'refAddressSubdistrict' => ['nullable', 'string', 'max:255'],
-                'refAddressDistrict' => ['nullable', 'string', 'max:255'],
-                'refAddressProvince' => ['nullable', 'string', 'max:255'],
-                'refAddressPostal' => ['nullable', 'string', 'max:255'],
-                'refPhoneHome' => ['nullable', 'string', 'max:255'],
-                'refPhoneMobile' => ['nullable', 'string', 'max:255'],
-            ],
-            6 => [
-                // ความประสงค์กู้/การชำระเงิน
-                'loanPurpose' => ['required', 'string', 'max:255'],
-                'loanTerm' => [
-                    'required', 'integer',
-                    function ($attribute, $value, $fail) use ($request) {
-                        $consentId = $request->input('consent_id');
-                        $consent = null;
-                        if ($consentId) {
-                            $id = \Illuminate\Support\Facades\Crypt::decryptString($consentId);
-                            $consent = \App\Modules\Consent\Models\ConsentApplication::find($id);
-                        }
-                        
-                        $product = $consent?->loanProduct;
-                        if ($product && $product->max_loan_term && (int)$value > (int)$product->max_loan_term) {
-                            $fail("ระยะเวลาผ่อนชำระสูงสุดสำหรับสินเชื่อประเภทนี้คือ {$product->max_loan_term} เดือน");
-                        }
-                    }
-                ],
-                'loanAmountType' => ['required', 'string', 'in:full,custom'],
-                'customLoanAmount' => ['nullable', 'required_if:loanAmountType,custom', 'numeric', 'min:0'],
-                'accountNumber' => ['required', 'string', 'max:255'],
-                'accountType' => ['required', 'string', 'max:255'],
-                'bankName' => ['required', 'string', 'max:255'],
-                'accountName' => ['required', 'string', 'max:255'],
-                'paymentMethod' => ['required', 'string', 'max:255'],
-                'directDebitAmount' => ['nullable', 'required_if:paymentMethod,ชําระโดยการหักบัญชี', 'numeric', 'min:0'],
-                'directDebitAccountNumber' => ['nullable', 'required_if:paymentMethod,ชําระโดยการหักบัญชี', 'string', 'max:50'],
-            ],
-            7 => [
-                // ลายเซ็น
-                'signatureData' => [
-                    'required', 'string',
-                    function ($attribute, $value, $fail) {
-                        $decoded = json_decode($value, true);
-                        if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded) || count($decoded) === 0) {
-                            $fail('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนบันทึก');
-                        }
-                    },
-                ],
-            ],
-            8 => [
-                // แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
-                'incomeDocuments' => ['nullable', 'array'],
-                'incomeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
-                'identityDocuments' => ['nullable', 'array'],
-                'identityDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
-            ],
+            1 => $this->getStep1Rules($request),
+            2 => $this->getStep2Rules(),
+            3 => $this->getStep3Rules(),
+            4 => $this->getStep4Rules(),
+            5 => $this->getStep5Rules(),
+            6 => $this->getStep6Rules($request),
+            7 => $this->getStep7Rules(),
+            8 => $this->getStep8Rules(),
             default => [],
         };
+    }
+
+    private function getStep1Rules(Request $request): array {
+        return [
+            // ข้อมูลใบคำขอ + ข้อมูลส่วนตัว
+            'app_date' => ['nullable', 'date'],
+            'app_no' => ['nullable', 'string', 'max:13'],
+            'officer_name' => ['nullable', 'string', 'max:255'],
+            'officer_phone' => ['nullable', 'string', 'max:20'],
+            'officer_group_id' => ['nullable', 'integer', 'exists:officer_groups,id'],
+            'loan_product_id' => ['nullable', 'integer', 'exists:loan_products,id'],
+            'title' => ['required', 'string', 'max:50'],
+            'title_other' => ['nullable', 'required_if:title,' . self::OPTION_OTHER, 'string', 'max:50'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'name_en' => ['nullable', 'string', 'max:255'],
+            'birthdate' => ['required', 'date'],
+            'nationality' => ['required', 'string', 'max:50'],
+            'id_type' => ['required', 'in:id_card,passport'],
+            'id_card' => $this->getIdCardRule($request),
+            'education' => ['required', 'string', 'max:50'],
+            'marital_status' => ['required', 'string', 'max:50'],
+        ];
+    }
+
+    private function getIdCardRule(Request $request): array {
+        return [
+            'required', 'string', 'max:20',
+            function ($attribute, $value, $fail) use ($request) {
+                $documentType = $request->input('id_type', 'id_card');
+                $normalizedValue = strtoupper(trim((string) $value));
+                if ($documentType === 'passport') {
+                    if (!preg_match('/^[A-Z0-9]{6,20}$/', $normalizedValue)) {
+                        $fail('กรุณากรอกเลขหนังสือเดินทางเป็นตัวอักษรภาษาอังกฤษหรือตัวเลข 6-20 หลัก');
+                    }
+                    return;
+                }
+                if (!preg_match('/^\d{13}$/', $normalizedValue)) {
+                    $fail('กรุณากรอกเลขบัตรประจำตัวประชาชน 13 หลัก');
+                }
+            },
+        ];
+    }
+
+    private function getStep2Rules(): array {
+        return [
+            // ที่อยู่ปัจจุบัน
+            'residence_status' => ['required', 'string', 'max:255'],
+            'address_building' => ['nullable', 'string', 'max:255'],
+            'address_room' => ['nullable', 'string', 'max:255'],
+            'address_floor' => ['nullable', 'string', 'max:255'],
+            'address_no' => ['nullable', 'string', 'max:255'],
+            'address_village' => ['nullable', 'string', 'max:255'],
+            'address_soi' => ['nullable', 'string', 'max:255'],
+            'address_road' => ['nullable', 'string', 'max:255'],
+            'address_subdistrict' => ['nullable', 'string', 'max:255'],
+            'address_district' => ['nullable', 'string', 'max:255'],
+            'address_province' => ['nullable', 'string', 'max:255'],
+            'address_postal' => ['nullable', 'string', 'max:255'],
+            'phone_home' => ['nullable', 'string', 'max:255'],
+            'phone_mobile' => ['nullable', 'string', 'max:20', 'regex:/^\d{9,10}$/'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'documentDelivery' => ['required', 'string', 'max:255'],
+            'documentAddressText' => ['nullable', 'string'],
+            'documentAddressProvince' => ['nullable', 'string', 'max:255'],
+            'documentAddressPostal' => ['nullable', 'string', 'max:255'],
+            'birthPlaceAddress' => ['nullable', 'string'],
+        ];
+    }
+
+    private function getStep3Rules(): array {
+        return [
+            // ข้อมูลอาชีพ/สถานที่ทำงาน
+            'useHomeAddress' => ['nullable', 'boolean'],
+            'occupation' => ['required', 'string', 'max:100'],
+            'governmentLevel' => ['nullable', 'required_if:occupation,ข้าราชการ', 'string', 'max:100'],
+            'occupationOther' => ['nullable', 'required_if:occupation,' . self::OPTION_OTHER, 'string', 'max:100'],
+            'careerField' => ['required', 'string', 'max:100'],
+            'careerFieldOther' => ['nullable', 'required_if:careerField,' . self::OPTION_OTHER, 'string', 'max:100'],
+            'companyName' => ['nullable', 'string', 'max:255'],
+            'businessType' => ['required', 'string', 'max:255'],
+            'businessTypeOther' => ['nullable', 'required_if:businessType,' . self::OPTION_OTHER, 'string', 'max:255'],
+            'workAddressBuilding' => ['nullable', 'string', 'max:255'],
+            'workAddressFloor' => ['nullable', 'string', 'max:255'],
+            'workDepartment' => ['nullable', 'string', 'max:255'],
+            'workAddressNo' => ['nullable', 'string', 'max:255'],
+            'workAddressVillage' => ['nullable', 'string', 'max:255'],
+            'workAddressSoi' => ['nullable', 'string', 'max:255'],
+            'workAddressRoad' => ['nullable', 'string', 'max:255'],
+            'workAddressSubdistrict' => ['nullable', 'string', 'max:255'],
+            'workAddressDistrict' => ['nullable', 'string', 'max:255'],
+            'workAddressProvince' => ['nullable', 'string', 'max:255'],
+            'workAddressPostal' => ['nullable', 'string', 'max:255'],
+            'workPhone' => ['nullable', 'string', 'max:255'],
+            'workYears' => ['nullable', 'integer', 'min:0'],
+            'workMonths' => ['nullable', 'integer', 'min:0', 'max:11'],
+            'previousCompanyName' => ['nullable', 'string', 'max:255'],
+            'previousPosition' => ['nullable', 'string', 'max:255'],
+            'previousIncome' => ['nullable', 'numeric'],
+            'previousWorkAddress' => ['nullable', 'string'],
+            'previousPhone' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    private function getStep4Rules(): array {
+        return [
+            // รายได้
+            'income' => ['required', 'numeric', 'min:0'],
+            'extraIncome' => ['nullable', 'numeric', 'min:0'],
+            'extraIncomeSource' => ['required', 'string', 'max:255'],
+            'extraIncomeSourceOther' => ['nullable', 'required_if:extraIncomeSource,' . self::OPTION_OTHER, 'string', 'max:255'],
+            'incomeCountry' => ['nullable', 'string', 'max:100'],
+            'hasOtherDebts' => ['required', 'string', 'max:10'],
+            'otherDebtInstallment' => ['nullable', 'required_if:hasOtherDebts,มี', 'numeric', 'min:0'],
+            'hasExistingLoan' => ['required', 'string', 'in:ใช่,ไม่ใช่'],
+            'existingLoanInstitutionCount' => ['nullable', 'required_if:hasExistingLoan,ใช่', 'integer', 'min:1'],
+            'existingLoanTotalAmount' => ['nullable', 'required_if:hasExistingLoan,ใช่', 'numeric', 'min:0'],
+        ];
+    }
+
+    private function getStep5Rules(): array {
+        return [
+            // บุคคลอ้างอิง
+            'refName' => ['required', 'string', 'max:255'],
+            'refRelation' => ['nullable', 'string', 'max:255'],
+            'refAddressNo' => ['nullable', 'string', 'max:255'],
+            'refAddressFloor' => ['nullable', 'string', 'max:255'],
+            'refAddressVillage' => ['nullable', 'string', 'max:255'],
+            'refAddressBuilding' => ['nullable', 'string', 'max:255'],
+            'refAddressSoi' => ['nullable', 'string', 'max:255'],
+            'refAddressRoad' => ['nullable', 'string', 'max:255'],
+            'refAddressSubdistrict' => ['nullable', 'string', 'max:255'],
+            'refAddressDistrict' => ['nullable', 'string', 'max:255'],
+            'refAddressProvince' => ['nullable', 'string', 'max:255'],
+            'refAddressPostal' => ['nullable', 'string', 'max:255'],
+            'refPhoneHome' => ['nullable', 'string', 'max:255'],
+            'refPhoneMobile' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    private function getStep6Rules(Request $request): array {
+        return [
+            // ความประสงค์กู้/การชำระเงิน
+            'loanPurpose' => ['required', 'string', 'max:255'],
+            'loanTerm' => $this->getLoanTermRule($request),
+            'loanAmountType' => ['required', 'string', 'in:full,custom'],
+            'customLoanAmount' => ['nullable', 'required_if:loanAmountType,custom', 'numeric', 'min:0'],
+            'accountNumber' => ['required', 'string', 'max:255'],
+            'accountType' => ['required', 'string', 'max:255'],
+            'bankName' => ['required', 'string', 'max:255'],
+            'accountName' => ['required', 'string', 'max:255'],
+            'paymentMethod' => ['required', 'string', 'max:255'],
+            'directDebitAmount' => ['nullable', 'required_if:paymentMethod,ชําระโดยการหักบัญชี', 'numeric', 'min:0'],
+            'directDebitAccountNumber' => ['nullable', 'required_if:paymentMethod,ชําระโดยการหักบัญชี', 'string', 'max:50'],
+        ];
+    }
+
+    private function getLoanTermRule(Request $request): array {
+        return [
+            'required', 'integer',
+            function ($attribute, $value, $fail) use ($request) {
+                $consentId = $request->input('consent_id');
+                $consent = null;
+                if ($consentId) {
+                    $id = \Illuminate\Support\Facades\Crypt::decryptString($consentId);
+                    $consent = \App\Modules\Consent\Models\ConsentApplication::find($id);
+                }
+
+                $product = $consent?->loanProduct;
+                if ($product && $product->max_loan_term && (int)$value > (int)$product->max_loan_term) {
+                    $fail("ระยะเวลาผ่อนชำระสูงสุดสำหรับสินเชื่อประเภทนี้คือ {$product->max_loan_term} เดือน");
+                }
+            },
+        ];
+    }
+
+    private function getStep7Rules(): array {
+        return [
+            // ลายเซ็น
+            'signatureData' => [
+                'required', 'string',
+                function ($attribute, $value, $fail) {
+                    $decoded = json_decode($value, true);
+                    if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded) || count($decoded) === 0) {
+                        $fail('กรุณาเซ็นลายเซ็นผู้ขอสินเชื่อก่อนบันทึก');
+                    }
+                },
+            ],
+        ];
+    }
+
+    private function getStep8Rules(): array {
+        return [
+            // แนบไฟล์หลักฐานการเงินและเอกสารแสดงตัวตน
+            'incomeDocuments' => ['nullable', 'array'],
+            'incomeDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+            'identityDocuments' => ['nullable', 'array'],
+            'identityDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:20480'],
+        ];
     }
 
     private function updateConsentByStep(ConsentApplication $consent, int $step, array $validated, Request $request): void {
@@ -659,8 +699,7 @@ class ConsentFormController extends Controller {
         Log::info("Consent updateConsentByStep: Step 8 completed. Final status: {$status}", ['id' => $consent->id]);
     }
 
-    private function processApplicantPhoto(ConsentApplication $consent, Request $request): void
-    {
+    private function processApplicantPhoto(ConsentApplication $consent, Request $request): void {
         if (!$request->hasFile('applicantPhoto')) {
             return;
         }
@@ -777,7 +816,7 @@ class ConsentFormController extends Controller {
         return $isRejected ? 'rejected' : 'approved';
     }
 
-        protected function getNextAppNo(bool $lock = false): string {
+    protected function getNextAppNo(bool $lock = false): string {
         $query = ConsentApplication::withTrashed()->whereNotNull('app_no');
 
         if ($lock) {

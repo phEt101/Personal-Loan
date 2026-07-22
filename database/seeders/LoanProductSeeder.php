@@ -16,6 +16,7 @@ class LoanProductSeeder extends Seeder
                 'bot_code' => '101',
                 'interest_rate_cap' => 25.00,
                 'fee_rate' => 0.05,
+                'late_fee' => 3.00,
                 'max_loan_term' => 60,
                 'max_loan_amount' => null, // ไม่จำกัดวงเงินก้อนใหญ่ แต่จำกัดที่ตัวคูณรายได้
                 'income_threshold' => 30000.00,
@@ -28,6 +29,7 @@ class LoanProductSeeder extends Seeder
                 'bot_code' => '201',
                 'interest_rate_cap' => 33.00,
                 'fee_rate' => 0.05,
+                'late_fee' => 3.00,
                 'max_loan_term' => 24,
                 'max_loan_amount' => 100000.00,
                 'income_threshold' => null,

@@ -253,6 +253,9 @@ class ConsentReviewController extends Controller
             'loan_product_id' => $consent->loan_product_id,
             'officer_group_name' => app()->getLocale() === 'th' ? $consent->officerGroup?->name_th : $consent->officerGroup?->name_en,
             'loan_product_name' => app()->getLocale() === 'th' ? $consent->loanProduct?->name_th : $consent->loanProduct?->name_en,
+            'interest_rate_cap' => $consent->loanProduct?->interest_rate_cap,
+            'fee_rate' => $consent->loanProduct?->fee_rate,
+            'late_penalty_rate' => $consent->loanProduct?->late_fee,
 
             'loanApproval' => $loanApproval,
 
@@ -347,6 +350,11 @@ class ConsentReviewController extends Controller
             'loanAmountType' => $loan?->loan_amount_type,
             'customLoanAmount' => $loan?->custom_loan_amount,
             'calculatedEligibleAmount' => $loan?->calculated_eligible_amount,
+            'loan_amount' => match ($loan?->loan_amount_type) {
+                'full' => $loan?->calculated_eligible_amount,
+                'custom' => $loan?->custom_loan_amount,
+                default => null,
+            },
 
             'accountNumber' => $account?->account_number,
             'accountType' => $account?->account_type,

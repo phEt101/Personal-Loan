@@ -14,6 +14,7 @@ class LoanProduct extends Model
         'bot_code',
         'interest_rate_cap',
         'fee_rate',
+        'late_fee',
         'max_loan_term',
         'max_loan_amount',
         'income_threshold',
@@ -24,6 +25,7 @@ class LoanProduct extends Model
     protected $casts = [
         'interest_rate_cap' => 'decimal:2',
         'fee_rate' => 'decimal:4',
+        'late_fee' => 'decimal:2',
         'max_loan_term' => 'integer',
         'max_loan_amount' => 'decimal:2',
         'income_threshold' => 'decimal:2',

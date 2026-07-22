@@ -356,6 +356,9 @@ class ConsentController extends ConsentFormController
             'loan_product_id' => $consent->loan_product_id,
             'officer_group_name' => app()->getLocale() === 'th' ? $consent->officerGroup?->name_th : $consent->officerGroup?->name_en,
             'loan_product_name' => app()->getLocale() === 'th' ? $consent->loanProduct?->name_th : $consent->loanProduct?->name_en,
+            'interest_rate_cap' => $consent->loanProduct?->interest_rate_cap,
+            'fee_rate' => $consent->loanProduct?->fee_rate,
+            'late_penalty_rate' => $consent->loanProduct?->late_fee,
 
             // 3. ข้อมูลส่วนตัวผู้ขอสินเชื่อ
             'title' => $applicant?->title,

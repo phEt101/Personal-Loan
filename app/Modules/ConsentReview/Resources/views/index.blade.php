@@ -244,6 +244,8 @@
         const education = customer.education || '-';
         const occupation = customer.occupation || '-';
         const income = customer.income ? parseInt(customer.income).toLocaleString('th-TH') + ' บาท' : '-';
+        const extraIncome = customer.extraIncome ? parseInt(customer.extraIncome).toLocaleString('th-TH') + ' บาท' : '-';
+        const otherDebtInstallment = customer.otherDebtInstallment ? parseInt(customer.otherDebtInstallment).toLocaleString('th-TH') + ' บาท' : '-';
 
         const officer_name = customer.officer_name || '-';
         const officer_phone = customer.officer_phone || '-';
@@ -355,8 +357,16 @@
                         <td class="value value--strong">${income}</td>
                     </tr>
                     <tr>
+                        <td class="label">รายได้อื่นๆ:</td>
+                        <td class="value">${extraIncome}</td>
+                    </tr>
+                    <tr>
                         <td class="label">ภาระหนี้อื่นๆ ในปัจจุบัน:</td>
                         <td class="value">${has_other_debts}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">ยอดค่างวดหนี้อื่นๆ:</td>
+                        <td class="value">${otherDebtInstallment}</td>
                     </tr>
                 </table>
             </div>
@@ -367,35 +377,35 @@
                     <div class="calc-field">
                         <label>ดอกเบี้ยเงินกู้</label>
                         <div class="calc-input-wrapper">
-                            <input type="number" step="0.01" id="calc_interest_rate" value="${customer.loanApproval?.interest_rate ? parseFloat(customer.loanApproval.interest_rate).toFixed(2) : '20.00'}">
+                            <input type="number" step="0.01" id="calc_interest_rate" value="${customer.loanApproval?.interest_rate ? parseFloat(customer.loanApproval.interest_rate).toFixed(2) : (customer.interest_rate_cap ? parseFloat(customer.interest_rate_cap).toFixed(2) : '20.00')}">
                             <span class="unit">% ต่อปี</span>
                         </div>
                     </div>
                     <div class="calc-field">
                         <label>ค่าธรรมเนียม</label>
                         <div class="calc-input-wrapper">
-                            <input type="number" step="0.01" id="calc_fee_rate" value="${customer.loanApproval?.fee_rate ? parseFloat(customer.loanApproval.fee_rate).toFixed(2) : '1.00'}">
+                            <input type="number" step="0.01" id="calc_fee_rate" value="${customer.loanApproval?.fee_rate ? parseFloat(customer.loanApproval.fee_rate).toFixed(2) : (customer.fee_rate ? parseFloat(customer.fee_rate).toFixed(2) : '1.00')}">
                             <span class="unit">% ต่อปี</span>
                         </div>
                     </div>
                     <div class="calc-field">
                         <label>วงเงินสินเชื่อ</label>
                         <div class="calc-input-wrapper">
-                            <input type="number" step="0.01" id="calc_loan_amount" value="${customer.loanApproval?.loan_amount ? parseFloat(customer.loanApproval.loan_amount).toFixed(2) : (customer.loan_amount || '10000.00')}">
+                            <input type="number" step="0.01" id="calc_loan_amount" value="${customer.loanApproval?.loan_amount ? parseFloat(customer.loanApproval.loan_amount).toFixed(2) : (customer.loan_amount ? parseFloat(customer.loan_amount).toFixed(2) : '0.00')}">
                             <span class="unit">บาท</span>
                         </div>
                     </div>
                     <div class="calc-field">
                         <label>เบี้ยปรับล่าช้า</label>
                         <div class="calc-input-wrapper">
-                            <input type="number" step="0.01" id="calc_late_penalty_rate" value="${customer.loanApproval?.late_penalty_rate ? parseFloat(customer.loanApproval.late_penalty_rate).toFixed(2) : '3.00'}">
+                            <input type="number" step="0.01" id="calc_late_penalty_rate" value="${customer.loanApproval?.late_penalty_rate ? parseFloat(customer.loanApproval.late_penalty_rate).toFixed(2) : (customer.late_penalty_rate ? parseFloat(customer.late_penalty_rate).toFixed(2) : '3.00')}">
                             <span class="unit">% ต่อปี</span>
                         </div>
                     </div>
                     <div class="calc-field">
                         <label>จำนวนงวดการผ่อน</label>
                         <div class="calc-input-wrapper">
-                            <input type="number" id="calc_installments" value="${customer.loanApproval?.installments || customer.installments || '12'}">
+                            <input type="number" id="calc_installments" value="${customer.loanApproval?.installments || customer.loanTerm || customer.installments || '12'}">
                             <span class="unit">งวด</span>
                         </div>
                     </div>
