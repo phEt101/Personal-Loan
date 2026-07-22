@@ -259,6 +259,11 @@
             <div class="modal-body modal-body--pdf">
                 <div class="pdf-content-padding" id="attachmentPreviewContent"></div>
             </div>
+            <div class="modal-footer">
+                <div class="form-actions modal-form-actions">
+                    <button type="button" class="action-btn outline" id="attachmentPreviewCloseFooter">{{ __('consent::messages.modal.pdf.cancel') }}</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -684,7 +689,7 @@
             // If identityDocuments array is empty, try to heuristically separate identity files
             // from income files by filename keywords to avoid labelling identity files
             // as "ไฟล์หลักฐานการเงิน" in the view modal.
-            const identityKeywords = /(id|identity|passport|บัตร|หลักฐาน|身份证|身份证明)/i;
+            const identityKeywords = /(id|identity|passport|บัตร|หลักฐาน)/i;
             const identityCandidates = [];
             const incomeOnly = [];
 
@@ -712,17 +717,17 @@
                             const zipItems = await expandZipDocument(url, name);
                             zipItems.forEach((item) => {
                                 if (item.type === 'fallback') {
-                                    parts.push(`<div class="file-link"><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.name)} (ดาวน์โหลด)</a></div>`);
+                                    parts.push(`<div class="file-link"><a href="${escapeHtml(item.url)}" onclick="openAttachmentPreview(event, '${escapeHtml(item.url)}', '${escapeHtml(item.mime || guessZipMimeType(item.name))}', '${escapeHtml(item.name)}')">${escapeHtml(item.name)} (ดาวน์โหลด)</a></div>`);
                                     return;
                                 }
 
-                                parts.push(`<div class="file-link"><a href="${item.url}" target="_blank" rel="noopener">${escapeHtml(item.name)}</a></div>`);
+                                parts.push(`<div class="file-link"><a href="${item.url}" onclick="openAttachmentPreview(event, '${escapeHtml(item.url)}', '${escapeHtml(item.mime || guessZipMimeType(item.name))}', '${escapeHtml(item.name)}')">${escapeHtml(item.name)}</a></div>`);
                             });
                         } catch (e) {
-                            parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
+                            parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
                         }
                     } else {
-                        parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="file-link__anchor">${escapeHtml(name)}</a></div>`);
+                        parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')" class="file-link__anchor">${escapeHtml(name)}</a></div>`);
                     }
                 }
                 return parts.join('') || '-';

@@ -343,7 +343,7 @@
         // Render attachments (incomeDocuments) by expanding ZIPs when possible
         let attachmentsHtml = '';
         if (Array.isArray(customer.incomeDocuments) && customer.incomeDocuments.length) {
-            const identityKeywords = /(id|identity|passport|บัตร|หลักฐาน|身份证|身份证明)/i;
+            const identityKeywords = /(id|identity|passport|บัตร|หลักฐาน)/i;
             const identityCandidates = [];
             const incomeOnly = [];
             customer.incomeDocuments.forEach(function(doc) {
