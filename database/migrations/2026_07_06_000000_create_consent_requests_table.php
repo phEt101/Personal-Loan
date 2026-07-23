@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('officer_name', 100)->nullable()->comment('ชื่อเจ้าหน้าที่ผู้รับเรื่อง');
             $table->string('officer_phone', 20)->nullable()->comment('เบอร์โทรเจ้าหน้าที่ผู้รับเรื่อง');
             $table->string('document_delivery', 50)->nullable()->comment('ช่องทางการรับเอกสาร');
-            $table->string('status', 20)->default('pending')->comment('สถานะคำขอ');
+            $table->enum('status', ['กำลังดำเนินการ', 'ผ่าน', 'ไม่ผ่าน'])->default('กำลังดำเนินการ')->comment('สถานะคำขอ');
+            $table->enum('loan_status', ['รอวิเคราะห์ 1/2', 'รอวิเคราะห์ 1/2 (รอเอกสารเพิ่มเติม)', 'รอวิเคราะห์ 2/2', 'รอวิเคราะห์ 2/2 (รอเอกสารเพิ่มเติม)', 'รอพิจารณา','อนุมัติ','ไม่อนุมัติ'])->default('รอวิเคราะห์ 1/2')->comment('สถานะสินเชื่อ (สำหรับการอนุมัติสินเชื่อ)');
             $table->foreignId('loan_product_id')->nullable()->constrained('loan_products')->nullOnDelete();
             $table->foreignId('officer_group_id')->nullable()->constrained('officer_groups')->nullOnDelete();
             $table->boolean('signed')->default(false)->comment('ระบุว่าเซ็นเอกสารแล้วหรือไม่');

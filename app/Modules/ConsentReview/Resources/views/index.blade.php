@@ -10,11 +10,16 @@
                 <input id="search-query" name="q" value="{{ request('q') }}" class="filter-input" placeholder="{{ __('consentreview::messages.search_placeholder') }}">
             </div>
             <div>
-                <label for="search-status" class="filter-label">{{ __('consentreview::messages.status') }}</label>
-                <select id="search-status" name="status" class="filter-input">
+                <label for="search-status" class="filter-label">{{ __('consentreview::messages.search_loan_status') }}</label>
+                <select id="search-status" name="loan_status" class="filter-input">
                     <option value="">{{ __('consentreview::messages.status_all') }}</option>
-                    <option value="approved" {{ request('status')=='approved' ? 'selected' : '' }}>{{ __('consentreview::messages.status_approved') }}</option>
-                    <option value="rejected" {{ request('status')=='rejected' ? 'selected' : '' }}>{{ __('consentreview::messages.status_rejected') }}</option>
+                    <option value="รอวิเคราะห์ 1/2" {{ request('loan_status') === 'รอวิเคราะห์ 1/2' ? 'selected' : '' }}>{{ __('consentreview::messages.loan_status.pending_analysis_1_2') }}</option>
+                    <option value="รอวิเคราะห์ 1/2 (รอเอกสารเพิ่มเติม)" {{ request('loan_status') === 'รอวิเคราะห์ 1/2 (รอเอกสารเพิ่มเติม)' ? 'selected' : '' }}>{{ __('consentreview::messages.loan_status.pending_analysis_1_2_additional_docs') }}</option>
+                    <option value="รอวิเคราะห์ 2/2" {{ request('loan_status') === 'รอวิเคราะห์ 2/2' ? 'selected' : '' }}>{{ __('consentreview::messages.loan_status.pending_analysis_2_2') }}</option>
+                    <option value="รอวิเคราะห์ 2/2 (รอเอกสารเพิ่มเติม)" {{ request('loan_status') === 'รอวิเคราะห์ 2/2 (รอเอกสารเพิ่มเติม)' ? 'selected' : '' }}>{{ __('consentreview::messages.loan_status.pending_analysis_2_2_additional_docs') }}</option>
+                    <option value="รอพิจารณา" {{ request('loan_status') === 'รอพิจารณา' ? 'selected' : '' }}>{{ __('consentreview::messages.loan_status.pending_review') }}</option>
+                    <option value="อนุมัติ" {{ request('loan_status') === 'อนุมัติ' ? 'selected' : '' }}>{{ __('consentreview::messages.approved') }}</option>
+                    <option value="ไม่อนุมัติ" {{ request('loan_status') === 'ไม่อนุมัติ' ? 'selected' : '' }}>{{ __('consentreview::messages.rejected') }}</option>
                 </select>
             </div>
             <div>
@@ -48,7 +53,7 @@
                 <input id="date-to" type="date" name="date_to" value="{{ request('date_to') }}" class="filter-input">
             </div>
             <div class="search-actions-group">
-                <button class="btn btn-search" type="submit">{{ __('consentreview::messages.search_button') }}</button>
+                <button class="btn btn-search" type="submit">{{ __('consentreview::messages.search') }}</button>
                 <button type="button" id="reset-filters" class="btn btn-reset">{{ __('consentreview::messages.reset') }}</button>
             </div>
         </form>
@@ -63,7 +68,7 @@
                     <th>{{ __('consentreview::messages.col_date') }}</th>
                     <th>{{ __('consentreview::messages.col_officer_group') }}</th>
                     <th>{{ __('consentreview::messages.col_requested_amount') }}</th>
-                    <th>{{ __('consentreview::messages.col_status') }}</th>
+                    <th>{{ __('consentreview::messages.status') }}</th>
                     <th>{{ __('consentreview::messages.col_actions') }}</th>
                 </tr>
             </thead>
@@ -88,12 +93,22 @@
                         {{ $displayAmount ? number_format($displayAmount, 0) . ' บาท' : '-' }}
                     </td>
                     <td>
-                        @if($c->status === 'approved')
-                            <span class="badge badge-signed">{{ __('consentreview::messages.status_approved') }}</span>
-                        @elseif($c->status === 'rejected')
-                            <span class="badge badge-pending">{{ __('consentreview::messages.status_rejected') }}</span>
-                        @else
-                            <span class="badge">{{ $c->status ?: '-' }}</span>
+                        @if($c->loan_status === 'approved')
+                            <span class="badge badge-signed">{{ __('consentreview::messages.approved') }}</span>
+                        @elseif($c->loan_status === 'rejected')
+                            <span class="badge badge-pending">{{ __('consentreview::messages.rejected') }}</span>
+                        @elseif($c->loan_status === 'รอวิเคราะห์ 1/2')
+                            <span class="badge badge-pending">{{ __('consentreview::messages.loan_status.pending_analysis_1_2') }}</span>
+                        @elseif($c->loan_status === 'รอวิเคราะห์ 1/2 (รอเอกสารเพิ่มเติม)')
+                            <span class="badge badge-pending">{{ __('consentreview::messages.loan_status.pending_analysis_1_2_additional_docs') }}</span>
+                        @elseif($c->loan_status === 'รอวิเคราะห์ 2/2')
+                            <span class="badge badge-pending">{{ __('consentreview::messages.loan_status.pending_analysis_2_2') }}</span>
+                        @elseif($c->loan_status === 'รอวิเคราะห์ 2/2 (รอเอกสารเพิ่มเติม)')
+                            <span class="badge badge-pending">{{ __('consentreview::messages.loan_status.pending_analysis_2_2_additional_docs') }}</span>
+                        @elseif($c->loan_status === 'รอพิจารณา')
+                            <span class="badge badge-pending">{{ __('consentreview::messages.loan_status.pending_review') }}</span>
+                       @else
+                            <span class="badge badge-unknown">{{ $c->loan_status ?? '-' }}</span>
                         @endif
                     </td>
                     <td class="table-actions">

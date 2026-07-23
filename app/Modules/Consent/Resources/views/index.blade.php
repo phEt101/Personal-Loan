@@ -116,9 +116,9 @@
                                 <td data-label="{{ __('consent::messages.index.table.name') }}">{{ $customer->applicant?->name ?? '-' }}</td>
                                 <td data-label="{{ __('consent::messages.index.table.date') }}">{{ $customer->created_at?->format('d/m/Y') ?? '-' }}</td>
                                 <td data-label="{{ __('consent::messages.index.table.status') }}">
-                                    @if($customer->status === 'approved')
+                                    @if($customer->status === 'ผ่าน')
                                         <span class="badge badge-signed">{{ __('consent::messages.index.status.approved') }}</span>
-                                    @elseif($customer->status === 'rejected')
+                                    @elseif($customer->status === 'ไม่ผ่าน')
                                         <span class="badge badge-pending">{{ __('consent::messages.index.status.rejected') }}</span>
                                     @else
                                         <span class="badge">{{ __('consent::messages.index.status.pending') }}</span>

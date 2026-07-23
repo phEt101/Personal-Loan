@@ -58,7 +58,7 @@ class ConsentFormController extends Controller {
                         'officer_phone' => $validated['officer_phone'] ?? null,
                         'officer_group_id' => $validated['officer_group_id'] ?? null,
                         'loan_product_id' => $validated['loan_product_id'] ?? null,
-                        'status' => 'draft',
+                        'status' => 'กำลังดำเนินการ',
                     ]);
                     Log::info("Consent saveStep: Created new root draft record", [
                         'id' => $consent->id,
@@ -695,6 +695,7 @@ class ConsentFormController extends Controller {
 
         $status = $this->determineStep8Status($consent);
         $consent->update(['status' => $status]);
+        $consent->update(['loan_status' => 'รอวิเคราะห์ 1/2']);
 
         Log::info("Consent updateConsentByStep: Step 8 completed. Final status: {$status}", ['id' => $consent->id]);
     }
@@ -898,7 +899,7 @@ class ConsentFormController extends Controller {
             || $income < 15000
             || ($income > 0 && $otherDebtInstallment > ($income / 2));
 
-        return $isRejected ? 'rejected' : 'approved';
+        return $isRejected ? 'ไม่ผ่าน' : 'ผ่าน';
     }
 
     protected function getNextAppNo(bool $lock = false): string {

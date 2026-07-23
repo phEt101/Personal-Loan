@@ -33,8 +33,8 @@ class ConsentReviewController extends Controller
             });
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
+        if ($request->filled('loan_status')) {
+            $query->where('loan_status', $request->input('loan_status'));
         }
 
         if ($request->filled('officer_group_id')) {

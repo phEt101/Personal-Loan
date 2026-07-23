@@ -24,6 +24,7 @@ class ConsentApplication extends Model
         'officer_group_id',
         'document_delivery',
         'status',
+        'loan_status',
         'signed',
         'signed_at',
         'signature_data',
