@@ -204,7 +204,7 @@
                 try {
                     const resp = await fetch(url);
                         if (!resp.ok) {
-                        parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')">${escapeHtml(name)} (ดาวน์โหลด)</a></div>`);
+                        parts.push(`<div class="file-link"><a class="file-link__anchor" href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')">${escapeHtml(name)} (ดาวน์โหลด)</a></div>`);
                         continue;
                     }
                     const blob = await resp.blob();
@@ -223,10 +223,10 @@
                         const mime = mimeMap[ext] || 'application/octet-stream';
                         const fileBlob = new Blob([arrayBuf], { type: mime });
                         const fileUrl = URL.createObjectURL(fileBlob);
-                        parts.push(`<div class="file-link"><a href="${fileUrl}" onclick="openAttachmentPreview(event, '${fileUrl}', '${mime}', '${escapeHtml(filename)}')">${escapeHtml(filename)}</a></div>`);
+                        parts.push(`<div class="file-link"><a class="file-link__anchor" href="${fileUrl}" onclick="openAttachmentPreview(event, '${fileUrl}', '${mime}', '${escapeHtml(filename)}')">${escapeHtml(filename)}</a></div>`);
                     }));
                 } catch (e) {
-                    parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
+                    parts.push(`<div class="file-link"><a class="file-link__anchor" href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')">${escapeHtml(name)} (ไม่สามารถแตกไฟล์ได้)</a></div>`);
                 }
             } else {
                 parts.push(`<div class="file-link"><a href="${escapeHtml(url)}" onclick="openAttachmentPreview(event, '${escapeHtml(url)}', '${guessZipMimeType(name)}', '${escapeHtml(name)}')" class="file-link__anchor">${escapeHtml(name)}</a></div>`);
@@ -315,6 +315,8 @@
         const has_other_debts = customer.hasOtherDebts || '-';
         const customLoanAmount = customer.customLoanAmount ? parseInt(customer.customLoanAmount).toLocaleString('th-TH') + ' บาท' : '-';
         const calculatedEligibleAmount = customer.calculatedEligibleAmount ? parseInt(customer.calculatedEligibleAmount).toLocaleString('th-TH') + ' บาท' : '-';
+        const loanProductId = customer.loan_product_id || (customer.loanRequest && customer.loanRequest.loan_product_id) || null;
+        const loanAmountType = customer.loan_amount_type || (customer.loanRequest && customer.loanRequest.loan_amount_type) || null;
 
         const residence_status = customer.residence_status || '-';
         const address_room = customer.address_room || '-';
@@ -355,34 +357,29 @@
             const incomeDocumentsHtml = await buildDocumentsHtml(incomeOnly);
             const identityDocumentsHtml = await buildDocumentsHtml(identityCandidates);
 
+            // present attachments in two columns when both groups exist
+            const incomeCol = incomeOnly.length ? `<div class="attachments-group"><strong>เอกสารแสดงรายได้</strong>${incomeDocumentsHtml}</div>` : '';
+            const idCol = identityCandidates.length ? `<div class="attachments-group"><strong>เอกสารแสดงตน</strong>${identityDocumentsHtml}</div>` : '';
+
             attachmentsHtml = `
                 <div class="panel">
                     <h4 class="section-title">เอกสารแนบ</h4>
-                    ${incomeOnly.length ? `<div class="attachments-group"><strong>เอกสารแสดงรายได้</strong>${incomeDocumentsHtml}</div>` : ''}
-                    ${identityCandidates.length ? `<div class="attachments-group"><strong>เอกสารแสดงตน</strong>${identityDocumentsHtml}</div>` : ''}
+                    <div class="attachments-columns">
+                        ${incomeCol}
+                        ${idCol}
+                    </div>
                 </div>
             `;
         }
 
         contentDiv.innerHTML = `
-            <div class="consent-header">
-                <div>
-                    <div class="consent-header__title">บริษัท บิ๊ก มันนี่ พลัส จำกัด</div>
-                    <div class="consent-header__subtitle">ใบคำขอให้บริการสินเชื่อส่วนบุคคล (Personal Loan)</div>
-                    <div class="consent-header__meta">App No.: ${customer.app_no || '-'}</div>
-                </div>
-                <div class="consent-header__right">
-                    <div class="consent-meta">วันที่: <span class="meta-value">${appDateFormatted}</span></div>
-                    <div class="consent-appno-row">
-                        <span class="meta-label">App No.</span>
-                        ${appNoBoxesHtml}
-                    </div>
-                </div>
-            </div>
-
             <div class="panel">
                 <h4 class="section-title section-title--accent">รายละเอียดสัญญา</h4>
                 <table class="consent-detail-table">
+                    <tr>
+                        <td class="label">วันที่ทำใบคำขอ:</td>
+                        <td class="value">${appDateFormatted}</td>
+                    </tr>
                     <tr>
                         <td class="label">กลุ่มเจ้าหน้าที่:</td>
                         <td class="value">${officer_group}</td>
@@ -391,14 +388,37 @@
                         <td class="label">ประเภทผลิตภัณฑ์:</td>
                         <td class="value">${product_type}</td>
                     </tr>
-                    <tr>
-                        <td class="label">วงเงินกู้ที่ระบุ:</td>
-                        <td class="value">${customLoanAmount}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">วงเงินสูงสุดที่คำนวณได้:</td>
-                        <td class="value value--strong" style="color: #059669;">${calculatedEligibleAmount}</td>
-                    </tr>
+                    ${(() => {
+                        // Prefer showing one of the two based on loanProductId and loanAmountType
+                        if (loanProductId) {
+                            if (loanAmountType === 'custom') {
+                                return `
+                                    <tr>
+                                        <td class="label">วงเงินกู้ที่ระบุ:</td>
+                                        <td class="value">${customLoanAmount}</td>
+                                    </tr>
+                                `;
+                            }
+                            // default for products: show calculated eligible amount
+                            return `
+                                <tr>
+                                    <td class="label">วงเงินสูงสุดที่คำนวณได้:</td>
+                                    <td class="value value--strong" style="color: #059669;">${calculatedEligibleAmount}</td>
+                                </tr>
+                            `;
+                        }
+                        // fallback: show both if product info missing
+                        return `
+                            <tr>
+                                <td class="label">วงเงินกู้ที่ระบุ:</td>
+                                <td class="value">${customLoanAmount}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">วงเงินสูงสุดที่คำนวณได้:</td>
+                                <td class="value value--strong" style="color: #059669;">${calculatedEligibleAmount}</td>
+                            </tr>
+                        `;
+                    })()}
                     <tr>
                         <td class="label">เลขที่ใบคำขอ:</td>
                         <td class="value">${customer.app_no || '-'}</td>
@@ -568,12 +588,14 @@
                     </div>
                 </div>
 
-                ${attachmentsHtml}
-
                 <div class="panel-actions" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
                 </div>
             </div>
         `;
+        // place attachments outside of calc-panel so they render after calculation section
+        if (attachmentsHtml) {
+            contentDiv.innerHTML += attachmentsHtml;
+        }
 
         if (viewModal) {
             viewModal.style.display = 'flex';

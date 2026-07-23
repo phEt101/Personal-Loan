@@ -38,9 +38,10 @@
     transition: border-color 0.2s;
 }
 
+
 .calc-input-wrapper:focus-within {
     border-color: #10b981; /* Matches theme green */
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.06);
 }
 
 .calc-input-wrapper input {
@@ -144,6 +145,20 @@
     border: 1px solid #e2e8f0;
 }
 
+/* Collapsible schedule: default collapsed, expand when .show is present */
+.schedule-table-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 300ms ease, padding 200ms ease;
+    padding: 0 0;
+}
+.schedule-table-wrapper.show {
+    /* large enough to show table; table controls its own height */
+    max-height: 1000px;
+    overflow: auto; /* allow horizontal/vertical scroll when expanded */
+    padding: 12px; /* restore padding when expanded */
+}
+
 .schedule-table {
     width: 100%;
     border-collapse: collapse;
@@ -176,4 +191,99 @@
 
 .schedule-table tr.total-row td {
     border-top: 2px solid #10b981;
+}
+
+/* Attachments and panels improvements */
+.panel {
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.section-title { 
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.75rem;
+}
+
+.attachments-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: #f8fafc;
+    border: 1px solid #e6eef6;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.file-link__anchor {
+    color: #000000;
+    text-decoration: none;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Tweak link appearance inside file-link for better readability */
+.file-link__anchor:hover {
+    text-decoration: underline;
+}
+.file-link {
+    background: #ffffff; /* keep white but ensure contrast */
+}
+
+/* If you prefer darker link text (less blue), uncomment the rule below */
+/* .file-link__anchor { color: #0b2545; } */
+
+.file-link .file-meta {
+    color: #64748b;
+    font-size: 0.85rem;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* Make attachments grouped in columns on wider screens */
+.attachments-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 720px) {
+    .calc-grid, .calc-results { grid-template-columns: 1fr; }
+    .attachments-columns { grid-template-columns: 1fr; }
+}
+
+/* Prevent overflow on small screens: allow flex items to shrink and truncate properly */
+.attachments-columns, .attachments-group {
+    min-width: 0;
+}
+
+.attachments-group .file-link {
+    width: 100%;
+    min-width: 0; /* allow truncation inside grid/flex */
+}
+
+/* Ensure links inside flexible containers can shrink on IE/old browsers */
+.file-link__anchor {
+    min-width: 0;
+}
+
+/* Reduce font-size slightly on very small screens to avoid overflow */
+@media (max-width: 420px) {
+    .file-link { padding: 6px 8px; }
+    .file-link__anchor { font-size: 0.9rem; }
 }
