@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->string('customer_code', 50)->unique()->comment('รหัสลูกค้า');
             $table->string('title', 50)->nullable()->comment('คำนำหน้า');
             $table->string('name', 150)->nullable()->comment('ชื่อ-นามสกุล');
             $table->string('name_en', 150)->nullable()->comment('ชื่อ-นามสกุล (อังกฤษ)');
