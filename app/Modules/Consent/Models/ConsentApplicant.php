@@ -10,6 +10,7 @@ class ConsentApplicant extends Model
     protected $table = 'consent_request_applicants';
 
     protected $fillable = [
+        'customer_id',
         'application_id',
         'title',
         'name',
@@ -34,6 +35,7 @@ class ConsentApplicant extends Model
         'has_existing_loan',
         'existing_loan_institution_count',
         'existing_loan_total_amount',
+        'applicant_order',
     ];
 
     protected $casts = [
@@ -45,10 +47,16 @@ class ConsentApplicant extends Model
         'has_existing_loan' => 'boolean',
         'existing_loan_institution_count' => 'integer',
         'existing_loan_total_amount' => 'decimal:2',
+        'applicant_order' => 'integer',
     ];
 
     public function application(): BelongsTo
     {
         return $this->belongsTo(ConsentApplication::class, 'application_id');
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 }

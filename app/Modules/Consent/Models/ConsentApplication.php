@@ -72,9 +72,9 @@ class ConsentApplication extends Model
         return rtrim(strtr($encrypted, '+/', '-_'), '=');
     }
 
-    public function applicant(): HasOne
+    public function applicants(): HasMany
     {
-        return $this->hasOne(ConsentApplicant::class, 'application_id');
+        return $this->hasMany(ConsentApplicant::class, 'application_id');
     }
 
     public function contact(): HasOne

@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('consent_request_applicants', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
-            $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
+            $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete();
+            $table->foreignId('customer_id')->nullable()->comment('อ้างอิงลูกค้า (customers)')->constrained('customers')->nullOnDelete();
             $table->string('title', 50)->nullable()->comment('คำนำหน้า');
             $table->string('name', 150)->nullable()->comment('ชื่อ-นามสกุล');
             $table->string('name_en', 150)->nullable()->comment('ชื่อ-นามสกุล (อังกฤษ)');
@@ -37,6 +38,11 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
 
+            $table->unsignedInteger('applicant_order')->nullable()->comment('ลำดับผู้ขอกู้ในสัญญา');
+
+            $table->index('application_id');
+            $table->index('customer_id');
+            $table->index(['application_id', 'applicant_order'], 'consent_applicants_app_order_idx');
             $table->index('id_card');
             $table->index('passport');
         });
