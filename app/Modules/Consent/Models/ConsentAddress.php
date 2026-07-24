@@ -33,7 +33,7 @@ class ConsentAddress extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function application(): BelongsTo
+    public function applicant(): BelongsTo
     {
         return $this->belongsTo(ConsentApplicant::class, 'applicant_id');
     }

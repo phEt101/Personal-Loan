@@ -4,6 +4,8 @@ namespace App\Modules\Consent\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ConsentApplicant extends Model
 {
@@ -58,5 +60,15 @@ class ConsentApplicant extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(ConsentAddress::class, 'applicant_id');
+    }
+
+    public function contact(): HasOne
+    {
+        return $this->hasOne(ConsentContact::class, 'applicant_id');
     }
 }

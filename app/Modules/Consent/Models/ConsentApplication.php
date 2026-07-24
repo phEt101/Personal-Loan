@@ -5,6 +5,8 @@ namespace App\Modules\Consent\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Crypt;
 
@@ -38,18 +40,7 @@ class ConsentApplication extends Model
         'officer_group_id' => 'integer',
     ];
 
-    public function loanProduct()
-    {
-        return $this->belongsTo(LoanProduct::class, 'loan_product_id');
-    }
-
-    public function officerGroup()
-    {
-        return $this->belongsTo(OfficerGroup::class, 'officer_group_id');
-    }
-
-    protected static function booted(): void
-    {
+     protected static function booted(): void {
         static::created(function (self $model) {
             if ($model->encrypted_id) {
                 return;
@@ -60,16 +51,24 @@ class ConsentApplication extends Model
         });
     }
 
-    public function getRouteKeyName(): string
-    {
+    public function getRouteKeyName(): string {
         return 'encrypted_id';
     }
 
-    public static function makeEncryptedId(string $id): string
-    {
+    public static function makeEncryptedId(string $id): string {
         $encrypted = Crypt::encryptString($id);
 
         return rtrim(strtr($encrypted, '+/', '-_'), '=');
+    }
+
+    public function loanProduct()
+    {
+        return $this->belongsTo(LoanProduct::class, 'loan_product_id');
+    }
+
+    public function officerGroup()
+    {
+        return $this->belongsTo(OfficerGroup::class, 'officer_group_id');
     }
 
     public function applicants(): HasMany
@@ -77,14 +76,28 @@ class ConsentApplication extends Model
         return $this->hasMany(ConsentApplicant::class, 'application_id');
     }
 
-    public function contact(): HasOne
+    public function contact(): HasOneThrough
     {
-        return $this->hasOne(ConsentContact::class, 'application_id');
+        return $this->hasOneThrough(
+            ConsentContact::class,
+            ConsentApplicant::class,
+            'application_id', // foreign key on applicants
+            'applicant_id',    // foreign key on contacts
+            'id',
+            'id'
+        );
     }
 
-    public function addresses(): HasMany
+    public function addresses(): HasManyThrough
     {
-        return $this->hasMany(ConsentAddress::class, 'applicant_id');
+        return $this->hasManyThrough(
+            ConsentAddress::class,
+            ConsentApplicant::class,
+            'application_id', // foreign key on applicants
+            'applicant_id',    // foreign key on addresses
+            'id',
+            'id'
+        );
     }
 
     public function incomeDocuments(): HasMany
@@ -92,24 +105,52 @@ class ConsentApplication extends Model
         return $this->hasMany(ConsentDocumentFile::class, 'application_id');
     }
 
-    public function homeAddress(): HasOne
+    public function homeAddress(): HasOneThrough
     {
-        return $this->hasOne(ConsentAddress::class, 'applicant_id')->where('kind', 'home');
+        return $this->hasOneThrough(
+            ConsentAddress::class,
+            ConsentApplicant::class,
+            'application_id',
+            'applicant_id',
+            'id',
+            'id'
+        )->where('consent_addresses.kind', 'home');
     }
 
-    public function workAddress(): HasOne
+    public function workAddress(): HasOneThrough
     {
-        return $this->hasOne(ConsentAddress::class, 'applicant_id')->where('kind', 'work');
+        return $this->hasOneThrough(
+            ConsentAddress::class,
+            ConsentApplicant::class,
+            'application_id',
+            'applicant_id',
+            'id',
+            'id'
+        )->where('consent_addresses.kind', 'work');
     }
 
-    public function referenceAddress(): HasOne
+    public function referenceAddress(): HasOneThrough
     {
-        return $this->hasOne(ConsentAddress::class, 'applicant_id')->where('kind', 'reference');
+        return $this->hasOneThrough(
+            ConsentAddress::class,
+            ConsentApplicant::class,
+            'application_id',
+            'applicant_id',
+            'id',
+            'id'
+        )->where('consent_addresses.kind', 'reference');
     }
 
-    public function documentAddress(): HasOne
+    public function documentAddress(): HasOneThrough
     {
-        return $this->hasOne(ConsentAddress::class, 'applicant_id')->where('kind', 'document');
+        return $this->hasOneThrough(
+            ConsentAddress::class,
+            ConsentApplicant::class,
+            'application_id',
+            'applicant_id',
+            'id',
+            'id'
+        )->where('consent_addresses.kind', 'document');
     }
 
     public function employment(): HasOne
