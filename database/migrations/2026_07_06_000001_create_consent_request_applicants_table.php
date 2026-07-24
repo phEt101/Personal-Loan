@@ -38,7 +38,7 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
 
-            $table->unsignedInteger('applicant_order')->nullable()->comment('ลำดับผู้ขอกู้ในสัญญา');
+            $table->unsignedInteger('applicant_order')->default(1)->comment('ลำดับผู้ขอกู้ในสัญญา');
 
             $table->index('application_id');
             $table->index('customer_id');
