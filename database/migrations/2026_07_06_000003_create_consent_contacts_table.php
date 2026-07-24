@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('consent_contacts', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
-            $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
+            $table->foreignId('applicant_id')->nullable()->comment('อ้างอิงผู้สมัคร (consent_request_applicants)')->constrained('consent_request_applicants')->cascadeOnDelete();
             $table->string('phone_home', 20)->nullable()->comment('เบอร์โทรศัพท์บ้าน');
             $table->string('phone_mobile', 20)->nullable()->comment('เบอร์โทรศัพท์มือถือ');
             $table->string('email', 100)->nullable()->comment('อีเมล');

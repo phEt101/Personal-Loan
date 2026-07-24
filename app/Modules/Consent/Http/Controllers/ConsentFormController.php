@@ -466,8 +466,8 @@ class ConsentFormController extends Controller {
         );
         
         $contact = ConsentContact::updateOrCreate(
-            ['application_id' => $consent->id],
             [
+                'applicant_id' => $applicant?->id,
                 'phone_home' => $validated['phone_home'] ?? null,
                 'phone_mobile' => $validated['phone_mobile'] ?? null,
                 'email' => $validated['email'] ?? null,

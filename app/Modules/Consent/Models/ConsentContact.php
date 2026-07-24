@@ -10,15 +10,15 @@ class ConsentContact extends Model
     protected $table = 'consent_contacts';
 
     protected $fillable = [
-        'application_id',
+        'applicant_id',
         'phone_home',
         'phone_mobile',
         'email',
     ];
 
-    public function application(): BelongsTo
+    public function applicant(): BelongsTo
     {
-        return $this->belongsTo(ConsentApplication::class, 'application_id');
+        return $this->belongsTo(ConsentApplicant::class, 'applicant_id');
     }
 }
 
