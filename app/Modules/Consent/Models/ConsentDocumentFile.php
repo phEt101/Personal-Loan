@@ -10,7 +10,7 @@ class ConsentDocumentFile extends Model
     protected $table = 'consent_documents_file';
 
     protected $fillable = [
-        'application_id',
+        'applicant_id',
         'document_type',
         'disk',
         'path',
@@ -23,8 +23,8 @@ class ConsentDocumentFile extends Model
         'size' => 'integer',
     ];
 
-    public function application(): BelongsTo
+    public function applicant(): BelongsTo
     {
-        return $this->belongsTo(ConsentApplication::class, 'application_id');
+        return $this->belongsTo(ConsentApplicant::class, 'applicant_id');
     }
 }

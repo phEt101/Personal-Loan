@@ -10,7 +10,7 @@ class ConsentPreviousEmployment extends Model
     protected $table = 'consent_previous_employments';
 
     protected $fillable = [
-        'application_id',
+        'applicant_id',
         'previous_company_name',
         'previous_position',
         'previous_income',
@@ -22,8 +22,8 @@ class ConsentPreviousEmployment extends Model
         'previous_income' => 'decimal:2',
     ];
 
-    public function application(): BelongsTo
+    public function applicant(): BelongsTo
     {
-        return $this->belongsTo(ConsentApplication::class, 'application_id');
+        return $this->belongsTo(ConsentApplicant::class, 'applicant_id');
     }
 }

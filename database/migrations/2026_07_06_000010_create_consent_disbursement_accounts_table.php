@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('consent_disbursement_accounts', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
-            $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
+            $table->foreignId('applicant_id')->comment('อ้างอิงผู้สมัคร (consent_request_applicants)')->constrained('consent_request_applicants')->cascadeOnDelete()->unique();
             $table->string('bank_name', 100)->nullable()->comment('ชื่อธนาคาร');
             $table->string('account_name', 150)->nullable()->comment('ชื่อบัญชี');
             $table->string('account_type', 50)->nullable()->comment('ประเภทบัญชี');

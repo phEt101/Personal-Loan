@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('consent_employments', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
-            $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
+            $table->foreignId('applicant_id')->comment('อ้างอิงผู้ขอ (consent_request_applicants)')->constrained('consent_request_applicants')->cascadeOnDelete()->unique();
             $table->boolean('use_home_address')->default(false)->comment('ใช้ที่อยู่บ้านเป็นที่อยู่ที่ทำงานหรือไม่');
             $table->string('company_name', 100)->nullable()->comment('ชื่อบริษัท/หน่วยงาน');
             $table->string('business_type', 100)->nullable()->comment('ประเภทธุรกิจ');

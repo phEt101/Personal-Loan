@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('consent_documents_file', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
-            $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete();
+            $table->foreignId('applicant_id')->comment('อ้างอิงผู้สมัคร (consent_request_applicants)')->constrained('consent_request_applicants')->cascadeOnDelete();
             $table->string('document_type', 50)->nullable()->comment('ประเภทเอกสาร');
             $table->string('disk', 50)->default('local')->comment('Storage disk');
             $table->string('path', 1024)->comment('Storage path');
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
 
-            $table->index('application_id');
+            $table->index('applicant_id');
         });
     }
 

@@ -28,7 +28,7 @@ class ConsentDocumentController extends ConsentController
     }
 
     public function downloadIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document) {
-        if ((int) $document->application_id !== (int) $consent->id) {
+        if ((int) $document->applicant?->application_id !== (int) $consent->id) {
             abort(404);
         }
 
@@ -59,7 +59,7 @@ class ConsentDocumentController extends ConsentController
 
     public function downloadApplicantPhoto(ConsentApplication $consent, ConsentDocumentFile $document)
     {
-        if ((int) $document->application_id !== (int) $consent->id || $document->document_type !== 'applicant_photo') {
+        if ((int) $document->applicant?->application_id !== (int) $consent->id || $document->document_type !== 'applicant_photo') {
             abort(404);
         }
 
@@ -87,7 +87,7 @@ class ConsentDocumentController extends ConsentController
     }
 
     public function destroyIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document){
-        if ((int) $document->application_id !== (int) $consent->id) {
+        if ((int) $document->applicant?->application_id !== (int) $consent->id) {
             abort(404);
         }
 
@@ -107,7 +107,7 @@ class ConsentDocumentController extends ConsentController
      * filenames as returned by `listZipContents`.
      */
     public function destroyZipEntry(Request $request, ConsentApplication $consent, ConsentDocumentFile $document) {
-        if ((int) $document->application_id !== (int) $consent->id) {
+        if ((int) $document->applicant?->application_id !== (int) $consent->id) {
             abort(404);
         }
 
@@ -251,8 +251,10 @@ class ConsentDocumentController extends ConsentController
     {
         $disk = Storage::disk('local');
         ConsentDocumentFile::query()
-            ->where('application_id', $consent->id)
             ->where('document_type', 'applicant_photo')
+            ->whereHas('applicant', function ($q) use ($consent) {
+                $q->where('application_id', $consent->id);
+            })
             ->get()
             ->each(function (ConsentDocumentFile $existingDocument) use ($disk) {
                 if ($disk->exists($existingDocument->path)) {
@@ -264,8 +266,10 @@ class ConsentDocumentController extends ConsentController
         $fileName = 'applicant-photo-' . now()->format('YmdHis') . '-' . uniqid() . '.' . strtolower($file->getClientOriginalExtension() ?: 'jpg');
         $path = $file->storeAs("consent/{$consent->encrypted_id}/photos", $fileName, 'local');
 
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         return ConsentDocumentFile::create([
-            'application_id' => $consent->id,
+            'applicant_id' => $applicant->id,
             'document_type' => 'applicant_photo',
             'disk' => 'local',
             'path' => $path,

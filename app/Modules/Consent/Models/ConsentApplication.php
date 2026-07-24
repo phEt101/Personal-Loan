@@ -100,9 +100,16 @@ class ConsentApplication extends Model
         );
     }
 
-    public function incomeDocuments(): HasMany
+    public function incomeDocuments(): HasManyThrough
     {
-        return $this->hasMany(ConsentDocumentFile::class, 'application_id');
+        return $this->hasManyThrough(
+            ConsentDocumentFile::class,
+            ConsentApplicant::class,
+            'application_id', // foreign on applicants
+            'applicant_id',    // foreign on documents
+            'id',
+            'id'
+        );
     }
 
     public function homeAddress(): HasOneThrough
@@ -153,19 +160,40 @@ class ConsentApplication extends Model
         )->where('consent_addresses.kind', 'document');
     }
 
-    public function employment(): HasOne
+    public function employment(): HasOneThrough
     {
-        return $this->hasOne(ConsentEmployment::class, 'application_id');
+        return $this->hasOneThrough(
+            ConsentEmployment::class,
+            ConsentApplicant::class,
+            'application_id', // foreign key on applicants
+            'applicant_id',    // foreign key on employments
+            'id',
+            'id'
+        );
     }
 
-    public function previousEmployment(): HasOne
+    public function previousEmployment(): HasOneThrough
     {
-        return $this->hasOne(ConsentPreviousEmployment::class, 'application_id');
+        return $this->hasOneThrough(
+            ConsentPreviousEmployment::class,
+            ConsentApplicant::class,
+            'application_id', // foreign key on applicants
+            'applicant_id',    // foreign key on previous_employments
+            'id',
+            'id'
+        );
     }
 
-    public function reference(): HasOne
+    public function reference(): HasOneThrough
     {
-        return $this->hasOne(ConsentReference::class, 'application_id');
+        return $this->hasOneThrough(
+            ConsentReference::class,
+            ConsentApplicant::class,
+            'application_id', // foreign key on applicants
+            'applicant_id',    // foreign key on references
+            'id',
+            'id'
+        );
     }
 
     public function loanRequest(): HasOne
@@ -173,9 +201,16 @@ class ConsentApplication extends Model
         return $this->hasOne(ConsentLoanRequest::class, 'application_id');
     }
 
-    public function disbursementAccount(): HasOne
+    public function disbursementAccount(): HasOneThrough
     {
-        return $this->hasOne(ConsentDisbursementAccount::class, 'application_id');
+        return $this->hasOneThrough(
+            ConsentDisbursementAccount::class,
+            ConsentApplicant::class,
+            'application_id',
+            'applicant_id',
+            'id',
+            'id'
+        );
     }
 
     public function loanApproval(): HasOne

@@ -10,7 +10,7 @@ class ConsentEmployment extends Model
     protected $table = 'consent_employments';
 
     protected $fillable = [
-        'application_id',
+        'applicant_id',
         'use_home_address',
         'company_name',
         'business_type',
@@ -24,8 +24,8 @@ class ConsentEmployment extends Model
         'use_home_address' => 'boolean',
     ];
 
-    public function application(): BelongsTo
+    public function applicant(): BelongsTo
     {
-        return $this->belongsTo(ConsentApplication::class, 'application_id');
+        return $this->belongsTo(ConsentApplicant::class, 'applicant_id');
     }
 }

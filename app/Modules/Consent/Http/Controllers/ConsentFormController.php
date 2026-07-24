@@ -513,8 +513,10 @@ class ConsentFormController extends Controller {
             'career_field' => $careerField,
         ]);
 
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         $employment = ConsentEmployment::updateOrCreate(
-            ['application_id' => $consent->id],
+            ['applicant_id' => $applicant?->id],
             [
                 'use_home_address' => (bool) ($validated['useHomeAddress'] ?? false),
                 'company_name' => $validated['companyName'] ?? null,
@@ -525,7 +527,6 @@ class ConsentFormController extends Controller {
                 'work_months' => $validated['workMonths'] ?? null,
             ]
         );
-        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
 
         $workAddr = ConsentAddress::updateOrCreate(
             ['applicant_id' => $applicant?->id, 'kind' => 'work'],
@@ -544,7 +545,7 @@ class ConsentFormController extends Controller {
         );
         
         $prevEmployment = ConsentPreviousEmployment::updateOrCreate(
-            ['application_id' => $consent->id],
+            ['applicant_id' => $applicant?->id],
             [
                 'previous_company_name' => $validated['previousCompanyName'] ?? null,
                 'previous_position' => $validated['previousPosition'] ?? null,
@@ -589,8 +590,10 @@ class ConsentFormController extends Controller {
     }
 
     private function handleStep5(ConsentApplication $consent, array $validated, Request $request): void {
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         $ref = ConsentReference::updateOrCreate(
-            ['application_id' => $consent->id],
+            ['applicant_id' => $applicant?->id],
             [
                 'ref_name' => $validated['refName'] ?? null,
                 'ref_relation' => $validated['refRelation'] ?? null,
@@ -662,8 +665,10 @@ class ConsentFormController extends Controller {
             ]
         );
         
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         $account = ConsentDisbursementAccount::updateOrCreate(
-            ['application_id' => $consent->id],
+            ['applicant_id' => $applicant?->id],
             [
                 'account_number' => $validated['accountNumber'] ?? null,
                 'account_type' => $validated['accountType'] ?? null,
@@ -718,8 +723,10 @@ class ConsentFormController extends Controller {
 
         $disk = Storage::disk('local');
         ConsentDocumentFile::query()
-            ->where('application_id', $consent->id)
             ->where('document_type', 'applicant_photo')
+            ->whereHas('applicant', function ($q) use ($consent) {
+                $q->where('application_id', $consent->id);
+            })
             ->get()
             ->each(function (ConsentDocumentFile $existingDocument) use ($disk) {
                 if ($disk->exists($existingDocument->path)) {
@@ -731,8 +738,10 @@ class ConsentFormController extends Controller {
         $fileName = 'applicant-photo-' . now()->format('YmdHis') . '-' . uniqid() . '.' . strtolower($file->getClientOriginalExtension() ?: 'jpg');
         $path = $file->storeAs("consent/{$consent->encrypted_id}/photos", $fileName, 'local');
 
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         ConsentDocumentFile::create([
-            'application_id' => $consent->id,
+            'applicant_id' => $applicant->id,
             'document_type' => 'applicant_photo',
             'disk' => 'local',
             'path' => $path,
@@ -778,8 +787,10 @@ class ConsentFormController extends Controller {
             return;
         }
 
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         ConsentDocumentFile::create([
-            'application_id' => $consent->id,
+            'applicant_id' => $applicant->id,
             'document_type' => $documentType,
             'disk' => 'local',
             'path' => 'consent/' . $consent->encrypted_id . '/documents/' . $zipData['zipName'],

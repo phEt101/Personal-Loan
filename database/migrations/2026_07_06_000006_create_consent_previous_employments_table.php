@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('consent_previous_employments', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
-            $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete()->unique();
+            $table->foreignId('applicant_id')->comment('อ้างอิงผู้ขอ (consent_request_applicants)')->constrained('consent_request_applicants')->cascadeOnDelete()->unique();
             $table->string('previous_company_name', 100)->nullable()->comment('ชื่อสถานที่ทำงานเดิม');
             $table->string('previous_position', 100)->nullable()->comment('ตำแหน่งเดิม');
             $table->decimal('previous_income', 12, 2)->nullable()->comment('รายได้เดิม');

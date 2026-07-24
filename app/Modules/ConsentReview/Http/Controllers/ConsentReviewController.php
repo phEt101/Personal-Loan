@@ -137,11 +137,11 @@ class ConsentReviewController extends Controller
     private function toFrontendData(\App\Modules\Consent\Models\ConsentApplication $consent): array
     {
         $applicant = $consent->applicants->sortBy('applicant_order')->first();
-        $contact = $consent->contact;
-        $home = $consent->homeAddress;
-        $work = $consent->workAddress;
-        $documentAddress = $consent->documentAddress;
-        $referenceAddress = $consent->referenceAddress;
+        $contact = $applicant?->contact;
+        $home = $applicant?->addresses()->where('kind', 'home')->first();
+        $work = $applicant?->addresses()->where('kind', 'work')->first();
+        $documentAddress = $applicant?->addresses()->where('kind', 'document')->first();
+        $referenceAddress = $applicant?->addresses()->where('kind', 'reference')->first();
         $employment = $consent->employment;
         $previousEmployment = $consent->previousEmployment;
         $reference = $consent->reference;

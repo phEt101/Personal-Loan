@@ -10,16 +10,16 @@ class ConsentReference extends Model
     protected $table = 'consent_references';
 
     protected $fillable = [
-        'application_id',
+        'applicant_id',
         'ref_name',
         'ref_relation',
         'ref_phone_home',
         'ref_phone_mobile',
     ];
 
-    public function application(): BelongsTo
+    public function applicant(): BelongsTo
     {
-        return $this->belongsTo(ConsentApplication::class, 'application_id');
+        return $this->belongsTo(ConsentApplicant::class, 'applicant_id');
     }
 }
 

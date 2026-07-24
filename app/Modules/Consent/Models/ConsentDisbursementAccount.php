@@ -10,7 +10,7 @@ class ConsentDisbursementAccount extends Model
     protected $table = 'consent_disbursement_accounts';
 
     protected $fillable = [
-        'application_id',
+        'applicant_id',
         'bank_name',
         'account_name',
         'account_type',
@@ -24,9 +24,9 @@ class ConsentDisbursementAccount extends Model
         'direct_debit_amount' => 'decimal:2',
     ];
 
-    public function application(): BelongsTo
+    public function applicant(): BelongsTo
     {
-        return $this->belongsTo(ConsentApplication::class, 'application_id');
+        return $this->belongsTo(ConsentApplicant::class, 'applicant_id');
     }
 }
 
