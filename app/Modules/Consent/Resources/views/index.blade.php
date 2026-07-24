@@ -113,7 +113,7 @@
                         @forelse($customers as $customer)
                             <tr>
                                 <td data-label="{{ __('consent::messages.index.table.code') }}" class="no-auto-link">{{ $customer->app_no ?? '-' }}</td>
-                                <td data-label="{{ __('consent::messages.index.table.name') }}">{{ $customer->applicant?->name ?? '-' }}</td>
+                                <td data-label="{{ __('consent::messages.index.table.name') }}">{{ $customer->applicants->sortBy('applicant_order')->first()?->name ?? '-' }}</td>
                                 <td data-label="{{ __('consent::messages.index.table.date') }}">{{ $customer->created_at?->format('d/m/Y') ?? '-' }}</td>
                                 <td data-label="{{ __('consent::messages.index.table.status') }}">
                                     @if($customer->status === 'ผ่าน')
@@ -140,7 +140,7 @@
                                         >
                                             {{ __('consent::messages.index.actions.edit') }}
                                         </button>
-                                        <form method="POST" action="{{ route('consent.destroy', $customer->encrypted_id) }}" class="delete-consent-form table-actions-form" data-name="{{ $customer->applicant?->name ?? '-' }}">
+                                        <form method="POST" action="{{ route('consent.destroy', $customer->encrypted_id) }}" class="delete-consent-form table-actions-form" data-name="{{ $customer->applicants->sortBy('applicant_order')->first()?->name ?? '-' }}">
                                             @csrf
                                             @method('DELETE')
                                             <button

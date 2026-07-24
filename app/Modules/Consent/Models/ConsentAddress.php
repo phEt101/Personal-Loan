@@ -10,7 +10,7 @@ class ConsentAddress extends Model
     protected $table = 'consent_addresses';
 
     protected $fillable = [
-        'application_id',
+        'applicant_id',
         'kind',
         'residence_status',
         'address_text',
@@ -35,6 +35,6 @@ class ConsentAddress extends Model
 
     public function application(): BelongsTo
     {
-        return $this->belongsTo(ConsentApplication::class, 'application_id');
+        return $this->belongsTo(ConsentApplicant::class, 'applicant_id');
     }
 }

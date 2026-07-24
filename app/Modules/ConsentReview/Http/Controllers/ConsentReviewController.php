@@ -15,13 +15,16 @@ class ConsentReviewController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ConsentApplication::query()->with(['applicant:id,application_id,name', 'loanRequest', 'officerGroup', 'loanProduct']);
+        $query = ConsentApplication::query()->with([
+            'applicants' => function($q){ $q->select('id','application_id','name','applicant_order')->orderBy('applicant_order'); },
+            'loanRequest', 'officerGroup', 'loanProduct'
+        ]);
 
         if ($request->filled('q')) {
             $q = $request->input('q');
             $query->where(function ($sub) use ($q) {
                 $sub->where('app_no', 'like', '%' . $q . '%')
-                    ->orWhereHas('applicant', function ($appQuery) use ($q) {
+                    ->orWhereHas('applicants', function ($appQuery) use ($q) {
                         $appQuery->where('name', 'like', '%' . $q . '%')
                             ->orWhere('id_card', 'like', '%' . $q . '%')
                             ->orWhere('passport', 'like', '%' . $q . '%');
@@ -133,7 +136,7 @@ class ConsentReviewController extends Controller
 
     private function toFrontendData(\App\Modules\Consent\Models\ConsentApplication $consent): array
     {
-        $applicant = $consent->applicant;
+        $applicant = $consent->applicants->sortBy('applicant_order')->first();
         $contact = $consent->contact;
         $home = $consent->homeAddress;
         $work = $consent->workAddress;

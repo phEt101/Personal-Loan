@@ -118,13 +118,15 @@ class ConsentController extends ConsentFormController
 
     public function index(Request $request) {
         $query = ConsentApplication::query()
-            ->with(['applicant:id,application_id,name']);
+            ->with(['applicants' => function ($q) {
+                $q->select('id','application_id','name','applicant_order')->orderBy('applicant_order');
+            }]);
 
         if ($request->filled('q')) {
             $q = $request->input('q');
             $query->where(function ($sub) use ($q) {
                 $sub->where('app_no', 'like', '%' . $q . '%')
-                    ->orWhereHas('applicant', function ($appQuery) use ($q) {
+                    ->orWhereHas('applicants', function ($appQuery) use ($q) {
                         $appQuery->where('name', 'like', '%' . $q . '%')
                             ->orWhere('id_card', 'like', '%' . $q . '%')
                             ->orWhere('passport', 'like', '%' . $q . '%');
@@ -173,7 +175,7 @@ class ConsentController extends ConsentFormController
 
     public function data(ConsentApplication $consent) {
         $consent->load([
-            'applicant',
+            'applicants',
             'contact',
             'incomeDocuments',
             'homeAddress',
@@ -191,8 +193,8 @@ class ConsentController extends ConsentFormController
     }
 
     public function destroy(ConsentApplication $consent){
-        $consent->load('applicant:id,application_id,name');
-        $name = $consent->applicant?->name;
+        $consent->load(['applicants' => function($q){ $q->select('id','application_id','name','applicant_order')->orderBy('applicant_order'); }]);
+        $name = $consent->applicants->sortBy('applicant_order')->first()?->name;
         $appNo = $consent->app_no;
 
         $consent->delete();
@@ -210,7 +212,7 @@ class ConsentController extends ConsentFormController
     }
 
     private function toFrontendData(ConsentApplication $consent): array {
-        $applicant = $consent->applicant;
+        $applicant = $consent->applicants->sortBy('applicant_order')->first();
         $contact = $consent->contact;
         $home = $consent->homeAddress;
         $work = $consent->workAddress;

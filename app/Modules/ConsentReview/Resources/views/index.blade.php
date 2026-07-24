@@ -76,7 +76,7 @@
             @forelse($customers as $c)
                 <tr>
                     <td>{{ $c->app_no }}</td>
-                    <td>{{ $c->applicant?->name }}</td>
+                    <td>{{ $c->applicants->sortBy('applicant_order')->first()?->name }}</td>
                     <td>{{ $c->created_at?->format('d/m/Y') }}</td>
                     <td>
                         {{ app()->getLocale() === 'th' ? ($c->officerGroup?->name_th ?? '-') : ($c->officerGroup?->name_en ?? '-') }}

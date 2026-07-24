@@ -84,7 +84,7 @@ class ConsentApplication extends Model
 
     public function addresses(): HasMany
     {
-        return $this->hasMany(ConsentAddress::class, 'application_id');
+        return $this->hasMany(ConsentAddress::class, 'applicant_id');
     }
 
     public function incomeDocuments(): HasMany
@@ -94,22 +94,22 @@ class ConsentApplication extends Model
 
     public function homeAddress(): HasOne
     {
-        return $this->hasOne(ConsentAddress::class, 'application_id')->where('kind', 'home');
+        return $this->hasOne(ConsentAddress::class, 'applicant_id')->where('kind', 'home');
     }
 
     public function workAddress(): HasOne
     {
-        return $this->hasOne(ConsentAddress::class, 'application_id')->where('kind', 'work');
+        return $this->hasOne(ConsentAddress::class, 'applicant_id')->where('kind', 'work');
     }
 
     public function referenceAddress(): HasOne
     {
-        return $this->hasOne(ConsentAddress::class, 'application_id')->where('kind', 'reference');
+        return $this->hasOne(ConsentAddress::class, 'applicant_id')->where('kind', 'reference');
     }
 
     public function documentAddress(): HasOne
     {
-        return $this->hasOne(ConsentAddress::class, 'application_id')->where('kind', 'document');
+        return $this->hasOne(ConsentAddress::class, 'applicant_id')->where('kind', 'document');
     }
 
     public function employment(): HasOne

@@ -445,8 +445,10 @@ class ConsentFormController extends Controller {
     }
 
     private function handleStep2(ConsentApplication $consent, array $validated, Request $request): void {
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         $homeAddr = ConsentAddress::updateOrCreate(
-            ['application_id' => $consent->id, 'kind' => 'home'],
+            ['applicant_id' => $applicant?->id, 'kind' => 'home'],
             [
                 'residence_status' => $validated['residence_status'] ?? null,
                 'address_building' => $validated['address_building'] ?? null,
@@ -475,8 +477,9 @@ class ConsentFormController extends Controller {
         $consent->update(['document_delivery' => $validated['documentDelivery'] ?? null]);
         
         $docAddr = ConsentAddress::updateOrCreate(
-            ['application_id' => $consent->id, 'kind' => 'document'],
             [
+                'applicant_id' => $applicant?->id,
+                'kind' => 'document',
                 'address_text' => $validated['documentAddressText'] ?? null,
                 'address_province' => $validated['documentAddressProvince'] ?? null,
                 'address_postal' => $validated['documentAddressPostal'] ?? null,
@@ -504,7 +507,7 @@ class ConsentFormController extends Controller {
             $businessType = $request->businessTypeOther;
         }
 
-        $consent->applicant()->update([
+        $consent->applicants()->orderBy('applicant_order')->first()->update([
             'occupation' => $occupation,
             'government_level' => $validated['governmentLevel'] ?? null,
             'career_field' => $careerField,
@@ -522,9 +525,10 @@ class ConsentFormController extends Controller {
                 'work_months' => $validated['workMonths'] ?? null,
             ]
         );
-        
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         $workAddr = ConsentAddress::updateOrCreate(
-            ['application_id' => $consent->id, 'kind' => 'work'],
+            ['applicant_id' => $applicant?->id, 'kind' => 'work'],
             [
                 'address_building' => $validated['workAddressBuilding'] ?? null,
                 'address_floor' => $validated['workAddressFloor'] ?? null,
@@ -566,7 +570,7 @@ class ConsentFormController extends Controller {
         $hasOtherDebts = $validated['hasOtherDebts'] === 'มี';
         $hasExistingLoan = $validated['hasExistingLoan'] === 'ใช่';
 
-        $consent->applicant()->update([
+        $consent->applicants()->orderBy('applicant_order')->first()->update([
             'income' => $validated['income'],
             'extra_income' => $validated['extraIncome'] ?? null,
             'extra_income_source' => $extraIncomeSource,
@@ -595,8 +599,10 @@ class ConsentFormController extends Controller {
             ]
         );
         
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
+
         $refAddr = ConsentAddress::updateOrCreate(
-            ['application_id' => $consent->id, 'kind' => 'reference'],
+            ['applicant_id' => $applicant?->id, 'kind' => 'reference'],
             [
                 'address_no' => $validated['refAddressNo'] ?? null,
                 'address_floor' => $validated['refAddressFloor'] ?? null,
@@ -618,7 +624,7 @@ class ConsentFormController extends Controller {
 
     private function handleStep6(ConsentApplication $consent, array $validated, Request $request): void {
         $product = $consent->loanProduct;
-        $applicant = $consent->applicant;
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
         $calculatedAmount = 0;
 
         if ($product && $applicant) {
@@ -889,7 +895,7 @@ class ConsentFormController extends Controller {
     }
 
     private function determineStep8Status(ConsentApplication $consent): string {
-        $applicant = $consent->applicant;
+        $applicant = $consent->applicants()->orderBy('applicant_order')->first();
         $age = $applicant?->birthdate ? Carbon::parse($applicant->birthdate)->age : 0;
         $income = (float) ($applicant?->income ?? 0);
         $otherDebtInstallment = (float) ($applicant?->other_debt_installment ?? 0);

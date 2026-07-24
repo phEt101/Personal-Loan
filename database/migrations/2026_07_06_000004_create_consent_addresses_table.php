@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('consent_addresses', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
-            $table->foreignId('application_id')->comment('อ้างอิงใบคำขอ (consent_requests)')->constrained('consent_requests')->cascadeOnDelete();
+            $table->foreignId('applicant_id')->nullable()->comment('อ้างอิงผู้สมัคร (consent_request_applicants)')->constrained('consent_request_applicants')->cascadeOnDelete();
             $table->enum('kind', ['home', 'work', 'reference', 'document'])->comment('ประเภทที่อยู่: home=บ้าน, work=ที่ทำงาน, reference=ผู้รับรอง, document=ที่อยู่ตามเอกสารสำคัญ');
             $table->string('residence_status', 100)->nullable()->comment('สถานะที่อยู่อาศัย (เช่า/เป็นเจ้าของ/อื่นๆ)');
             $table->text('address_text')->nullable()->comment('ที่อยู่แบบข้อความอิสระ');
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable()->comment('วันที่เวลาสร้างข้อมูล');
             $table->timestamp('updated_at')->nullable()->comment('วันที่เวลาแก้ไขล่าสุด');
 
-            $table->unique(['application_id', 'kind']);
+            $table->unique(['applicant_id', 'kind']);
         });
     }
 
