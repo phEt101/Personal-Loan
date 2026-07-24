@@ -162,8 +162,8 @@ class ConsentController extends ConsentFormController
             ->withQueryString();
 
         $total = ConsentApplication::count();
-        $approved = ConsentApplication::where('status', 'approved')->count();
-        $rejected = ConsentApplication::where('status', 'rejected')->count();
+        $approved = ConsentApplication::where('status', 'ผ่าน')->count();
+        $rejected = ConsentApplication::where('status', 'ไม่ผ่าน')->count();
 
         $nextAppNo = $this->getNextAppNo();
 

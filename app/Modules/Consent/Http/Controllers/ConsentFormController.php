@@ -27,6 +27,10 @@ class ConsentFormController extends Controller {
         $consentId = $request->input('consent_id');
         $consent = null;
 
+        // Normalize checkbox/boolean inputs so validation sees proper booleans
+        if ($request->has('useHomeAddress')) {
+            $request->merge(['useHomeAddress' => $request->boolean('useHomeAddress')]);
+        }
         Log::info("Consent saveStep: Start step {$step}", [
             'consent_id' => $consentId,
             'ip' => $request->ip(),
@@ -722,11 +726,11 @@ class ConsentFormController extends Controller {
         }
 
         $disk = Storage::disk('local');
+        $primaryApplicantId = $consent->applicants()->orderBy('applicant_order')->value('id');
+
         ConsentDocumentFile::query()
             ->where('document_type', 'applicant_photo')
-            ->whereHas('applicant', function ($q) use ($consent) {
-                $q->where('application_id', $consent->id);
-            })
+            ->where('applicant_id', $primaryApplicantId)
             ->get()
             ->each(function (ConsentDocumentFile $existingDocument) use ($disk) {
                 if ($disk->exists($existingDocument->path)) {

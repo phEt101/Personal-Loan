@@ -28,7 +28,8 @@ class ConsentDocumentController extends ConsentController
     }
 
     public function downloadIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document) {
-        if ((int) $document->applicant?->application_id !== (int) $consent->id) {
+        $primaryApplicantId = $consent->applicants()->orderBy('applicant_order')->value('id');
+        if ((int) $document->applicant_id !== (int) $primaryApplicantId) {
             abort(404);
         }
 
@@ -57,9 +58,9 @@ class ConsentDocumentController extends ConsentController
         ]);
     }
 
-    public function downloadApplicantPhoto(ConsentApplication $consent, ConsentDocumentFile $document)
-    {
-        if ((int) $document->applicant?->application_id !== (int) $consent->id || $document->document_type !== 'applicant_photo') {
+    public function downloadApplicantPhoto(ConsentApplication $consent, ConsentDocumentFile $document) {
+        $primaryApplicantId = $consent->applicants()->orderBy('applicant_order')->value('id');
+        if ((int) $document->applicant_id !== (int) $primaryApplicantId || $document->document_type !== 'applicant_photo') {
             abort(404);
         }
 
@@ -87,7 +88,8 @@ class ConsentDocumentController extends ConsentController
     }
 
     public function destroyIncomeDocument(ConsentApplication $consent, ConsentDocumentFile $document){
-        if ((int) $document->applicant?->application_id !== (int) $consent->id) {
+        $primaryApplicantId = $consent->applicants()->orderBy('applicant_order')->value('id');
+        if ((int) $document->applicant_id !== (int) $primaryApplicantId) {
             abort(404);
         }
 
@@ -101,13 +103,9 @@ class ConsentDocumentController extends ConsentController
         return response()->json(['ok' => true]);
     }
 
-    /**
-     * Remove one or more entries from an existing ZIP document.
-     * Expects query param `inner[]` (multiple) or `inner` (single) which are the decoded
-     * filenames as returned by `listZipContents`.
-     */
     public function destroyZipEntry(Request $request, ConsentApplication $consent, ConsentDocumentFile $document) {
-        if ((int) $document->applicant?->application_id !== (int) $consent->id) {
+        $primaryApplicantId = $consent->applicants()->orderBy('applicant_order')->value('id');
+        if ((int) $document->applicant_id !== (int) $primaryApplicantId) {
             abort(404);
         }
 
@@ -233,7 +231,8 @@ class ConsentDocumentController extends ConsentController
     }
 
     public function destroyApplicantPhoto(ConsentApplication $consent, ConsentDocumentFile $document): JsonResponse {
-        if ((int) $document->application_id !== (int) $consent->id || $document->document_type !== 'applicant_photo') {
+        $primaryApplicantId = $consent->applicants()->orderBy('applicant_order')->value('id');
+        if ((int) $document->applicant_id !== (int) $primaryApplicantId || $document->document_type !== 'applicant_photo') {
             abort(404);
         }
 
@@ -250,11 +249,11 @@ class ConsentDocumentController extends ConsentController
     private function storeApplicantPhoto(ConsentApplication $consent, $file): ConsentDocumentFile
     {
         $disk = Storage::disk('local');
+        $primaryApplicantId = $consent->applicants()->orderBy('applicant_order')->value('id');
+
         ConsentDocumentFile::query()
             ->where('document_type', 'applicant_photo')
-            ->whereHas('applicant', function ($q) use ($consent) {
-                $q->where('application_id', $consent->id);
-            })
+            ->where('applicant_id', $primaryApplicantId)
             ->get()
             ->each(function (ConsentDocumentFile $existingDocument) use ($disk) {
                 if ($disk->exists($existingDocument->path)) {
