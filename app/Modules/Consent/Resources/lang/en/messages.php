@@ -305,7 +305,8 @@ return [
             ],
             'step5' => [
                 'sections' => [
-                    'reference' => 'Reference Person Information',
+                    'reference' => 'Reference Person Information / Guarantor',
+                    'ref_type' => 'Reference Person Type',
                 ],
                 'fields' => [
                     'ref_name' => 'Full Name',
@@ -321,6 +322,11 @@ return [
                 ],
                 'notes' => [
                     'reference_consent' => '( I have obtained consent from the reference person and agree that the company may contact this reference person for debt collection related to my obligations. )',
+                ],
+                'options' => [
+                    'reference_prompt' => 'Select reference type',
+                    'reference' => 'Reference Person',
+                    'guarantor' => 'Guarantor',
                 ],
             ],
             'step6' => [
@@ -402,7 +408,7 @@ return [
                 'address' => 'Address',
                 'occupation' => 'Occupation',
                 'income' => 'Income',
-                'reference' => 'Reference',
+                'reference' => 'Reference / Guarantor',
                 'loan' => 'Loan/Payment',
                 'consent' => 'Consent',
                 'attachments' => 'Attachments',

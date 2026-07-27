@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('consent_previous_employments', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
             $table->foreignId('applicant_id')->comment('อ้างอิงผู้ขอ (consent_request_applicants)')->constrained('consent_request_applicants')->cascadeOnDelete()->unique();
+            $table->foreignId('reference_id')->nullable()->comment('อ้างอิงผู้รับรอง (consent_references)')->constrained('consent_references')->nullOnDelete();
             $table->string('previous_company_name', 100)->nullable()->comment('ชื่อสถานที่ทำงานเดิม');
             $table->string('previous_position', 100)->nullable()->comment('ตำแหน่งเดิม');
             $table->decimal('previous_income', 12, 2)->nullable()->comment('รายได้เดิม');

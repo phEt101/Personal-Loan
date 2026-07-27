@@ -2,11 +2,10 @@
 
 namespace App\Modules\ConsentReview\Http\Controllers;
 
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Consent\Models\ConsentApplication;
-use App\Modules\Consent\Models\ConsentLoanApproval;
-use App\Modules\Consent\Models\ConsentLoanSchedule;
 use App\Modules\Consent\Models\OfficerGroup;
 use App\Modules\Consent\Models\LoanProduct;
 use Illuminate\Support\Facades\DB;
@@ -62,7 +61,7 @@ class ConsentReviewController extends Controller
         return view('consentreview::index', compact('customers', 'officerGroups', 'loanProducts'));
     }
 
-    public function data(\App\Modules\Consent\Models\ConsentApplication $consent)
+    public function data(ConsentApplication $consent)
     {
         $consent->load([
             'applicant',
@@ -134,14 +133,14 @@ class ConsentReviewController extends Controller
         return response()->json(['message' => 'Approved successfully']);
     }
 
-    private function toFrontendData(\App\Modules\Consent\Models\ConsentApplication $consent): array
+    private function toFrontendData(ConsentApplication $consent): array
     {
         $applicant = $consent->applicants->sortBy('applicant_order')->first();
         $contact = $applicant?->contact;
         $home = $applicant?->addresses()->where('kind', 'home')->first();
         $work = $applicant?->addresses()->where('kind', 'work')->first();
         $documentAddress = $applicant?->addresses()->where('kind', 'document')->first();
-        $referenceAddress = $applicant?->addresses()->where('kind', 'reference')->first();
+        $referenceAddress = $applicant?->addresses()->where('kind', 'reference/guarantor')->first();
         $employment = $consent->employment;
         $previousEmployment = $consent->previousEmployment;
         $reference = $consent->reference;

@@ -321,7 +321,26 @@ class ConsentFormController extends Controller {
         return [
             // บุคคลอ้างอิง
             'refName' => ['required', 'string', 'max:255'],
+            'refType' => ['nullable', 'in:reference,guarantor'],
             'refRelation' => ['nullable', 'string', 'max:255'],
+            'refBirthdate' => ['nullable', 'date'],
+            'refNationality' => ['nullable', 'string', 'max:50'],
+            'refMaritalStatus' => ['nullable', 'string', 'max:50'],
+            'refEducation' => ['nullable', 'string', 'max:50'],
+            'refOccupation' => ['nullable', 'string', 'max:100'],
+            'refGovernmentLevel' => ['nullable', 'string', 'max:100'],
+            'refOccupationOther' => ['nullable', 'string', 'max:100'],
+            'refCareerField' => ['nullable', 'string', 'max:100'],
+            'refCareerFieldOther' => ['nullable', 'string', 'max:100'],
+            'refIncome' => ['nullable', 'numeric', 'min:0'],
+            'refExtraIncome' => ['nullable', 'numeric', 'min:0'],
+            'refExtraIncomeSource' => ['nullable', 'string', 'max:100'],
+            'refIncomeCountry' => ['nullable', 'string', 'max:100'],
+            'refHasOtherDebts' => ['nullable', 'boolean'],
+            'refOtherDebtInstallment' => ['nullable', 'numeric', 'min:0'],
+            'refHasExistingLoan' => ['nullable', 'boolean'],
+            'refExistingLoanInstitutionCount' => ['nullable', 'integer', 'min:0'],
+            'refExistingLoanTotalAmount' => ['nullable', 'numeric', 'min:0'],
             'refAddressNo' => ['nullable', 'string', 'max:255'],
             'refAddressFloor' => ['nullable', 'string', 'max:255'],
             'refAddressVillage' => ['nullable', 'string', 'max:255'],
@@ -334,6 +353,25 @@ class ConsentFormController extends Controller {
             'refAddressPostal' => ['nullable', 'string', 'max:255'],
             'refPhoneHome' => ['nullable', 'string', 'max:255'],
             'refPhoneMobile' => ['nullable', 'string', 'max:255'],
+            // Work/employment fields for reference/guarantor
+            'refUseHomeAddress' => ['nullable', 'boolean'],
+            'refWorkCompany' => ['nullable', 'string', 'max:255'],
+            'refWorkBuildingName' => ['nullable', 'string', 'max:255'],
+            'refWorkBuilding' => ['nullable', 'string', 'max:255'],
+            'refBusinessType' => ['nullable', 'string', 'max:100'],
+            'refWorkDepartment' => ['nullable', 'string', 'max:100'],
+            'refWorkNo' => ['nullable', 'string', 'max:50'],
+            'refWorkRoom' => ['nullable', 'string', 'max:50'],
+            'refWorkFloor' => ['nullable', 'string', 'max:50'],
+            'refWorkVillage' => ['nullable', 'string', 'max:255'],
+            'refWorkSoi' => ['nullable', 'string', 'max:255'],
+            'refWorkRoad' => ['nullable', 'string', 'max:255'],
+            'refWorkDistrict' => ['nullable', 'string', 'max:255'],
+            'refWorkProvince' => ['nullable', 'string', 'max:255'],
+            'refWorkPostal' => ['nullable', 'string', 'max:255'],
+            'refWorkPhone' => ['nullable', 'string', 'max:20'],
+            'refWorkYears' => ['nullable', 'integer', 'min:0'],
+            'refWorkMonths' => ['nullable', 'integer', 'min:0', 'max:11'],
         ];
     }
 
@@ -600,16 +638,35 @@ class ConsentFormController extends Controller {
             ['applicant_id' => $applicant?->id],
             [
                 'ref_name' => $validated['refName'] ?? null,
+                'ref_type' => $validated['refType'] ?? 'reference',
                 'ref_relation' => $validated['refRelation'] ?? null,
                 'ref_phone_home' => $validated['refPhoneHome'] ?? null,
                 'ref_phone_mobile' => $validated['refPhoneMobile'] ?? null,
+                'birthdate' => $validated['refBirthdate'] ?? null,
+                'nationality' => $validated['refNationality'] ?? null,
+                'marital_status' => $validated['refMaritalStatus'] ?? null,
+                'education' => $validated['refEducation'] ?? null,
+                'occupation' => $validated['refOccupation'] ?? null,
+                'government_level' => $validated['refGovernmentLevel'] ?? null,
+                'occupation_other' => $validated['refOccupationOther'] ?? null,
+                'career_field' => $validated['refCareerField'] ?? null,
+                'career_field_other' => $validated['refCareerFieldOther'] ?? null,
+                'income' => $validated['refIncome'] ?? null,
+                'extra_income' => $validated['refExtraIncome'] ?? null,
+                'extra_income_source' => $validated['refExtraIncomeSource'] ?? null,
+                'income_country' => $validated['refIncomeCountry'] ?? null,
+                'has_other_debts' => isset($validated['refHasOtherDebts']) ? (bool)$validated['refHasOtherDebts'] : null,
+                'other_debt_installment' => $validated['refOtherDebtInstallment'] ?? null,
+                'has_existing_loan' => isset($validated['refHasExistingLoan']) ? (bool)$validated['refHasExistingLoan'] : null,
+                'existing_loan_institution_count' => $validated['refExistingLoanInstitutionCount'] ?? null,
+                'existing_loan_total_amount' => $validated['refExistingLoanTotalAmount'] ?? null,
             ]
         );
         
         $applicant = $consent->applicants()->orderBy('applicant_order')->first();
 
         $refAddr = ConsentAddress::updateOrCreate(
-            ['applicant_id' => $applicant?->id, 'kind' => 'reference'],
+            ['applicant_id' => $applicant?->id, 'kind' => 'reference/guarantor'],
             [
                 'address_no' => $validated['refAddressNo'] ?? null,
                 'address_floor' => $validated['refAddressFloor'] ?? null,
@@ -623,9 +680,49 @@ class ConsentFormController extends Controller {
                 'address_postal' => $validated['refAddressPostal'] ?? null,
             ]
         );
+        
+        // Also store guarantor's work address separately (kind = 'reference/guarantor_work')
+        $refWorkAddr = ConsentAddress::updateOrCreate(
+            ['applicant_id' => $applicant?->id, 'kind' => 'reference/guarantor_work'],
+            [
+                'address_no' => $validated['refWorkNo'] ?? null,
+                'address_room' => $validated['refWorkRoom'] ?? null,
+                'address_floor' => $validated['refWorkFloor'] ?? null,
+                'address_village' => $validated['refWorkVillage'] ?? null,
+                // prefer explicit building name field if present
+                'address_building' => $validated['refWorkBuildingName'] ?? $validated['refWorkBuilding'] ?? null,
+                'address_soi' => $validated['refWorkSoi'] ?? null,
+                'address_road' => $validated['refWorkRoad'] ?? null,
+                'address_subdistrict' => $validated['refWorkSubdistrict'] ?? null,
+                'address_district' => $validated['refWorkDistrict'] ?? null,
+                'address_province' => $validated['refWorkProvince'] ?? null,
+                'address_postal' => $validated['refWorkPostal'] ?? null,
+            ]
+        );
+        // Persist employment-like info only when reference is a guarantor
+        if (($ref->ref_type ?? $validated['refType'] ?? null) === 'guarantor') {
+            $employment = ConsentEmployment::firstOrNew(['reference_id' => $ref->id]);
+            $employment->applicant_id = $applicant?->id;
+            $employment->reference_id = $ref->id;
+            $employment->use_home_address = isset($validated['refUseHomeAddress']) ? (bool)$validated['refUseHomeAddress'] : false;
+            // company_name: prefer explicit company field if provided, fallback to building name
+            $employment->company_name = $validated['refWorkCompany'] ?? $validated['refWorkBuildingName'] ?? $validated['refWorkBuilding'] ?? null;
+            $employment->business_type = $validated['refBusinessType'] ?? null;
+            $employment->work_department = $validated['refWorkDepartment'] ?? null;
+            $employment->work_years = isset($validated['refWorkYears']) ? (int)$validated['refWorkYears'] : null;
+            $employment->work_months = isset($validated['refWorkMonths']) ? (int)$validated['refWorkMonths'] : null;
+            $employment->work_phone = $validated['refWorkPhone'] ?? null;
+            $employment->save();
+        } else {
+            // If not a guarantor, do not create or modify consent_employments here.
+            $employment = null;
+        }
+
         Log::debug("Consent updateConsentByStep: Step 5 models updated", [
             'reference_id' => $ref->id,
-            'ref_addr_id' => $refAddr->id
+            'ref_addr_id' => $refAddr->id,
+            'ref_work_addr_id' => $refWorkAddr->id ?? null,
+            'ref_employment_id' => $employment?->id ?? null,
         ]);
     }
 

@@ -182,6 +182,7 @@ class ConsentController extends ConsentFormController
             'workAddress',
             'documentAddress',
             'referenceAddress',
+            'referenceWorkAddress',
             'employment',
             'previousEmployment',
             'reference',
@@ -217,7 +218,7 @@ class ConsentController extends ConsentFormController
         $home = $applicant?->addresses()->where('kind', 'home')->first();
         $work = $applicant?->addresses()->where('kind', 'work')->first();
         $documentAddress = $applicant?->addresses()->where('kind', 'document')->first();
-        $referenceAddress = $applicant?->addresses()->where('kind', 'reference')->first();
+        $referenceAddress = $applicant?->addresses()->where('kind', 'reference/guarantor')->first();
         $employment = $consent->employment;
         $previousEmployment = $consent->previousEmployment;
         $reference = $consent->reference;
@@ -348,7 +349,6 @@ class ConsentController extends ConsentFormController
             'transaction_date' => $consent->created_at?->format('d/m/Y'),
             'signed_date' => $consent->signed_at?->format('Y-m-d'),
 
-            // 1. ข้อมูลใบคำขอ
             'app_date' => $consent->app_date?->format('Y-m-d'),
             'app_no' => $consent->app_no,
 
@@ -362,7 +362,6 @@ class ConsentController extends ConsentFormController
             'fee_rate' => $consent->loanProduct?->fee_rate,
             'late_penalty_rate' => $consent->loanProduct?->late_fee,
 
-            // 3. ข้อมูลส่วนตัวผู้ขอสินเชื่อ
             'title' => $applicant?->title,
             'name' => $applicant?->name,
             'name_en' => $applicant?->name_en,
@@ -373,7 +372,6 @@ class ConsentController extends ConsentFormController
             'education' => $applicant?->education,
             'marital_status' => $applicant?->marital_status,
 
-            // 4. ที่อยู่ปัจจุบัน
             'residence_status' => $home?->residence_status,
             'address_building' => $home?->address_building,
             'address_room' => $home?->address_room,
@@ -395,7 +393,6 @@ class ConsentController extends ConsentFormController
             'documentAddressPostal' => $documentAddress?->address_postal,
             'birthPlaceAddress' => $documentAddress?->birth_place_address,
 
-            // 5. ข้อมูลอาชีพ/สถานที่ทำงาน
             'useHomeAddress' => $employment?->use_home_address,
             'occupation' => $applicant?->occupation,
             'governmentLevel' => $applicant?->government_level,
@@ -419,14 +416,12 @@ class ConsentController extends ConsentFormController
             'workYears' => $employment?->work_years,
             'workMonths' => $employment?->work_months,
 
-            // 6. ที่ทำงานเดิม
             'previousCompanyName' => $previousEmployment?->previous_company_name,
             'previousPosition' => $previousEmployment?->previous_position,
             'previousIncome' => $previousEmployment?->previous_income,
             'previousWorkAddress' => $previousEmployment?->previous_address,
             'previousPhone' => $previousEmployment?->previous_phone,
 
-            // 7. รายได้
             'income' => $applicant?->income,
             'extraIncome' => $applicant?->extra_income,
             'extraIncomeSource' => $applicant?->extra_income_source,
@@ -439,8 +434,8 @@ class ConsentController extends ConsentFormController
             'existingLoanInstitutionCount' => $applicant?->existing_loan_institution_count,
             'existingLoanTotalAmount' => $applicant?->existing_loan_total_amount,
 
-            // 8. ข้อมูลบุคคลอ้างอิง
             'refName' => $reference?->ref_name,
+            'refType' => $reference?->ref_type,
             'refRelation' => $reference?->ref_relation,
             'refAddressNo' => $referenceAddress?->address_no,
             'refAddressFloor' => $referenceAddress?->address_floor,
@@ -455,25 +450,71 @@ class ConsentController extends ConsentFormController
             'refPhoneHome' => $reference?->ref_phone_home,
             'refPhoneMobile' => $reference?->ref_phone_mobile,
 
-            // 9. ความประสงค์ในการสมัครใช้สินเชื่อ
+            // Reference / guarantor personal fields
+            'refBirthdate' => $reference?->birthdate?->format('Y-m-d'),
+            'refNationality' => $reference?->nationality,
+            'refEducation' => $reference?->education,
+            'refMaritalStatus' => $reference?->marital_status,
+            'refOccupation' => $reference?->occupation,
+            'refCareerField' => $reference?->career_field,
+            'refIncome' => $reference?->income,
+            'refExtraIncome' => $reference?->extra_income,
+            'refExtraIncomeSource' => $reference?->extra_income_source,
+            'refIncomeCountry' => $reference?->income_country,
+            // map debt/loan flags to form select values ('1'/'0') used in the modal
+            'refHasOtherDebts' => isset($reference->has_other_debts) ? ($reference->has_other_debts ? '1' : '0') : null,
+            'refOtherDebtInstallment' => $reference?->other_debt_installment,
+            'refHasExistingLoan' => isset($reference->has_existing_loan) ? ($reference->has_existing_loan ? '1' : '0') : null,
+            'refExistingLoanInstitutionCount' => $reference?->existing_loan_institution_count,
+            'refExistingLoanTotalAmount' => $reference?->existing_loan_total_amount,
+
+            // Reference work/employment and work address (use single relation `referenceWorkAddress`)
+            'refUseHomeAddress' => $employment?->use_home_address ?? null,
+            'refWorkCompany' => $employment?->company_name ?? null,
+            // refBusinessType should come from employment record linked to the reference (reference_id),
+            // fallback to the applicant's employment.business_type if no reference employment exists
+            'refBusinessType' => (function() use ($reference, $employment) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp) return $refEmp->business_type;
+                }
+                return $employment?->business_type ?? null;
+            })(),
+            'refWorkDepartment' => $employment?->work_department ?? null,
+            'refWorkBuildingName' => $consent->referenceWorkAddress?->address_building ?? null,
+            'refWorkNo' => $consent->referenceWorkAddress?->address_no ?? null,
+            'refWorkRoom' => $consent->referenceWorkAddress?->address_room ?? null,
+            'refWorkFloor' => $consent->referenceWorkAddress?->address_floor ?? null,
+            'refWorkVillage' => $consent->referenceWorkAddress?->address_village ?? null,
+            'refWorkSoi' => $consent->referenceWorkAddress?->address_soi ?? null,
+            'refWorkRoad' => $consent->referenceWorkAddress?->address_road ?? null,
+            'refWorkSubdistrict' => $consent->referenceWorkAddress?->address_subdistrict ?? null,
+            'refWorkDistrict' => $consent->referenceWorkAddress?->address_district ?? null,
+            'refWorkProvince' => $consent->referenceWorkAddress?->address_province ?? null,
+            'refWorkPostal' => $consent->referenceWorkAddress?->address_postal ?? null,
+            'refWorkPhone' => $employment?->work_phone ?? null,
+            'refWorkYears' => $employment?->work_years ?? null,
+            'refWorkMonths' => $employment?->work_months ?? null,
+            // total months = years*12 + months (if available)
+            'refWorkTotalMonths' => ($employment?->work_years !== null || $employment?->work_months !== null)
+                ? (((int)($employment?->work_years ?? 0) * 12) + (int)($employment?->work_months ?? 0))
+                : null,
+
             'loanPurpose' => $loan?->loan_purpose,
             'loanTerm' => $loan?->loan_term,
             'loanAmountType' => $loan?->loan_amount_type,
             'customLoanAmount' => $loan?->custom_loan_amount,
             'calculatedEligibleAmount' => $loan?->calculated_eligible_amount,
 
-            // 10. ความประสงค์ขอรับวงเงินกู้ครั้งแรกเข้าบัญชีเงินฝาก
             'accountNumber' => $account?->account_number,
             'accountType' => $account?->account_type,
             'bankName' => $account?->bank_name,
             'accountName' => $account?->account_name,
 
-            // 11. วิธีการชําระเงิน
             'paymentMethod' => $account?->payment_method,
             'directDebitAmount' => $account?->direct_debit_amount,
             'directDebitAccountNumber' => $account?->direct_debit_account_number,
 
-            // 12. ลายเซ็น
             'signature_data' => $consent->signature_data,
             'signatureData' => $consent->signature_data,
         ];

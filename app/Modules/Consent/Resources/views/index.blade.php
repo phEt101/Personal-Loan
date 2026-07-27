@@ -261,8 +261,6 @@
 
         const loanProductsMaster = @json($loanProducts);
 
-        // inline translations used directly where needed; no consentI18n object required
-
         const consentBaseUrl = @json(url('/consent'));
         let modalNextAppNo = '';
 
@@ -1364,6 +1362,131 @@
                 }
             }
 
+            // Wire refType change to update visibility
+            const refTypeField = consentForm?.querySelector('[name="refType"]');
+            if (refTypeField) {
+                refTypeField.addEventListener('change', function(e) {
+                    updateRefTypeVisibility(e.target.value);
+                });
+            }
+
+            // Wire ref income/debt toggles (mirror Step 4 behavior)
+            const refHasOtherDebtsField = consentForm?.querySelector('[name="refHasOtherDebts"]');
+            const refOtherDebtInstallmentWrapper = document.getElementById('refOtherDebtInstallmentWrapper');
+            if (refHasOtherDebtsField) {
+                refHasOtherDebtsField.addEventListener('change', function(e) {
+                    const v = String(e.target.value);
+                    if (refOtherDebtInstallmentWrapper) refOtherDebtInstallmentWrapper.classList.toggle('hidden', v !== 'มี');
+                });
+                // initialize
+                refHasOtherDebtsField.dispatchEvent(new Event('change'));
+            }
+
+            const refHasExistingLoanField = consentForm?.querySelector('[name="refHasExistingLoan"]');
+            const refExistingLoanInstitutionCountWrapper = document.getElementById('refExistingLoanInstitutionCountWrapper');
+            const refExistingLoanTotalAmountWrapper = document.getElementById('refExistingLoanTotalAmountWrapper');
+            if (refHasExistingLoanField) {
+                refHasExistingLoanField.addEventListener('change', function(e) {
+                    const v = String(e.target.value);
+                    const show = v === 'ใช่';
+                    if (refExistingLoanInstitutionCountWrapper) refExistingLoanInstitutionCountWrapper.classList.toggle('hidden', !show);
+                    if (refExistingLoanTotalAmountWrapper) refExistingLoanTotalAmountWrapper.classList.toggle('hidden', !show);
+                });
+                refHasExistingLoanField.dispatchEvent(new Event('change'));
+            }
+
+            // Mirror occupation / career field logic for reference (Step 5)
+            const refOccupationSelect = document.getElementById('refOccupation');
+            const refGovernmentLevelWrapper = document.getElementById('refGovernmentLevelWrapper');
+            const refGovernmentLevelInput = document.getElementById('refGovernmentLevel');
+            const refCareerFieldSelect = document.getElementById('refCareerField');
+            const refCareerFieldOtherWrapper = document.getElementById('refCareerFieldOtherWrapper');
+            const refCareerFieldOtherInput = document.getElementById('refCareerFieldOther');
+
+            if (refOccupationSelect) {
+                refOccupationSelect.addEventListener('change', function() {
+                    if (this.value === 'ข้าราชการ') {
+                        refGovernmentLevelWrapper.classList.remove('hidden');
+                        refGovernmentLevelInput.setAttribute('required', 'required');
+                    } else {
+                        refGovernmentLevelWrapper.classList.add('hidden');
+                        refGovernmentLevelInput.removeAttribute('required');
+                        refGovernmentLevelInput.value = '';
+                    }
+                    // handle occupation 'อื่นๆ' for reference
+                    const refOccupationOtherWrapper = document.getElementById('refOccupationOtherWrapper');
+                    const refOccupationOtherInput = document.getElementById('refOccupationOther');
+                    if (this.value === 'อื่นๆ') {
+                        if (refOccupationOtherWrapper) refOccupationOtherWrapper.classList.remove('hidden');
+                        if (refOccupationOtherInput) refOccupationOtherInput.setAttribute('required', 'required');
+                    } else {
+                        if (refOccupationOtherWrapper) refOccupationOtherWrapper.classList.add('hidden');
+                        if (refOccupationOtherInput) {
+                            refOccupationOtherInput.removeAttribute('required');
+                            refOccupationOtherInput.value = '';
+                        }
+                    }
+                });
+            }
+
+            if (refCareerFieldSelect) {
+                refCareerFieldSelect.addEventListener('change', function() {
+                    if (this.value === 'อื่นๆ') {
+                        refCareerFieldOtherWrapper.classList.remove('hidden');
+                        refCareerFieldOtherInput.setAttribute('required', 'required');
+                    } else {
+                        refCareerFieldOtherWrapper.classList.add('hidden');
+                        refCareerFieldOtherInput.removeAttribute('required');
+                        refCareerFieldOtherInput.value = '';
+                    }
+                });
+            }
+
+            // Copy ref personal address to ref work address when checkbox is checked
+            // Select the actual checkbox input (there's also a hidden input with the same name)
+            const refUseHomeAddressCheckbox = consentForm?.querySelector('input[type="checkbox"][name="refUseHomeAddress"]');
+            if (refUseHomeAddressCheckbox) {
+                refUseHomeAddressCheckbox.addEventListener('change', function(e) {
+                    const checked = e.target.checked;
+                    const fieldMap = [
+                        ['refAddressNo','refWorkNo'],
+                        ['refAddressFloor','refWorkFloor'],
+                        ['refAddressBuilding','refWorkBuildingName'],
+                        ['refAddressVillage','refWorkVillage'],
+                        ['refAddressSoi','refWorkSoi'],
+                        ['refAddressRoad','refWorkRoad'],
+                        ['refAddressSubdistrict','refWorkSubdistrict'],
+                        ['refAddressDistrict','refWorkDistrict'],
+                        ['refAddressProvince','refWorkProvince'],
+                        ['refAddressPostal','refWorkPostal']
+                    ];
+                    fieldMap.forEach(([from, to]) => {
+                        const fromEl = document.getElementById(from);
+                        const toEl = document.getElementById(to);
+                        if (!toEl) return;
+                        if (checked && fromEl) {
+                            toEl.value = fromEl.value || '';
+                            // use readonly so value is still submitted
+                            toEl.readOnly = true;
+                            toEl.dataset.copiedFromHome = 'true';
+                            toEl.style.background = '#f3f4f6';
+                            toEl.style.cursor = 'not-allowed';
+                            toEl.dispatchEvent(new Event('change'));
+                        } else if (!checked) {
+                            // only clear if previously copied from home
+                            if (toEl.dataset.copiedFromHome === 'true') {
+                                toEl.value = '';
+                            }
+                            toEl.readOnly = false;
+                            delete toEl.dataset.copiedFromHome;
+                            toEl.style.background = '';
+                            toEl.style.cursor = '';
+                            toEl.dispatchEvent(new Event('change'));
+                        }
+                    });
+                });
+            }
+
             async function saveStepData(step) {
                 if (!consentForm) return { ok: false, message: 'Form not found' };
 
@@ -1372,6 +1495,21 @@
                 
                 // Ensure _method is POST for save-step API regardless of edit mode
                 formData.set('_method', 'POST');
+
+                // Normalize checkbox fields that may submit 'on' in some browsers/contexts
+                // Laravel 'boolean' validation rejects 'on' — convert to '1' or '0'
+                try {
+                    const refUseHomeCheckbox = consentForm.querySelector('input[type="checkbox"][name="refUseHomeAddress"]');
+                    if (refUseHomeCheckbox) {
+                        formData.set('refUseHomeAddress', refUseHomeCheckbox.checked ? '1' : '0');
+                    }
+                    const useHomeCheckbox = consentForm.querySelector('input[type="checkbox"][name="useHomeAddress"]');
+                    if (useHomeCheckbox) {
+                        formData.set('useHomeAddress', useHomeCheckbox.checked ? '1' : '0');
+                    }
+                } catch (e) {
+                    // ignore
+                }
                 
                 // Add consent_id from hidden field if exists
                 const consentId = document.getElementById('consent_id')?.value;
@@ -1933,13 +2071,35 @@
                 postalDropdown: document.getElementById('refAddressPostal_dropdown'),
             });
 
+            const refWorkAddressController = createAddressLookupController({
+                provinceInput: document.getElementById('refWorkProvince'),
+                provinceDropdown: document.getElementById('refWorkProvince_dropdown'),
+                cityInput: document.getElementById('refWorkDistrict'),
+                cityDropdown: document.getElementById('refWorkDistrict_dropdown'),
+                districtInput: document.getElementById('refWorkSubdistrict'),
+                districtDropdown: document.getElementById('refWorkSubdistrict_dropdown'),
+                postalInput: document.getElementById('refWorkPostal'),
+                postalDropdown: document.getElementById('refWorkPostal_dropdown'),
+            });
+
             homeAddressController.reset();
             workAddressController.reset();
             documentAddressController.reset();
             refAddressController.reset();
+            refWorkAddressController.reset();
 
             function setFieldValue(fieldName, value) {
-                const field = consentForm?.querySelector(`[name="${fieldName}"]`);
+                if (!consentForm) return;
+                // Prefer an actual checkbox input when multiple elements share the same name
+                let field = null;
+                const fields = consentForm.querySelectorAll(`[name="${fieldName}"]`);
+                if (fields && fields.length) {
+                    // find checkbox first
+                    for (const f of fields) {
+                        if (f.type === 'checkbox') { field = f; break; }
+                    }
+                    if (!field) field = fields[0];
+                }
                 if (!field) return;
 
                 if (field.type === 'checkbox') {
@@ -1954,6 +2114,42 @@
                 }
 
                 field.value = value ?? '';
+
+                // Debug: log ref-related fields so we can see why they might not populate
+                if (fieldName.startsWith('ref')) {
+                    try { console.debug('populate', fieldName, field.value); } catch (e) { }
+                }
+
+                // If refType changed, update visibility of occupation/work/income fields
+                if (fieldName === 'refType') {
+                    updateRefTypeVisibility(value ?? '');
+                }
+            }
+
+            function toggleFieldHiddenByName(name, hide) {
+                const el = consentForm?.querySelector(`[name="${name}"]`);
+                if (!el) return;
+                const wrapper = el.closest('.form-group') || el.parentElement;
+                if (!wrapper) return;
+                if (hide) wrapper.classList.add('hidden'); else wrapper.classList.remove('hidden');
+            }
+
+            function updateRefTypeVisibility(refTypeValue) {
+                const isGuarantor = String(refTypeValue) === 'guarantor';
+
+                // Hide/show the entire occupation section container
+                const occSectionTitle = document.querySelector('[data-section="ref-occupation"]');
+                if (occSectionTitle) {
+                    const occContainer = occSectionTitle.closest('.form-group.col-12') || occSectionTitle.parentElement;
+                    if (occContainer) occContainer.classList.toggle('hidden', !isGuarantor);
+                }
+
+                // Hide/show the entire income section container
+                const incSectionTitle = document.querySelector('[data-section="ref-income"]');
+                if (incSectionTitle) {
+                    const incContainer = incSectionTitle.closest('.form-group.col-12') || incSectionTitle.parentElement;
+                    if (incContainer) incContainer.classList.toggle('hidden', !isGuarantor);
+                }
             }
 
             function setSelectWithOther(selectName, otherInputName, value, allowedValues) {
@@ -2243,6 +2439,8 @@
             }
 
             async function prepareEditModal(customer) {
+                // debug marker to confirm the edit flow runs
+                try { window.lastPrepareEditCalled = Date.now(); console.debug('prepareEditModal called', customer?.id); } catch (e) {}
                 if (!consentForm) return;
 
                 consentForm.reset();
@@ -2267,6 +2465,8 @@
                 const inferredIdType = hasPassport ? 'passport' : 'id_card';
                 const inferredIdNumber = hasPassport ? customer.passport : customer.id_card;
 
+                // expose for debugging in browser console
+                try { window.lastLoadedCustomer = customer; } catch (e) { /* ignore */ }
                 setFieldValue('id_type', inferredIdType);
 
                 [
@@ -2281,7 +2481,6 @@
                 });
 
                 setFieldValue('id_card', inferredIdNumber);
-
                 setFieldValue('income', customer.income);
                 setFieldValue('extraIncome', customer.extraIncome);
                 setFieldValue('incomeCountry', customer.incomeCountry);
@@ -2290,7 +2489,9 @@
                 setFieldValue('hasExistingLoan', customer.hasExistingLoan);
                 setFieldValue('existingLoanInstitutionCount', customer.existingLoanInstitutionCount);
                 setFieldValue('existingLoanTotalAmount', customer.existingLoanTotalAmount);
-                setFieldValue('useHomeAddress', customer.useHomeAddress);
+                // Support both camelCase (from controller) and snake_case (raw DB) field names
+                const useHomeVal = (customer.useHomeAddress !== undefined) ? customer.useHomeAddress : customer.use_home_address;
+                setFieldValue('useHomeAddress', useHomeVal);
                 setFieldValue('companyName', customer.companyName);
                 setFieldValue('businessType', customer.businessType);
                 setFieldValue('workDepartment', customer.workDepartment);
@@ -2314,6 +2515,7 @@
                 setFieldValue('previousPhone', customer.previousPhone);
                 setFieldValue('documentDelivery', customer.documentDelivery);
                 setFieldValue('refName', customer.refName);
+                setFieldValue('refType', customer.refType);
                 setFieldValue('refRelation', customer.refRelation);
                 setFieldValue('refAddressNo', customer.refAddressNo);
                 setFieldValue('refAddressFloor', customer.refAddressFloor);
@@ -2327,6 +2529,22 @@
                 setFieldValue('refAddressPostal', customer.refAddressPostal);
                 setFieldValue('refPhoneHome', customer.refPhoneHome);
                 setFieldValue('refPhoneMobile', customer.refPhoneMobile);
+                setFieldValue('refBirthdate', customer.refBirthdate);
+                setFieldValue('refNationality', customer.refNationality);
+                setFieldValue('refEducation', customer.refEducation);
+                setFieldValue('refMaritalStatus', customer.refMaritalStatus);
+                setFieldValue('refOccupation', customer.refOccupation);
+                setFieldValue('refCareerField', customer.refCareerField);
+                setFieldValue('refIncome', customer.refIncome);
+                setFieldValue('refExtraIncome', customer.refExtraIncome);
+                setFieldValue('refExtraIncomeSource', customer.refExtraIncomeSource);
+                setFieldValue('refHasOtherDebts', customer.refHasOtherDebts);
+                setFieldValue('refOtherDebtInstallment', customer.refOtherDebtInstallment);
+                setFieldValue('refHasExistingLoan', customer.refHasExistingLoan);
+                setFieldValue('refExistingLoanInstitutionCount', customer.refExistingLoanInstitutionCount);
+                setFieldValue('refExistingLoanTotalAmount', customer.refExistingLoanTotalAmount);
+                // Populate reference business type
+                setFieldValue('refBusinessType', customer.refBusinessType);
                 setFieldValue('loanTerm', customer.loanTerm);
                 setFieldValue('loanAmountType', customer.loanAmountType);
                 setFieldValue('customLoanAmount', customer.customLoanAmount);
@@ -2383,6 +2601,37 @@
                     district: customer.refAddressSubdistrict,
                     post_code: customer.refAddressPostal,
                 });
+
+                // Populate ref work address and fields
+                // Ensure checkbox state is applied first and trigger its change handler
+                const refUseHomeVal = (customer.refUseHomeAddress !== undefined) ? customer.refUseHomeAddress : customer.ref_use_home_address;
+                setFieldValue('refUseHomeAddress', refUseHomeVal);
+                const refUseHomeEl = consentForm?.querySelector('input[type="checkbox"][name="refUseHomeAddress"]');
+                if (refUseHomeEl) refUseHomeEl.dispatchEvent(new Event('change'));
+
+                await refWorkAddressController.setValues({
+                    province: customer.refWorkProvince,
+                    city: customer.refWorkDistrict,
+                    district: customer.refWorkSubdistrict,
+                    post_code: customer.refWorkPostal,
+                });
+
+                // Populate non-address work fields (only if provided)
+                setFieldValue('refWorkNo', customer.refWorkNo);
+                setFieldValue('refWorkRoom', customer.refWorkRoom);
+                setFieldValue('refWorkFloor', customer.refWorkFloor);
+                setFieldValue('refWorkVillage', customer.refWorkVillage);
+                setFieldValue('refWorkBuildingName', customer.refWorkBuildingName || customer.refWorkBuilding);
+                setFieldValue('refWorkSoi', customer.refWorkSoi);
+                setFieldValue('refWorkRoad', customer.refWorkRoad);
+                setFieldValue('refWorkDepartment', customer.refWorkDepartment);
+                setFieldValue('refWorkPhone', customer.refWorkPhone);
+                setFieldValue('refWorkYears', customer.refWorkYears);
+                setFieldValue('refWorkMonths', customer.refWorkMonths);
+
+                // Ensure main useHomeAddress checkbox change runs so work address fields become readonly/greyed when appropriate
+                const useHomeEl = consentForm?.querySelector('input[type="checkbox"][name="useHomeAddress"]');
+                if (useHomeEl) useHomeEl.dispatchEvent(new Event('change'));
 
                 syncConditionalSections();
 
@@ -2632,6 +2881,24 @@
                         businessTypeOtherWrapper.classList.add('hidden');
                         businessTypeOtherInput.removeAttribute('required');
                         businessTypeOtherInput.value = '';
+                    }
+                });
+            }
+
+            // Handle refBusinessType "อื่นๆ" (Step 5)
+            const refBusinessTypeSelect = document.getElementById('refBusinessType');
+            const refBusinessTypeOtherWrapper = document.getElementById('refBusinessTypeOtherWrapper');
+            const refBusinessTypeOtherInput = document.getElementById('refBusinessTypeOther');
+
+            if (refBusinessTypeSelect) {
+                refBusinessTypeSelect.addEventListener('change', function() {
+                    if (this.value === 'อื่นๆ') {
+                        refBusinessTypeOtherWrapper.classList.remove('hidden');
+                        refBusinessTypeOtherInput.setAttribute('required', 'required');
+                    } else {
+                        refBusinessTypeOtherWrapper.classList.add('hidden');
+                        refBusinessTypeOtherInput.removeAttribute('required');
+                        refBusinessTypeOtherInput.value = '';
                     }
                 });
             }

@@ -145,7 +145,19 @@ class ConsentApplication extends Model
             'applicant_id',
             'id',
             'id'
-        )->where('consent_addresses.kind', 'reference');
+        )->where('consent_addresses.kind', 'reference/guarantor');
+    }
+
+    public function referenceWorkAddress(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            ConsentAddress::class,
+            ConsentApplicant::class,
+            'application_id',
+            'applicant_id',
+            'id',
+            'id'
+        )->where('consent_addresses.kind', 'reference/guarantor_work');
     }
 
     public function documentAddress(): HasOneThrough

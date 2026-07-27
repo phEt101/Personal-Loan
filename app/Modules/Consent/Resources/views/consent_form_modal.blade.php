@@ -48,11 +48,6 @@
                     </div>
                 </div>
 
-                <div class="hidden-accessible" aria-hidden="true">
-                    <label for="prevent_autofill">Prevent Autofill</label>
-                    <input type="text" id="prevent_autofill" name="prevent_autofill" tabindex="-1" autocomplete="off">
-                </div>
-
                 <!-- Step 1: Application + Officer + Personal Info -->
                 <div class="step-container active" data-step="1">
                     <div class="form-grid">
@@ -628,6 +623,16 @@
                         </div>
 
                         <div class="form-group col-6">
+                            <label for="refType">{{ __('consent::messages.modal.form.step5.sections.ref_type') }} <span class="required-asterisk">*</span></label>
+                            <select id="refType" name="refType" required>
+                                <option value="">{{ __('consent::messages.modal.form.step5.options.reference_prompt') }}</option>
+                                <option value="reference">{{ __('consent::messages.modal.form.step5.options.reference') }}</option>
+                                <option value="guarantor">{{ __('consent::messages.modal.form.step5.options.guarantor') }}</option>
+                            </select>
+                        </div>
+
+
+                        <div class="form-group col-6">
                             <label for="refName">{{ __('consent::messages.modal.form.step5.fields.ref_name') }} <span class="required-asterisk">*</span></label>
                             <input type="text" id="refName" name="refName" placeholder="{{ __('consent::messages.modal.form.step5.placeholders.ref_name') }}" required>
                         </div>
@@ -699,6 +704,260 @@
                         <div class="form-group col-3">
                             <label for="refPhoneMobile">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
                             <input type="tel" id="refPhoneMobile" name="refPhoneMobile" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" maxlength="10" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/\D/g,'')">
+                        </div>
+
+                        
+                        <!-- Personal fields (no section header as requested) -->
+                        <div class="form-group col-3">
+                            <label for="refBirthdate">{{ __('consent::messages.modal.form.step1.fields.birthdate') }}</label>
+                            <input type="date" id="refBirthdate" name="refBirthdate">
+                        </div>
+
+                        <div class="form-group col-3">
+                            <label for="refNationality">{{ __('consent::messages.modal.form.step1.fields.nationality') }}</label>
+                            <input type="text" id="refNationality" name="refNationality" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.nationality') }}">
+                        </div>
+
+                        <div class="form-group col-3">
+                            <label for="refEducation">{{ __('consent::messages.modal.form.step1.fields.education') }}</label>
+                            <select id="refEducation" name="refEducation">
+                                <option value="">{{ __('consent::messages.modal.form.step1.options.education_prompt') }}</option>
+                                <option value="มัธยมต้น">{{ __('consent::messages.modal.form.step1.options.education_lower_secondary') }}</option>
+                                <option value="มัธยมปลาย">{{ __('consent::messages.modal.form.step1.options.education_upper_secondary') }}</option>
+                                <option value="อุดมศึกษา">{{ __('consent::messages.modal.form.step1.options.education_higher') }}</option>
+                                <option value="ปริญญาตรี">{{ __('consent::messages.modal.form.step1.options.education_bachelor') }}</option>
+                                <option value="ปริญญาโท">{{ __('consent::messages.modal.form.step1.options.education_master') }}</option>
+                                <option value="ปริญญาเอก">{{ __('consent::messages.modal.form.step1.options.education_doctorate') }}</option>
+                                <option value="อื่นๆ">{{ __('consent::messages.modal.form.common.other') }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-3">
+                            <label for="refMaritalStatus">{{ __('consent::messages.modal.form.step1.fields.marital_status') }}</label>
+                            <select id="refMaritalStatus" name="refMaritalStatus">
+                                <option value="โสด">{{ __('consent::messages.modal.form.step1.options.marital_single') }}</option>
+                                <option value="สมรส">{{ __('consent::messages.modal.form.step1.options.marital_married') }}</option>
+                                <option value="สมรสไม่จดทะเบียน">{{ __('consent::messages.modal.form.step1.options.marital_common_law') }}</option>
+                                <option value="หย่า">{{ __('consent::messages.modal.form.step1.options.marital_divorced') }}</option>
+                                <option value="หม้าย">{{ __('consent::messages.modal.form.step1.options.marital_widowed') }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Occupation: ข้อมูลอาชีพ -->
+                        <!-- Workplace address fields (reuse step3 address placeholders) -->
+                        <div class="form-group col-12">
+                            <div class="form-section-title col-12" data-section="ref-occupation">
+                                {{ __('consent::messages.modal.form.step3.sections.occupation_workplace') }}
+                                <div class="checkbox-group">
+                                    <input type="hidden" name="refUseHomeAddress" value="0">
+                                    <input type="checkbox" id="refUseHomeAddress" name="refUseHomeAddress" value="1">
+                                    <label for="refUseHomeAddress">{{ __('consent::messages.modal.form.step3.fields.use_home_address') }}</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="refOccupation">{{ __('consent::messages.modal.form.step3.fields.occupation') }}</label>
+                                <select id="refOccupation" name="refOccupation">
+                                    <option value="">{{ __('consent::messages.modal.form.step3.options.occupation_prompt') }}</option>
+                                    <option value="ข้าราชการ">{{ __('consent::messages.modal.form.step3.options.occupation_civil_servant') }}</option>
+                                    <option value="พนักงานราชการ">{{ __('consent::messages.modal.form.step3.options.occupation_gov_employee') }}</option>
+                                    <option value="พนักงานรัฐวิสาหกิจ">{{ __('consent::messages.modal.form.step3.options.occupation_state_enterprise') }}</option>
+                                    <option value="พนักงานบริษัทเอกชน">{{ __('consent::messages.modal.form.step3.options.occupation_private_employee') }}</option>
+                                    <option value="อาชีพอิสระ">{{ __('consent::messages.modal.form.step3.options.occupation_freelance') }}</option>
+                                    <option value="เจ้าของกิจการที่จดทะเบียนพาณิชย์">{{ __('consent::messages.modal.form.step3.options.occupation_registered_owner') }}</option>
+                                    <option value="เจ้าของกิจการที่ไม่จดทะเบียนพาณิชย์">{{ __('consent::messages.modal.form.step3.options.occupation_unregistered_owner') }}</option>
+                                    <option value="อื่นๆ">{{ __('consent::messages.modal.form.common.other') }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-6 hidden" id="refOccupationOtherWrapper">
+                                <label for="refOccupationOther">{{ __('consent::messages.modal.form.step3.fields.occupation_other') }}</label>
+                                <input type="text" id="refOccupationOther" name="refOccupationOther" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.occupation_other') }}">
+                            </div>
+
+                            <div class="form-group col-6 hidden" id="refGovernmentLevelWrapper">
+                                <label for="refGovernmentLevel">{{ __('consent::messages.modal.form.step3.fields.government_level') }}</label>
+                                <input type="text" id="refGovernmentLevel" name="refGovernmentLevel" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.government_level') }}">
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label for="refCareerField">{{ __('consent::messages.modal.form.step3.fields.career_field') }}</label>
+                                <select id="refCareerField" name="refCareerField">
+                                    <option value="">{{ __('consent::messages.modal.form.step3.options.career_prompt') }}</option>
+                                    <option value="ครู/อาจารย์">{{ __('consent::messages.modal.form.step3.options.career_teacher') }}</option>
+                                    <option value="ตํารวจ/ทหาร">{{ __('consent::messages.modal.form.step3.options.career_police_military') }}</option>
+                                    <option value="แพทย์/ทันตแพทย์/สัตวแพยท์">{{ __('consent::messages.modal.form.step3.options.career_medical') }}</option>
+                                    <option value="เภสัชกร">{{ __('consent::messages.modal.form.step3.options.career_pharmacist') }}</option>
+                                    <option value="พยาบาล">{{ __('consent::messages.modal.form.step3.options.career_nurse') }}</option>
+                                    <option value="สถาปนิก">{{ __('consent::messages.modal.form.step3.options.career_architect') }}</option>
+                                    <option value="วิศวกร">{{ __('consent::messages.modal.form.step3.options.career_engineer') }}</option>
+                                    <option value="บัญชีการเงิน">{{ __('consent::messages.modal.form.step3.options.career_finance') }}</option>
+                                    <option value="พนักงานขาย">{{ __('consent::messages.modal.form.step3.options.career_sales') }}</option>
+                                    <option value="อื่นๆ">{{ __('consent::messages.modal.form.common.other') }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-6 hidden" id="refCareerFieldOtherWrapper">
+                                <label for="refCareerFieldOther">{{ __('consent::messages.modal.form.step3.fields.career_field_other') }}</label>
+                                <input type="text" id="refCareerFieldOther" name="refCareerFieldOther" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.career_field_other') }}">
+                            </div>
+
+
+
+                            <div class="form-group col-3">
+                                <label for="refWorkDepartment">{{ __('consent::messages.modal.form.step3.fields.work_department') }}</label>
+                                <input type="text" id="refWorkDepartment" name="refWorkDepartment" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_department') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refBusinessType">{{ __('consent::messages.modal.form.step3.fields.business_type') }}</label>
+                                <select id="refBusinessType" name="refBusinessType">
+                                    <option value="">{{ __('consent::messages.modal.form.step3.options.business_prompt') }}</option>
+                                    <option value="การศึกษา">{{ __('consent::messages.modal.form.step3.options.business_education') }}</option>
+                                    <option value="รับเหมาก่อสร้าง">{{ __('consent::messages.modal.form.step3.options.business_construction') }}</option>
+                                    <option value="วัสดุก่อสร้าง">{{ __('consent::messages.modal.form.step3.options.business_construction_material') }}</option>
+                                    <option value="บริการ">{{ __('consent::messages.modal.form.step3.options.business_service') }}</option>
+                                    <option value="ฟอร์นิเจอร์/โรงเลื่อย">{{ __('consent::messages.modal.form.step3.options.business_furniture') }}</option>
+                                    <option value="สิ่งทอ">{{ __('consent::messages.modal.form.step3.options.business_textile') }}</option>
+                                    <option value="พลาสติก">{{ __('consent::messages.modal.form.step3.options.business_plastic') }}</option>
+                                    <option value="เครื่องจักร/ผลิตภัณฑ์โลหะ">{{ __('consent::messages.modal.form.step3.options.business_machinery_metal') }}</option>
+                                    <option value="สาธารณูปโภค/ไฟฟ้า">{{ __('consent::messages.modal.form.step3.options.business_utility_electric') }}</option>
+                                    <option value="ขนส่ง">{{ __('consent::messages.modal.form.step3.options.business_transport') }}</option>
+                                    <option value="สาธารณูปโภค">{{ __('consent::messages.modal.form.step3.options.business_utility') }}</option>
+                                    <option value="ไฟฟ้า">{{ __('consent::messages.modal.form.step3.options.business_electric') }}</option>
+                                    <option value="เวชภัณฑ์/โรงพยาบาล/คลินิก">{{ __('consent::messages.modal.form.step3.options.business_medical') }}</option>
+                                    <option value="อาหาร/เครื่องดื่ม">{{ __('consent::messages.modal.form.step3.options.business_food_beverage') }}</option>
+                                    <option value="ร้านสะดวกซื้อ">{{ __('consent::messages.modal.form.step3.options.business_convenience_store') }}</option>
+                                    <option value="โรงแรม/ร้านอาหาร">{{ __('consent::messages.modal.form.step3.options.business_hotel_restaurant') }}</option>
+                                    <option value="อื่นๆ">{{ __('consent::messages.modal.form.common.other') }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-3 hidden" id="refBusinessTypeOtherWrapper">
+                                <label for="refBusinessTypeOther">{{ __('consent::messages.modal.form.step3.fields.business_type_other') }}</label>
+                                <input type="text" id="refBusinessTypeOther" name="refBusinessTypeOther" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.business_type_other') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkNo">{{ __('consent::messages.modal.form.common.no') }}</label>
+                                <input type="text" id="refWorkNo" name="refWorkNo" placeholder="{{ __('consent::messages.modal.form.common.no') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkRoom">{{ __('consent::messages.modal.form.step2.fields.address_room') }}</label>
+                                <input type="text" id="refWorkRoom" name="refWorkRoom" placeholder="{{ __('consent::messages.modal.form.step2.placeholders.address_room') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkFloor">{{ __('consent::messages.modal.form.common.address_floor') }}</label>
+                                <input type="text" id="refWorkFloor" name="refWorkFloor" placeholder="{{ __('consent::messages.modal.form.common.address_floor') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkBuildingName">{{ __('consent::messages.modal.form.step3.fields.work_building') }}</label>
+                                <input type="text" id="refWorkBuildingName" name="refWorkBuildingName" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_building') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkVillage">{{ __('consent::messages.modal.form.common.address_village') }}</label>
+                                <input type="text" id="refWorkVillage" name="refWorkVillage" placeholder="{{ __('consent::messages.modal.form.common.address_village') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkSoi">{{ __('consent::messages.modal.form.common.address_soi') }}</label>
+                                <input type="text" id="refWorkSoi" name="refWorkSoi" placeholder="{{ __('consent::messages.modal.form.common.address_soi') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkRoad">{{ __('consent::messages.modal.form.common.address_road') }}</label>
+                                <input type="text" id="refWorkRoad" name="refWorkRoad" placeholder="{{ __('consent::messages.modal.form.common.address_road') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkDistrict">{{ __('consent::messages.modal.form.common.address_district') }}</label>
+                                <input type="text" id="refWorkDistrict" name="refWorkDistrict" placeholder="{{ __('consent::messages.modal.form.common.address_district') }}" autocomplete="off">
+                                <div class="address-search-dropdown hidden" id="refWorkDistrict_dropdown"></div>
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkProvince">{{ __('consent::messages.modal.form.common.province') }}</label>
+                                <input type="text" id="refWorkProvince" name="refWorkProvince" placeholder="{{ __('consent::messages.modal.form.common.province') }}" autocomplete="off">
+                                <div class="address-search-dropdown hidden" id="refWorkProvince_dropdown"></div>
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkPostal">{{ __('consent::messages.modal.form.common.postal') }}</label>
+                                <input type="text" id="refWorkPostal" name="refWorkPostal" placeholder="{{ __('consent::messages.modal.form.common.postal') }}" autocomplete="off" inputmode="numeric">
+                                <div class="address-search-dropdown hidden" id="refWorkPostal_dropdown"></div>
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkPhone">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
+                                <input type="text" id="refWorkPhone" name="refWorkPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refWorkYears">{{ __('consent::messages.modal.form.step3.fields.work_years') }}</label>
+                                <input type="number" id="refWorkYears" name="refWorkYears" min="0" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_years') }}">
+                            </div>
+
+                            <div class="form-group col-4">
+                                <label for="refWorkMonths">{{ __('consent::messages.modal.form.step3.fields.work_months') }}</label>
+                                <input type="number" id="refWorkMonths" name="refWorkMonths" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.work_months') }}" min="0" max="11">
+                            </div>
+                        </div>
+
+                        <!-- Income: ข้อมูลรายได้ -->
+                        <div class="form-group col-12">
+                            <div class="form-section-title col-12" data-section="ref-income">
+                                {{ __('consent::messages.modal.form.step4.sections.income') }}
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="refIncome">{{ __('consent::messages.modal.form.step4.fields.income') }}</label>
+                                <input type="number" id="refIncome" name="refIncome" step="0.01" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.income') }}">
+                            </div>
+
+                            <div class="form-group col-4">
+                                <label for="refExtraIncome">{{ __('consent::messages.modal.form.step4.fields.extra_income') }}</label>
+                                <input type="number" id="refExtraIncome" name="refExtraIncome" step="0.01" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.extra_income') }}">
+                            </div>
+
+                            <div class="form-group col-4">
+                                <label for="refExtraIncomeSource">{{ __('consent::messages.modal.form.step4.fields.extra_income_source') }}</label>
+                                <input type="text" id="refExtraIncomeSource" name="refExtraIncomeSource" placeholder="{{ __('consent::messages.modal.form.step4.options.extra_income_source_prompt') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refHasOtherDebts">{{ __('consent::messages.modal.form.step4.fields.has_other_debts') }}</label>
+                                <select id="refHasOtherDebts" name="refHasOtherDebts">
+                                    <option value="">{{ __('consent::messages.modal.form.step4.options.select_prompt') }}</option>
+                                    <option value="0">{{ __('consent::messages.modal.form.step4.options.no') }}</option>
+                                    <option value="1">{{ __('consent::messages.modal.form.step4.options.yes') }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-3 hidden" id="refOtherDebtInstallmentWrapper">
+                                <label for="refOtherDebtInstallment">{{ __('consent::messages.modal.form.step4.fields.other_debt_installment') }}</label>
+                                <input type="number" id="refOtherDebtInstallment" name="refOtherDebtInstallment" step="0.01" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.other_debt_installment') }}">
+                            </div>
+
+                            <div class="form-group col-3">
+                                <label for="refHasExistingLoan">{{ __('consent::messages.modal.form.step4.fields.existing_loan_disclosure') }}</label>
+                                <select id="refHasExistingLoan" name="refHasExistingLoan">
+                                    <option value="">{{ __('consent::messages.modal.form.step4.options.select_prompt') }}</option>
+                                    <option value="1">{{ __('consent::messages.modal.form.step4.options.existing_loan_yes') }}</option>
+                                    <option value="0">{{ __('consent::messages.modal.form.step4.options.existing_loan_no') }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-3 hidden" id="refExistingLoanInstitutionCountWrapper">
+                                <label for="refExistingLoanInstitutionCount">{{ __('consent::messages.modal.form.step4.fields.existing_loan_institution_count') }}</label>
+                                <input type="number" id="refExistingLoanInstitutionCount" name="refExistingLoanInstitutionCount" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.existing_loan_institution_count') }}">
+                            </div>
+
+                            <div class="form-group col-3 hidden" id="refExistingLoanTotalAmountWrapper">
+                                <label for="refExistingLoanTotalAmount">{{ __('consent::messages.modal.form.step4.fields.existing_loan_total_amount') }}</label>
+                                <input type="number" id="refExistingLoanTotalAmount" name="refExistingLoanTotalAmount" step="0.01" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.existing_loan_total_amount') }}">
+                            </div>
                         </div>
 
                         <div class="form-group col-12 note-box">
