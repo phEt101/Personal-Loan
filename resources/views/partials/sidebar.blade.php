@@ -19,6 +19,7 @@
                 </span>
                 <span>{{ __('messages.nav.consent') }}</span>
             </a>
+            {{--
             <a href="{{ route('consentreview.index') }}" class="nav-item {{ Request::routeIs('consentreview.*') ? 'active' : '' }}">
                 <span class="nav-icon" aria-hidden="true">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,6 +28,7 @@
                 </span>
                 <span>{{ __('messages.nav.consent_review') }}</span>
             </a>
+            --}}
         </nav>
     </div>
 </aside>
