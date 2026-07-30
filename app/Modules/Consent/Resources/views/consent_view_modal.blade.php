@@ -13,7 +13,7 @@
                     <section class="view-consent-summary">
                         <div class="row">
                             <div class="col-md-3 view-consent-photo">
-                                <img id="viewApplicantPhoto" src="" alt="Applicant Photo" />
+                                <img id="viewApplicantPhoto" src="" alt="Applicant" />
                             </div>
                             <div class="col-md-9">
                                 <h4 id="viewApplicantName">-</h4>
