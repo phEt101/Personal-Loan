@@ -66,8 +66,8 @@
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="officer_name">{{ __('consent::messages.modal.form.step1.fields.officer_name') }}</label>
-                            <input type="text" id="officer_name" name="officer_name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.officer_name') }}">
+                            <label for="officer_name">{{ __('consent::messages.modal.form.step1.fields.officer_name') }} <span class="required-asterisk">*</span></label>
+                            <input type="text" id="officer_name" name="officer_name" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.officer_name') }}" required>
                         </div>
 
                         <div class="form-group col-3">
@@ -76,8 +76,8 @@
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="officer_group_id">{{ __('consent::messages.modal.form.step1.fields.officer_group') }}</label>
-                            <select id="officer_group_id" name="officer_group_id">
+                            <label for="officer_group_id">{{ __('consent::messages.modal.form.step1.fields.officer_group') }} <span class="required-asterisk">*</span></label>
+                            <select id="officer_group_id" name="officer_group_id" required>
                                 <option value="">{{ __('consent::messages.modal.form.step1.options.officer_group_prompt') }}</option>
                                 @foreach($officerGroups as $group)
                                     <option value="{{ $group->id }}">{{ app()->getLocale() === 'th' ? $group->name_th : $group->name_en }}</option>
@@ -86,8 +86,8 @@
                         </div>
 
                         <div class="form-group col-3">
-                            <label for="loan_product_id">{{ __('consent::messages.modal.form.step1.fields.product_type') }}</label>
-                            <select id="loan_product_id" name="loan_product_id">
+                            <label for="loan_product_id">{{ __('consent::messages.modal.form.step1.fields.product_type') }} <span class="required-asterisk">*</span></label>
+                            <select id="loan_product_id" name="loan_product_id" required>
                                 <option value="">{{ __('consent::messages.modal.form.step1.options.product_type_prompt') }}</option>
                                 @foreach($loanProducts as $product)
                                     <option value="{{ $product->id }}">{{ app()->getLocale() === 'th' ? $product->name_th : $product->name_en }}</option>
@@ -124,6 +124,7 @@
                                 <div class="form-group col-3" id="titleGroup">
                                     <label for="title">{{ __('consent::messages.modal.form.step1.fields.title') }} <span class="required-asterisk">*</span></label>
                                     <select id="title" name="title" required>
+                                        <option value="">{{ __('consent::messages.modal.form.step1.placeholders.title_prompt') }}</option>
                                         <option value="นาย">{{ __('consent::messages.modal.form.step1.options.title_mr') }}</option>
                                         <option value="นาง">{{ __('consent::messages.modal.form.step1.options.title_mrs') }}</option>
                                         <option value="นางสาว">{{ __('consent::messages.modal.form.step1.options.title_ms') }}</option>
@@ -173,9 +174,15 @@
                             </select>
                         </div>
 
+                        <div class="form-group col-4 hidden" id="educationOtherWrapper">
+                            <label for="educationOther">{{ __('consent::messages.modal.form.step1.fields.education_other') }}</label>
+                            <input type="text" id="educationOther" name="educationOther" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.education_other') }}">
+                        </div>
+
                         <div class="form-group col-4">
                             <label for="marital_status">{{ __('consent::messages.modal.form.step1.fields.marital_status') }} <span class="required-asterisk">*</span></label>
                             <select id="marital_status" name="marital_status" required>
+                                <option value="">{{ __('consent::messages.modal.form.step1.options.marital_prompt') }}</option>
                                 <option value="โสด">{{ __('consent::messages.modal.form.step1.options.marital_single') }}</option>
                                 <option value="สมรส">{{ __('consent::messages.modal.form.step1.options.marital_married') }}</option>
                                 <option value="สมรสไม่จดทะเบียน">{{ __('consent::messages.modal.form.step1.options.marital_common_law') }}</option>
@@ -571,8 +578,8 @@
                             <label for="hasOtherDebts">{{ __('consent::messages.modal.form.step4.fields.has_other_debts') }} <span class="required-asterisk">*</span></label>
                             <select id="hasOtherDebts" name="hasOtherDebts" required>
                                 <option value="">{{ __('consent::messages.modal.form.step4.options.select_prompt') }}</option>
-                                <option value="ไม่มี">{{ __('consent::messages.modal.form.step4.options.no') }}</option>
-                                <option value="มี">{{ __('consent::messages.modal.form.step4.options.yes') }}</option>
+                                <option value="0">{{ __('consent::messages.modal.form.step4.options.no') }}</option>
+                                <option value="1">{{ __('consent::messages.modal.form.step4.options.yes') }}</option>
                             </select>
                         </div>
 
@@ -593,8 +600,8 @@
                                 <label for="hasExistingLoan" aria-hidden="true">&nbsp;</label>
                                 <select id="hasExistingLoan" name="hasExistingLoan" required>
                                     <option value="">{{ __('consent::messages.modal.form.step4.options.select_prompt') }}</option>
-                                    <option value="ใช่">{{ __('consent::messages.modal.form.step4.options.existing_loan_yes') }}</option>
-                                    <option value="ไม่ใช่">{{ __('consent::messages.modal.form.step4.options.existing_loan_no') }}</option>
+                                    <option value="1">{{ __('consent::messages.modal.form.step4.options.existing_loan_yes') }}</option>
+                                    <option value="0">{{ __('consent::messages.modal.form.step4.options.existing_loan_no') }}</option>
                                 </select>
                             </div>
 
@@ -732,9 +739,15 @@
                             </select>
                         </div>
 
+                        <div class="form-group col-3 hidden" id="refEducationOtherWrapper">
+                            <label for="refEducationOther">{{ __('consent::messages.modal.form.step1.fields.education_other') }}</label>
+                            <input type="text" id="refEducationOther" name="refEducationOther" placeholder="{{ __('consent::messages.modal.form.step1.placeholders.education_other') }}">
+                        </div>
+
                         <div class="form-group col-3">
                             <label for="refMaritalStatus">{{ __('consent::messages.modal.form.step1.fields.marital_status') }}</label>
                             <select id="refMaritalStatus" name="refMaritalStatus">
+                                <option value="">{{ __('consent::messages.modal.form.step1.options.marital_prompt') }}</option>
                                 <option value="โสด">{{ __('consent::messages.modal.form.step1.options.marital_single') }}</option>
                                 <option value="สมรส">{{ __('consent::messages.modal.form.step1.options.marital_married') }}</option>
                                 <option value="สมรสไม่จดทะเบียน">{{ __('consent::messages.modal.form.step1.options.marital_common_law') }}</option>
@@ -802,6 +815,11 @@
                             </div>
 
 
+
+                            <div class="form-group col-6">
+                                <label for="refWorkCompany">{{ __('consent::messages.modal.form.step3.fields.company_name') }}</label>
+                                <input type="text" id="refWorkCompany" name="refWorkCompany" placeholder="{{ __('consent::messages.modal.form.step3.placeholders.company_name') }}">
+                            </div>
 
                             <div class="form-group col-3">
                                 <label for="refWorkDepartment">{{ __('consent::messages.modal.form.step3.fields.work_department') }}</label>
@@ -892,7 +910,7 @@
 
                             <div class="form-group col-3">
                                 <label for="refWorkPhone">{{ __('consent::messages.modal.form.common.phone_number') }}</label>
-                                <input type="text" id="refWorkPhone" name="refWorkPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}">
+                                <input type="tel" id="refWorkPhone" name="refWorkPhone" placeholder="{{ __('consent::messages.modal.form.common.phone_number') }}" accept="[0-9]*" maxlength="10" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/\D/g,'')">
                             </div>
 
                             <div class="form-group col-3">
@@ -921,9 +939,21 @@
                                 <input type="number" id="refExtraIncome" name="refExtraIncome" step="0.01" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.extra_income') }}">
                             </div>
 
-                            <div class="form-group col-4">
+                            <div class="form-group col-4" id="refExtraIncomeSourceWrapper">
                                 <label for="refExtraIncomeSource">{{ __('consent::messages.modal.form.step4.fields.extra_income_source') }}</label>
-                                <input type="text" id="refExtraIncomeSource" name="refExtraIncomeSource" placeholder="{{ __('consent::messages.modal.form.step4.options.extra_income_source_prompt') }}">
+                                <select id="refExtraIncomeSource" name="refExtraIncomeSource">
+                                    <option value="">{{ __('consent::messages.modal.form.step4.options.extra_income_source_prompt') }}</option>
+                                    <option value="รับจ้าง/เงินเดือน">{{ __('consent::messages.modal.form.step4.options.extra_income_source_salary') }}</option>
+                                    <option value="ค่าคอมมมิชั่น">{{ __('consent::messages.modal.form.step4.options.extra_income_source_commission') }}</option>
+                                    <option value="โบนัส">{{ __('consent::messages.modal.form.step4.options.extra_income_source_bonus') }}</option>
+                                    <option value="ธุรกิจส่วนตัว">{{ __('consent::messages.modal.form.step4.options.extra_income_source_business') }}</option>
+                                    <option value="อื่นๆ">{{ __('consent::messages.modal.form.step4.options.extra_income_source_other') }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-4 hidden" id="refExtraIncomeSourceOtherWrapper">
+                                <label for="refExtraIncomeSourceOther">{{ __('consent::messages.modal.form.step4.fields.extra_income_source_other') }}</label>
+                                <input type="text" id="refExtraIncomeSourceOther" name="refExtraIncomeSourceOther" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.extra_income_source_other') }}">
                             </div>
 
                             <div class="form-group col-3">
@@ -957,6 +987,53 @@
                             <div class="form-group col-3 hidden" id="refExistingLoanTotalAmountWrapper">
                                 <label for="refExistingLoanTotalAmount">{{ __('consent::messages.modal.form.step4.fields.existing_loan_total_amount') }}</label>
                                 <input type="number" id="refExistingLoanTotalAmount" name="refExistingLoanTotalAmount" step="0.01" min="0" placeholder="{{ __('consent::messages.modal.form.step4.placeholders.existing_loan_total_amount') }}">
+                            </div>
+                        </div>
+
+                        <!-- Reference / Guarantor documents upload (visible when refType=guarantor) -->
+                        <div class="form-group col-12" id="referenceDocumentsSection">
+                            <div class="form-section-title">
+                                {{ __('consent::messages.modal.form.attachment.reference_header') }}
+                            </div>
+                            <div class="col-12">
+                                <div class="document-upload-table-wrap">
+                                    <table class="document-upload-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="document-upload-label-cell">{{ __('consent::messages.modal.form.attachment.reference_documents') }}</th>
+                                                <th class="document-upload-input-cell">{{ __('consent::messages.modal.form.attachment.common.upload') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="document-upload-label-cell">
+                                                    <div class="reference-doc-list-wrapper">
+                                                        <p class="muted">{{ __('consent::messages.modal.form.attachment.reference_documents_hint') }}</p>
+                                                    </div>
+                                                </td>
+                                                <td class="document-upload-input-cell">
+                                                    <div class="upload-stack">
+                                                        <label for="referenceDocuments" class="custom-file-upload compact">
+                                                            <span>{{ __('consent::messages.modal.form.attachment.common.upload') }}</span>
+                                                            <p>{{ __('consent::messages.modal.form.attachment.common.allowed_types') }}: PDF, JPG, PNG — {{ __('consent::messages.modal.form.attachment.common.per_file_max_10mb') }}</p>
+                                                        </label>
+                                                        <input type="file" id="referenceDocuments" name="referenceDocuments[]" multiple accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf" class="file-input-hidden">
+
+                                                        <div class="hidden" id="referenceDocumentsSelectedWrapper">
+                                                            <label for="referenceDocuments" class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.selected_files') }}</label>
+                                                            <div id="referenceDocumentsSelectedList"></div>
+                                                        </div>
+
+                                                        <div class="hidden" id="referenceDocumentsExistingWrapper">
+                                                            <label for="referenceDocuments" class="uploaded-files-title">{{ __('consent::messages.modal.form.attachment.common.existing_files') }}</label>
+                                                            <div id="referenceDocumentsExistingList"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
 

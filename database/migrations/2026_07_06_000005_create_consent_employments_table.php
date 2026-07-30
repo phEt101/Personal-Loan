@@ -15,6 +15,7 @@ return new class extends Migration
             $table->boolean('use_home_address')->default(false)->comment('ใช้ที่อยู่บ้านเป็นที่อยู่ที่ทำงานหรือไม่');
             $table->string('company_name', 100)->nullable()->comment('ชื่อบริษัท/หน่วยงาน');
             $table->string('business_type', 100)->nullable()->comment('ประเภทธุรกิจ');
+            $table->string('business_type_other', 255)->nullable()->comment('ประเภทธุรกิจอื่นๆ');
             $table->string('work_department', 100)->nullable()->comment('แผนก/ฝ่าย');
             $table->integer('work_years')->nullable()->comment('อายุงาน (ปี)');
             $table->integer('work_months')->nullable()->comment('อายุงาน (เดือน)');

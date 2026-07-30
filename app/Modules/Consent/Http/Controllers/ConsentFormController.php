@@ -152,6 +152,7 @@ class ConsentFormController extends Controller {
             'id_type' => 'เอกสารระบุตัวตน',
             'id_card' => 'เลขบัตรประจำตัวประชาชน/พาสปอร์ต',
             'education' => 'การศึกษา',
+            'educationOther' => 'การศึกษา (ระบุ)',
             'marital_status' => 'สถานภาพสมรส',
             'residence_status' => 'สถานะของการอยู่อาศัย',
             'phone_mobile' => 'หมายเลขโทรศัพท์มือถือ',
@@ -205,10 +206,10 @@ class ConsentFormController extends Controller {
             // ข้อมูลใบคำขอ + ข้อมูลส่วนตัว
             'app_date' => ['nullable', 'date'],
             'app_no' => ['nullable', 'string', 'max:13'],
-            'officer_name' => ['nullable', 'string', 'max:255'],
+            'officer_name' => ['required', 'string', 'max:255'],
             'officer_phone' => ['nullable', 'string', 'max:20'],
-            'officer_group_id' => ['nullable', 'integer', 'exists:officer_groups,id'],
-            'loan_product_id' => ['nullable', 'integer', 'exists:loan_products,id'],
+            'officer_group_id' => ['required', 'integer', 'exists:officer_groups,id'],
+            'loan_product_id' => ['required', 'integer', 'exists:loan_products,id'],
             'title' => ['required', 'string', 'max:50'],
             'title_other' => ['nullable', 'required_if:title,' . self::OPTION_OTHER, 'string', 'max:50'],
             'name' => ['nullable', 'string', 'max:255'],
@@ -218,6 +219,7 @@ class ConsentFormController extends Controller {
             'id_type' => ['required', 'in:id_card,passport'],
             'id_card' => $this->getIdCardRule($request),
             'education' => ['required', 'string', 'max:50'],
+            'educationOther' => ['nullable', 'required_if:education,' . self::OPTION_OTHER, 'string', 'max:100'],
             'marital_status' => ['required', 'string', 'max:50'],
         ];
     }
@@ -309,11 +311,11 @@ class ConsentFormController extends Controller {
             'extraIncomeSource' => ['required', 'string', 'max:255'],
             'extraIncomeSourceOther' => ['nullable', 'required_if:extraIncomeSource,' . self::OPTION_OTHER, 'string', 'max:255'],
             'incomeCountry' => ['nullable', 'string', 'max:100'],
-            'hasOtherDebts' => ['required', 'string', 'max:10'],
-            'otherDebtInstallment' => ['nullable', 'required_if:hasOtherDebts,มี', 'numeric', 'min:0'],
-            'hasExistingLoan' => ['required', 'string', 'in:ใช่,ไม่ใช่'],
-            'existingLoanInstitutionCount' => ['nullable', 'required_if:hasExistingLoan,ใช่', 'integer', 'min:1'],
-            'existingLoanTotalAmount' => ['nullable', 'required_if:hasExistingLoan,ใช่', 'numeric', 'min:0'],
+            'hasOtherDebts' => ['required', 'string', 'in:0,1'],
+            'otherDebtInstallment' => ['nullable', 'required_if:hasOtherDebts,1', 'numeric', 'min:0'],
+            'hasExistingLoan' => ['required', 'string', 'in:0,1'],
+            'existingLoanInstitutionCount' => ['nullable', 'required_if:hasExistingLoan,1', 'integer', 'min:1'],
+            'existingLoanTotalAmount' => ['nullable', 'required_if:hasExistingLoan,1', 'numeric', 'min:0'],
         ];
     }
 
@@ -372,6 +374,9 @@ class ConsentFormController extends Controller {
             'refWorkPhone' => ['nullable', 'string', 'max:20'],
             'refWorkYears' => ['nullable', 'integer', 'min:0'],
             'refWorkMonths' => ['nullable', 'integer', 'min:0', 'max:11'],
+            // Allow uploading reference/guarantor documents at Step 5
+            'referenceDocuments' => ['nullable', 'array'],
+            'referenceDocuments.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ];
     }
 
@@ -467,6 +472,12 @@ class ConsentFormController extends Controller {
             $title = $request->title_other;
         }
         
+        $education = $validated['education'] ?? null;
+        $educationOther = null;
+        if ($education === self::OPTION_OTHER && $request->filled('educationOther')) {
+            $educationOther = $request->educationOther;
+        }
+
         $applicant = ConsentApplicant::updateOrCreate(
             ['application_id' => $consent->id],
             [
@@ -477,7 +488,8 @@ class ConsentFormController extends Controller {
                 'nationality' => $validated['nationality'] ?? null,
                 'id_card' => $validated['id_type'] === 'id_card' ? preg_replace('/\D+/', '', $validated['id_card']) : null,
                 'passport' => $validated['id_type'] === 'passport' ? strtoupper(trim($validated['id_card'])) : null,
-                'education' => $validated['education'] ?? null,
+                'education' => $education,
+                'education_other' => $educationOther,
                 'marital_status' => $validated['marital_status'] ?? null,
             ]
         );
@@ -536,23 +548,32 @@ class ConsentFormController extends Controller {
     }
 
     private function handleStep3(ConsentApplication $consent, array $validated, Request $request): void {
+        // Preserve the selected sentinel value for the main fields (e.g. 'อื่นๆ')
+        // and store any user-entered detail into the corresponding *_other columns.
         $occupation = $validated['occupation'] ?? null;
+        $occupationOther = null;
         if ($occupation === self::OPTION_OTHER && $request->filled('occupationOther')) {
-            $occupation = $request->occupationOther;
+            $occupationOther = $request->occupationOther;
         }
+
         $careerField = $validated['careerField'] ?? null;
+        $careerFieldOther = null;
         if ($careerField === self::OPTION_OTHER && $request->filled('careerFieldOther')) {
-            $careerField = $request->careerFieldOther;
+            $careerFieldOther = $request->careerFieldOther;
         }
+
         $businessType = $validated['businessType'] ?? null;
+        $businessTypeOther = null;
         if ($businessType === self::OPTION_OTHER && $request->filled('businessTypeOther')) {
-            $businessType = $request->businessTypeOther;
+            $businessTypeOther = $request->businessTypeOther;
         }
 
         $consent->applicants()->orderBy('applicant_order')->first()->update([
             'occupation' => $occupation,
             'government_level' => $validated['governmentLevel'] ?? null,
             'career_field' => $careerField,
+            'occupation_other' => $occupationOther,
+            'career_field_other' => $careerFieldOther,
         ]);
 
         $applicant = $consent->applicants()->orderBy('applicant_order')->first();
@@ -563,6 +584,7 @@ class ConsentFormController extends Controller {
                 'use_home_address' => (bool) ($validated['useHomeAddress'] ?? false),
                 'company_name' => $validated['companyName'] ?? null,
                 'business_type' => $businessType,
+                'business_type_other' => $businessTypeOther,
                 'work_department' => $validated['workDepartment'] ?? null,
                 'work_phone' => $validated['workPhone'] ?? null,
                 'work_years' => $validated['workYears'] ?? null,
@@ -604,19 +626,24 @@ class ConsentFormController extends Controller {
     }
 
     private function handleStep4(ConsentApplication $consent, array $validated, Request $request): void {
+        // preserve sentinel in main column and save typed text in *_other
         $extraIncomeSource = $validated['extraIncomeSource'] ?? null;
-        if ($extraIncomeSource === 'อื่นๆ' && $request->filled('extraIncomeSourceOther')) {
-            $extraIncomeSource = $request->extraIncomeSourceOther;
+        $extraIncomeSourceOther = null;
+        if ($extraIncomeSource === self::OPTION_OTHER) {
+            if ($request->filled('extraIncomeSourceOther')) {
+                $extraIncomeSourceOther = $request->extraIncomeSourceOther;
+            }
         }
         
-        // Convert to boolean for database consistency
-        $hasOtherDebts = $validated['hasOtherDebts'] === 'มี';
-        $hasExistingLoan = $validated['hasExistingLoan'] === 'ใช่';
+        // Convert to boolean for database consistency (frontend sends '1' for yes, '0' for no)
+        $hasOtherDebts = isset($validated['hasOtherDebts']) ? ($validated['hasOtherDebts'] === '1' || $validated['hasOtherDebts'] === 1) : null;
+        $hasExistingLoan = isset($validated['hasExistingLoan']) ? ($validated['hasExistingLoan'] === '1' || $validated['hasExistingLoan'] === 1) : null;
 
         $consent->applicants()->orderBy('applicant_order')->first()->update([
             'income' => $validated['income'],
             'extra_income' => $validated['extraIncome'] ?? null,
             'extra_income_source' => $extraIncomeSource,
+            'extra_income_source_other' => $extraIncomeSourceOther,
             'income_country' => $validated['incomeCountry'] ?? null,
             'has_other_debts' => $hasOtherDebts,
             'other_debt_installment' => $hasOtherDebts ? $validated['otherDebtInstallment'] : 0,
@@ -634,6 +661,13 @@ class ConsentFormController extends Controller {
     private function handleStep5(ConsentApplication $consent, array $validated, Request $request): void {
         $applicant = $consent->applicants()->orderBy('applicant_order')->first();
 
+        // preserve 'อื่นๆ' other value for education when present
+        $refEducation = $validated['refEducation'] ?? null;
+        $refEducationOther = null;
+        if ($refEducation === self::OPTION_OTHER && $request->filled('refEducationOther')) {
+            $refEducationOther = $request->refEducationOther;
+        }
+
         $ref = ConsentReference::updateOrCreate(
             ['applicant_id' => $applicant?->id],
             [
@@ -645,7 +679,8 @@ class ConsentFormController extends Controller {
                 'birthdate' => $validated['refBirthdate'] ?? null,
                 'nationality' => $validated['refNationality'] ?? null,
                 'marital_status' => $validated['refMaritalStatus'] ?? null,
-                'education' => $validated['refEducation'] ?? null,
+                'education' => $refEducation,
+                'education_other' => $refEducationOther,
                 'occupation' => $validated['refOccupation'] ?? null,
                 'government_level' => $validated['refGovernmentLevel'] ?? null,
                 'occupation_other' => $validated['refOccupationOther'] ?? null,
@@ -654,6 +689,7 @@ class ConsentFormController extends Controller {
                 'income' => $validated['refIncome'] ?? null,
                 'extra_income' => $validated['refExtraIncome'] ?? null,
                 'extra_income_source' => $validated['refExtraIncomeSource'] ?? null,
+                'extra_income_source_other' => ($validated['refExtraIncomeSource'] === self::OPTION_OTHER && $request->filled('refExtraIncomeSourceOther')) ? $request->refExtraIncomeSourceOther : null,
                 'income_country' => $validated['refIncomeCountry'] ?? null,
                 'has_other_debts' => isset($validated['refHasOtherDebts']) ? (bool)$validated['refHasOtherDebts'] : null,
                 'other_debt_installment' => $validated['refOtherDebtInstallment'] ?? null,
@@ -701,6 +737,12 @@ class ConsentFormController extends Controller {
         );
         // Persist employment-like info only when reference is a guarantor
         if (($ref->ref_type ?? $validated['refType'] ?? null) === 'guarantor') {
+            // preserve 'อื่นๆ' other value for business type when present
+            $refBusinessType = $validated['refBusinessType'] ?? null;
+            $refBusinessTypeOther = null;
+            if ($refBusinessType === self::OPTION_OTHER && $request->filled('refBusinessTypeOther')) {
+                $refBusinessTypeOther = $request->refBusinessTypeOther;
+            }
             $employment = ConsentEmployment::firstOrNew(['reference_id' => $ref->id]);
             $employment->applicant_id = $applicant?->id;
             $employment->reference_id = $ref->id;
@@ -708,6 +750,7 @@ class ConsentFormController extends Controller {
             // company_name: prefer explicit company field if provided, fallback to building name
             $employment->company_name = $validated['refWorkCompany'] ?? $validated['refWorkBuildingName'] ?? $validated['refWorkBuilding'] ?? null;
             $employment->business_type = $validated['refBusinessType'] ?? null;
+            $employment->business_type_other = $refBusinessTypeOther;
             $employment->work_department = $validated['refWorkDepartment'] ?? null;
             $employment->work_years = isset($validated['refWorkYears']) ? (int)$validated['refWorkYears'] : null;
             $employment->work_months = isset($validated['refWorkMonths']) ? (int)$validated['refWorkMonths'] : null;
@@ -724,6 +767,13 @@ class ConsentFormController extends Controller {
             'ref_work_addr_id' => $refWorkAddr->id ?? null,
             'ref_employment_id' => $employment?->id ?? null,
         ]);
+
+        // Process uploaded reference/guarantor documents immediately when Step 5 is saved
+        try {
+            $this->processStep8UploadField($consent, $request, 'referenceDocuments', 'reference_document');
+        } catch (\Exception $e) {
+            Log::warning('Consent handleStep5: reference document processing failed', ['err' => $e->getMessage(), 'consent_id' => $consent->id]);
+        }
     }
 
     private function handleStep6(ConsentApplication $consent, array $validated, Request $request): void {
@@ -799,6 +849,7 @@ class ConsentFormController extends Controller {
         $uploadFields = [
             'incomeDocuments' => 'income_document',
             'identityDocuments' => 'identity_document',
+            'referenceDocuments' => 'reference_document',
         ];
 
         foreach ($uploadFields as $fieldName => $documentType) {

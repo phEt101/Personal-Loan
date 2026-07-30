@@ -149,8 +149,6 @@ class ConsentDocumentController extends ConsentController
             return response()->json(['ok' => false, 'message' => 'No matching entries found'], 404);
         }
 
-        // If removing these entries would leave zero non-directory files, delete the
-        // entire ZIP file and database record instead of creating an empty zip.
         $remainingCount = 0;
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $stat = $zip->statIndex($i);
@@ -163,7 +161,6 @@ class ConsentDocumentController extends ConsentController
         }
 
         if ($remainingCount === 0) {
-            // close zip then delete original
             $zip->close();
             try {
                 if ($disk->exists($document->path)) {

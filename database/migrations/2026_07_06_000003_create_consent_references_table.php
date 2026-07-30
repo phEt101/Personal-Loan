@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('nationality', 50)->nullable()->comment('สัญชาติ');
             $table->string('marital_status', 50)->nullable()->comment('สถานภาพสมรส');
             $table->string('education', 50)->nullable()->comment('ระดับการศึกษา');
+            $table->string('education_other', 150)->nullable()->comment('ระบุการศึกษาอื่นๆ');
             $table->string('occupation', 100)->nullable()->comment('อาชีพ');
             $table->string('government_level', 100)->nullable()->comment('ระดับข้าราชการ');
             $table->string('occupation_other', 100)->nullable()->comment('ระบุอาชีพอื่นๆ');
@@ -28,6 +29,7 @@ return new class extends Migration
             $table->decimal('income', 12, 2)->nullable()->comment('รายได้หลัก');
             $table->decimal('extra_income', 12, 2)->nullable()->comment('รายได้เสริม');
             $table->string('extra_income_source', 100)->nullable()->comment('แหล่งที่มาของรายได้');
+            $table->string('extra_income_source_other', 150)->nullable()->comment('ระบุแหล่งที่มาของรายได้อื่นๆ');
             $table->string('income_country', 100)->nullable()->comment('ประเทศที่มาของรายได้');
             $table->boolean('has_other_debts')->nullable()->comment('มีหนี้สินอื่นหรือไม่');
             $table->decimal('other_debt_installment', 12, 2)->nullable()->comment('ค่างวดหนี้สินอื่นต่อเดือน');

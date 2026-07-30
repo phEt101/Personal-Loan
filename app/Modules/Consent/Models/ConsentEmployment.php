@@ -14,6 +14,7 @@ class ConsentEmployment extends Model
         'use_home_address',
         'company_name',
         'business_type',
+        'business_type_other',
         'work_department',
         'work_years',
         'work_months',

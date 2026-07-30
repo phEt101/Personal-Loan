@@ -11,6 +11,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/consent/{consent}', [ConsentController::class, 'destroy'])->name('consent.destroy');
 
     Route::get('/consent/postcodes/options', [ConsentController::class, 'postCodeOptions'])->name('consent.postcodes.options');
+    Route::get('/consent/next-app-no', [ConsentController::class, 'nextAppNo'])->name('consent.next-app-no');
 
     Route::get('/consent/modals/form', [ConsentController::class, 'modalConsentForm'])->name('consent.modals.form');
     Route::get('/consent/modals/view', [ConsentController::class, 'modalConsentView'])->name('consent.modals.view');

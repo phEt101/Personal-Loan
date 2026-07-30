@@ -193,6 +193,16 @@ class ConsentController extends ConsentFormController
         return response()->json((object) $this->toFrontendData($consent));
     }
 
+    /**
+     * Return next application number for frontend (JSON)
+     */
+    public function nextAppNo(Request $request) {
+        // Attempt to obtain next app no; use lock flag to be safe when possible
+        $next = $this->getNextAppNo(false);
+
+        return response()->json(['nextAppNo' => $next]);
+    }
+
     public function destroy(ConsentApplication $consent){
         $consent->load(['applicants' => function($q){ $q->select('id','application_id','name','applicant_order')->orderBy('applicant_order'); }]);
         $name = $consent->applicants->sortBy('applicant_order')->first()?->name;
@@ -226,8 +236,12 @@ class ConsentController extends ConsentFormController
         $account = $consent->disbursementAccount;
         $applicantPhoto = $this->buildApplicantPhoto($consent);
 
-        [$hasOtherDebts, $hasExistingLoan] = $this->resolveDebtAndLoanLabels($applicant);
         $idType = $this->resolveIdType($applicant);
+        // boolean flags for frontend (use '1'/'0' strings for consistency with JS)
+        $hasOtherDebtsFlag = $applicant?->has_other_debts ? '1' : '0';
+        $hasExistingLoanFlag = $applicant?->has_existing_loan ? '1' : '0';
+        // human-readable labels
+        [$hasOtherDebtsLabel, $hasExistingLoanLabel] = $this->resolveDebtAndLoanLabels($applicant);
         $incomeDocuments = $this->buildIncomeDocuments($consent);
 
         return array_merge($consent->toArray(), $this->buildFrontendPayload($consent, [
@@ -243,8 +257,10 @@ class ConsentController extends ConsentFormController
             'loan' => $loan,
             'account' => $account,
             'idType' => $idType,
-            'hasOtherDebts' => $hasOtherDebts,
-            'hasExistingLoan' => $hasExistingLoan,
+            'hasOtherDebts' => $hasOtherDebtsFlag,
+            'hasOtherDebtsLabel' => $hasOtherDebtsLabel,
+            'hasExistingLoan' => $hasExistingLoanFlag,
+            'hasExistingLoanLabel' => $hasExistingLoanLabel,
             'incomeDocuments' => $incomeDocuments,
             'applicantPhoto' => $applicantPhoto,
         ]));
@@ -370,6 +386,7 @@ class ConsentController extends ConsentFormController
             'id_type' => $idType,
             'id_card' => $applicant?->id_card ?: $applicant?->passport,
             'education' => $applicant?->education,
+            'educationOther' => $applicant?->education_other,
             'marital_status' => $applicant?->marital_status,
 
             'residence_status' => $home?->residence_status,
@@ -401,6 +418,7 @@ class ConsentController extends ConsentFormController
             'careerFieldOther' => $applicant?->career_field_other,
             'companyName' => $employment?->company_name,
             'businessType' => $employment?->business_type,
+            'businessTypeOther' => $employment?->business_type_other,
             'workAddressBuilding' => $work?->address_building,
             'workAddressFloor' => $work?->address_floor,
             'workDepartment' => $employment?->work_department,
@@ -425,6 +443,7 @@ class ConsentController extends ConsentFormController
             'income' => $applicant?->income,
             'extraIncome' => $applicant?->extra_income,
             'extraIncomeSource' => $applicant?->extra_income_source,
+            'extraIncomeSourceOther' => $applicant?->extra_income_source_other,
             'incomeCountry' => $applicant?->income_country,
             'incomeDocuments' => $incomeDocuments,
             'applicantPhoto' => $applicantPhoto,
@@ -454,12 +473,16 @@ class ConsentController extends ConsentFormController
             'refBirthdate' => $reference?->birthdate?->format('Y-m-d'),
             'refNationality' => $reference?->nationality,
             'refEducation' => $reference?->education,
+            'refEducationOther' => $reference?->education_other,
             'refMaritalStatus' => $reference?->marital_status,
             'refOccupation' => $reference?->occupation,
             'refCareerField' => $reference?->career_field,
+            'refOccupationOther' => $reference?->occupation_other,
+            'refCareerFieldOther' => $reference?->career_field_other,
             'refIncome' => $reference?->income,
             'refExtraIncome' => $reference?->extra_income,
             'refExtraIncomeSource' => $reference?->extra_income_source,
+            'refExtraIncomeSourceOther' => $reference?->extra_income_source_other,
             'refIncomeCountry' => $reference?->income_country,
             // map debt/loan flags to form select values ('1'/'0') used in the modal
             'refHasOtherDebts' => isset($reference->has_other_debts) ? ($reference->has_other_debts ? '1' : '0') : null,
@@ -469,8 +492,20 @@ class ConsentController extends ConsentFormController
             'refExistingLoanTotalAmount' => $reference?->existing_loan_total_amount,
 
             // Reference work/employment and work address (use single relation `referenceWorkAddress`)
-            'refUseHomeAddress' => $employment?->use_home_address ?? null,
-            'refWorkCompany' => $employment?->company_name ?? null,
+            'refUseHomeAddress' => (function() use ($reference) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp) return $refEmp->use_home_address;
+                }
+                return null;
+            })(),
+            'refWorkCompany' => (function() use ($reference) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp) return $refEmp->company_name;
+                }
+                return null;
+            })(),
             // refBusinessType should come from employment record linked to the reference (reference_id),
             // fallback to the applicant's employment.business_type if no reference employment exists
             'refBusinessType' => (function() use ($reference, $employment) {
@@ -480,7 +515,20 @@ class ConsentController extends ConsentFormController
                 }
                 return $employment?->business_type ?? null;
             })(),
-            'refWorkDepartment' => $employment?->work_department ?? null,
+            'refBusinessTypeOther' => (function() use ($reference, $employment) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp) return $refEmp->business_type_other;
+                }
+                return $employment?->business_type_other ?? null;
+            })(),
+            'refWorkDepartment' => (function() use ($reference) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp) return $refEmp->work_department;
+                }
+                return null;
+            })(),
             'refWorkBuildingName' => $consent->referenceWorkAddress?->address_building ?? null,
             'refWorkNo' => $consent->referenceWorkAddress?->address_no ?? null,
             'refWorkRoom' => $consent->referenceWorkAddress?->address_room ?? null,
@@ -492,13 +540,39 @@ class ConsentController extends ConsentFormController
             'refWorkDistrict' => $consent->referenceWorkAddress?->address_district ?? null,
             'refWorkProvince' => $consent->referenceWorkAddress?->address_province ?? null,
             'refWorkPostal' => $consent->referenceWorkAddress?->address_postal ?? null,
-            'refWorkPhone' => $employment?->work_phone ?? null,
-            'refWorkYears' => $employment?->work_years ?? null,
-            'refWorkMonths' => $employment?->work_months ?? null,
+            'refWorkPhone' => (function() use ($reference) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp) return $refEmp->work_phone;
+                }
+                return null;
+            })(),
+            'refWorkYears' => (function() use ($reference) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp) return $refEmp->work_years;
+                }
+                return null;
+            })(),
+            'refWorkMonths' => (function() use ($reference) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp) return $refEmp->work_months;
+                }
+                return null;
+            })(),
             // total months = years*12 + months (if available)
-            'refWorkTotalMonths' => ($employment?->work_years !== null || $employment?->work_months !== null)
-                ? (((int)($employment?->work_years ?? 0) * 12) + (int)($employment?->work_months ?? 0))
-                : null,
+            'refWorkTotalMonths' => (function() use ($reference) {
+                if ($reference?->id) {
+                    $refEmp = \App\Modules\Consent\Models\ConsentEmployment::where('reference_id', $reference->id)->first();
+                    if ($refEmp && ($refEmp->work_years !== null || $refEmp->work_months !== null)) {
+                        $years = (int)($refEmp->work_years ?? 0);
+                        $months = (int)($refEmp->work_months ?? 0);
+                        return ($years * 12) + $months;
+                    }
+                }
+                return null;
+            })(),
 
             'loanPurpose' => $loan?->loan_purpose,
             'loanTerm' => $loan?->loan_term,

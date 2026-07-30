@@ -616,17 +616,18 @@
             const extraIncome = customer.extraIncome ? parseInt(customer.extraIncome).toLocaleString('th-TH') + ' บาท' : '-';
             const extraIncomeSource = customer.extraIncomeSource || '-';
             const incomeCountry = customer.incomeCountry || '-';
-            const hasOtherDebts = customer.hasOtherDebts || '-';
+            const hasOtherDebts = (customer.hasOtherDebtsLabel !== undefined && customer.hasOtherDebtsLabel !== null)
+                ? customer.hasOtherDebtsLabel
+                : (customer.hasOtherDebts === '1' ? 'มี' : (customer.hasOtherDebts === '0' ? 'ไม่มี' : '-'));
             const otherDebtInstallment = customer.otherDebtInstallment ? parseInt(customer.otherDebtInstallment).toLocaleString('th-TH') + ' บาท' : '-';
-            const hasExistingLoan = customer.hasExistingLoan || '-';
+            const hasExistingLoan = (customer.hasExistingLoanLabel !== undefined && customer.hasExistingLoanLabel !== null)
+                ? customer.hasExistingLoanLabel
+                : (customer.hasExistingLoan === '1' ? 'ใช่' : (customer.hasExistingLoan === '0' ? 'ไม่ใช่' : '-'));
             const existingLoanInstitutionCount = customer.existingLoanInstitutionCount ?? '-';
             const existingLoanTotalAmount = customer.existingLoanTotalAmount ? parseInt(customer.existingLoanTotalAmount).toLocaleString('th-TH') + ' บาท' : '-';
             const applicantPhoto = customer.applicantPhoto ?? null;
             const applicantPhotoSrc = applicantPhoto?.downloadUrl || 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27 viewBox=%270 0 160 160%27%3E%3Crect width=%27160%27 height=%27160%27 rx=%2780%27 fill=%27%23f8fafc%27/%3E%3Ccircle cx=%2780%27 cy=%2758%27 r=%2736%27 fill=%27none%27 stroke=%2710b981%27 stroke-width=%278%27/%3E%3Cpath d=%27M42 138c4-22 20-34 38-34h0c18 0 34 12 38 34%27 fill=%27none%27 stroke=%2710b981%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E';
             const incomeDocuments = Array.isArray(customer.incomeDocuments) ? customer.incomeDocuments : [];
-            // If identityDocuments array is empty, try to heuristically separate identity files
-            // from income files by filename keywords to avoid labelling identity files
-            // as "ไฟล์หลักฐานการเงิน" in the view modal.
             const identityKeywords = /(id|identity|passport|บัตร|หลักฐาน)/i;
             const identityCandidates = [];
             const incomeOnly = [];
@@ -746,6 +747,30 @@
             const refAddressPostal = customer.refAddressPostal || '-';
             const refPhoneHome = customer.refPhoneHome || '-';
             const refPhoneMobile = customer.refPhoneMobile || '-';
+            // Additional guarantor/reference personal & work fields
+            const refBirthdate = customer.refBirthdate ? new Date(customer.refBirthdate).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+            const refNationality = customer.refNationality || '-';
+            const refEducation = customer.refEducation || '-';
+            const refMaritalStatus = customer.refMaritalStatus || '-';
+            const refOccupation = customer.refOccupation || '-';
+            const refCareerField = customer.refCareerField || '-';
+            const refIncome = customer.refIncome ? parseInt(customer.refIncome).toLocaleString('th-TH') + ' บาท' : '-';
+            const refExtraIncome = customer.refExtraIncome ? parseInt(customer.refExtraIncome).toLocaleString('th-TH') + ' บาท' : '-';
+            const refExtraIncomeSource = customer.refExtraIncomeSource || '-';
+            const refHasOtherDebts = (customer.refHasOtherDebts !== undefined && customer.refHasOtherDebts !== null) ? (customer.refHasOtherDebts === '1' || customer.refHasOtherDebts === 1 ? 'มี' : (customer.refHasOtherDebts === '0' || customer.refHasOtherDebts === 0 ? 'ไม่มี' : customer.refHasOtherDebts)) : '-';
+            const refOtherDebtInstallment = customer.refOtherDebtInstallment ? parseInt(customer.refOtherDebtInstallment).toLocaleString('th-TH') + ' บาท' : '-';
+            const refHasExistingLoan = (customer.refHasExistingLoan !== undefined && customer.refHasExistingLoan !== null) ? (customer.refHasExistingLoan === '1' || customer.refHasExistingLoan === 1 ? 'ใช่' : (customer.refHasExistingLoan === '0' || customer.refHasExistingLoan === 0 ? 'ไม่ใช่' : customer.refHasExistingLoan)) : '-';
+            const refExistingLoanInstitutionCount = customer.refExistingLoanInstitutionCount ?? '-';
+            const refExistingLoanTotalAmount = customer.refExistingLoanTotalAmount ? parseInt(customer.refExistingLoanTotalAmount).toLocaleString('th-TH') + ' บาท' : '-';
+            const refWorkAddress = `${customer.refWorkNo || '-'}${customer.refWorkRoom ? ' ห้อง ' + customer.refWorkRoom : ''}${customer.refWorkFloor ? ' ชั้น ' + customer.refWorkFloor : ''}${customer.refWorkVillage ? ' หมู่ที่ ' + customer.refWorkVillage : ''}${customer.refWorkBuildingName ? ' ' + customer.refWorkBuildingName : ''}${customer.refWorkSoi ? ' ซอย ' + customer.refWorkSoi : ''}${customer.refWorkRoad ? ' ถนน ' + customer.refWorkRoad : ''}${customer.refWorkSubdistrict ? ' แขวง/ตำบล ' + customer.refWorkSubdistrict : ''}${customer.refWorkDistrict ? ' เขต/อำเภอ ' + customer.refWorkDistrict : ''}${customer.refWorkProvince ? ' จังหวัด ' + customer.refWorkProvince : ''}${customer.refWorkPostal ? ' ' + customer.refWorkPostal : ''}`;
+            const refWorkCompany = customer.refWorkCompany || '-';
+            const refWorkPhone = customer.refWorkPhone || '-';
+            const refWorkTotalMonths = customer.refWorkTotalMonths ?? null;
+            const refWorkYears = (refWorkTotalMonths !== null) ? Math.floor(refWorkTotalMonths / 12) : null;
+            const refWorkMonths = (refWorkTotalMonths !== null) ? (refWorkTotalMonths % 12) : null;
+            // Determine reference section title based on refType (reference or guarantor)
+            const refType = customer.refType || '';
+            const refSectionTitle = (refType === 'guarantor') ? `{{ __('consent::messages.modal.form.step5.options.guarantor') }}` : `{{ __('consent::messages.modal.form.step5.options.reference') }}`;
             // Loan request fields
             const loanTerm = customer.loanTerm ? `${customer.loanTerm} เดือน` : '-';
             const loanAmountType = customer.loanAmountType || '-';
@@ -845,7 +870,10 @@
                         </tr>
                         <tr>
                             <td class="label">{{ __('consent::messages.modal.form.step1.fields.education') }}</td>
-                            <td class="value">${education}</td>
+                            <td class="value">
+                                ${education}
+                                ${customer.education === 'อื่นๆ' && customer.educationOther ? ` (ระบุ: ${customer.educationOther})` : ''}
+                            </td>
                         </tr>
                         <tr>
                             <td class="label">{{ __('consent::messages.modal.form.step3.fields.occupation') }}:</td>
@@ -886,7 +914,7 @@
                             <td class="label">{{ __('consent::messages.modal.form.step4.fields.has_other_debts') }}:</td>
                             <td class="value">${hasOtherDebts}</td>
                         </tr>
-                        ${customer.hasOtherDebts === 'มี' ? `
+                        ${customer.hasOtherDebts === '1' ? `
                         <tr>
                             <td class="label">{{ __('consent::messages.modal.form.step4.fields.other_debt_installment') }}</td>
                             <td class="value">${otherDebtInstallment}</td>
@@ -903,7 +931,7 @@
                         </p>
                         <p class="consent-value">${hasExistingLoan || '-'}</p>
 
-                        ${hasExistingLoan === 'ใช่' ? `
+                        ${customer.hasExistingLoan === '1' ? `
                         <div class="consent-existing-details">
                             <p><strong>{{ __('consent::messages.modal.form.step4.fields.existing_loan_institution_count') }}:</strong> ${existingLoanInstitutionCount}</p>
                             <p><strong>{{ __('consent::messages.modal.form.step4.fields.existing_loan_total_amount') }}:</strong> ${existingLoanTotalAmount}</p>
@@ -1051,9 +1079,9 @@
                     </table>
                 </div>
 
-                <!-- Reference Person Section -->
+                <!-- Reference / Guarantor Section -->
                 <div class="panel panel--purple panel--compact">
-                    <h4 class="section-title">{{ __('consent::messages.modal.form.step5.sections.reference') }}</h4>
+                    <h4 class="section-title">${refSectionTitle}</h4>
                     <table class="consent-detail-table">
                         <tr>
                             <td class="label">{{ __('consent::messages.modal.form.step5.fields.ref_name') }}</td>
@@ -1075,6 +1103,74 @@
                             <td class="label">{{ __('consent::messages.modal.form.common.phone_number') }}</td>
                             <td class="value">${refPhoneMobile}</td>
                         </tr>
+                        ${refType === 'guarantor' ? `
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.birthdate') }}</td>
+                            <td class="value">${refBirthdate}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step1.fields.nationality') }}</td>
+                            <td class="value">${refNationality}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.occupation') }}</td>
+                            <td class="value">${refOccupation}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.income') }}</td>
+                            <td class="value">${refIncome}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.company_name') }}</td>
+                            <td class="value">${refWorkCompany}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.common.phone_number') }}</td>
+                            <td class="value">${refWorkPhone}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.work_address') }}</td>
+                            <td class="value">${refWorkAddress}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.placeholders.extra_income') }}</td>
+                            <td class="value">${refExtraIncome}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.extra_income_source') }}</td>
+                            <td class="value">${refExtraIncomeSource}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.has_other_debts') }}</td>
+                            <td class="value">${refHasOtherDebts}</td>
+                        </tr>
+                        ${customer.refHasOtherDebts ? `
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.other_debt_installment') }}</td>
+                            <td class="value">${refOtherDebtInstallment}</td>
+                        </tr>
+                        ` : ''}
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.questions.existing_loan') }}</td>
+                            <td class="value">${refHasExistingLoan}</td>
+                        </tr>
+                        ${customer.refHasExistingLoan ? `
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.existing_loan_institution_count') }}</td>
+                            <td class="value">${refExistingLoanInstitutionCount}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step4.fields.existing_loan_total_amount') }}</td>
+                            <td class="value">${refExistingLoanTotalAmount}</td>
+                        </tr>
+                        ` : ''}
+                        ${refWorkTotalMonths !== null ? `
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.step3.fields.work_experience') }}</td>
+                            <td class="value">${refWorkYears} ปี ${refWorkMonths} เดือน</td>
+                        </tr>
+                        ` : ''}
+                        ` : ''}
                     </table>
                 </div>
 
@@ -1362,6 +1458,35 @@
                 }
             }
 
+        // Reference sections visibility (handled in index to ensure bindings exist before modal load)
+        (function(){
+            function setRefSectionsVisible(show) {
+                const occupationSection = document.querySelector('[data-section="ref-occupation"]')?.parentElement;
+                const incomeSection = document.querySelector('[data-section="ref-income"]')?.parentElement;
+                if (occupationSection) {
+                    if (show) occupationSection.classList.remove('hidden'); else occupationSection.classList.add('hidden');
+                    occupationSection.querySelectorAll('input, select, textarea').forEach(el => {
+                        if (!show) el.removeAttribute('required');
+                    });
+                }
+                if (incomeSection) {
+                    if (show) incomeSection.classList.remove('hidden'); else incomeSection.classList.add('hidden');
+                    incomeSection.querySelectorAll('input, select, textarea').forEach(el => {
+                        if (!show) el.removeAttribute('required');
+                    });
+                }
+            }
+
+            const refType = document.getElementById('refType');
+            if (refType) {
+                // initialize
+                setRefSectionsVisible(Boolean(refType.value));
+                refType.addEventListener('change', function(){
+                    setRefSectionsVisible(Boolean(this.value));
+                });
+            }
+        })();
+
             // Wire refType change to update visibility
             const refTypeField = consentForm?.querySelector('[name="refType"]');
             if (refTypeField) {
@@ -1376,7 +1501,8 @@
             if (refHasOtherDebtsField) {
                 refHasOtherDebtsField.addEventListener('change', function(e) {
                     const v = String(e.target.value);
-                    if (refOtherDebtInstallmentWrapper) refOtherDebtInstallmentWrapper.classList.toggle('hidden', v !== 'มี');
+                    // option values are '1' for yes and '0' for no — show when '1'
+                    if (refOtherDebtInstallmentWrapper) refOtherDebtInstallmentWrapper.classList.toggle('hidden', v !== '1');
                 });
                 // initialize
                 refHasOtherDebtsField.dispatchEvent(new Event('change'));
@@ -1388,7 +1514,8 @@
             if (refHasExistingLoanField) {
                 refHasExistingLoanField.addEventListener('change', function(e) {
                     const v = String(e.target.value);
-                    const show = v === 'ใช่';
+                    // option values are '1' for yes and '0' for no — show when '1'
+                    const show = v === '1';
                     if (refExistingLoanInstitutionCountWrapper) refExistingLoanInstitutionCountWrapper.classList.toggle('hidden', !show);
                     if (refExistingLoanTotalAmountWrapper) refExistingLoanTotalAmountWrapper.classList.toggle('hidden', !show);
                 });
@@ -1535,6 +1662,10 @@
                         if (result.consent_id) {
                             const idField = document.getElementById('consent_id');
                             if (idField) idField.value = result.consent_id;
+                            // if this was a create (no consentId sent), refresh next app no for subsequent creates
+                            if (!consentId) {
+                                try { await refreshNextAppNo(); } catch (e) { }
+                            }
                         }
                         return { ok: true, data: result };
                     } else {
@@ -1680,6 +1811,18 @@
             const appDateInput = document.getElementById('app_date');
             const signatureDataInput = document.getElementById('signatureData');
             modalNextAppNo = modal?.dataset.nextAppNo || '';
+
+            async function refreshNextAppNo() {
+                try {
+                    const res = await fetch(@json(route('consent.next-app-no')),{ headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }});
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    modalNextAppNo = data.nextAppNo || '';
+                    if (appNoInput) appNoInput.value = modalNextAppNo;
+                } catch (e) {
+                    // ignore network errors
+                }
+            }
             let signaturePad;
             let signatureInitSeq = 0;
             let isSyncingConditionalSections = false;
@@ -2150,21 +2293,34 @@
                     const incContainer = incSectionTitle.closest('.form-group.col-12') || incSectionTitle.parentElement;
                     if (incContainer) incContainer.classList.toggle('hidden', !isGuarantor);
                 }
+
+                // Hide/show reference documents upload block
+                const refDocsSection = document.getElementById('referenceDocumentsSection');
+                if (refDocsSection) {
+                    refDocsSection.classList.toggle('hidden', !isGuarantor);
+                }
             }
 
-            function setSelectWithOther(selectName, otherInputName, value, allowedValues) {
+            function setSelectWithOther(selectName, otherInputName, value, allowedValues, otherValue) {
                 const normalizedValue = value ?? '';
 
                 if (!normalizedValue) {
                     setFieldValue(selectName, '');
                 } else if (allowedValues.includes(normalizedValue)) {
                     setFieldValue(selectName, normalizedValue);
+                    // If the value is the sentinel 'อื่นๆ' but an explicit otherValue is provided,
+                    // populate the other input so editing shows the previously-entered text.
+                    if (normalizedValue === 'อื่นๆ' && otherValue) {
+                        setFieldValue(otherInputName, otherValue);
+                    }
                 } else {
                     setFieldValue(selectName, 'อื่นๆ');
-                    const selectField = consentForm?.querySelector(`[name="${selectName}"]`);
-                    selectField?.dispatchEvent(new Event('change'));
                     setFieldValue(otherInputName, normalizedValue);
                 }
+
+                // Always dispatch change so dependent "other" inputs show/hide correctly
+                const selectField = consentForm?.querySelector(`[name="${selectName}"]`);
+                selectField?.dispatchEvent(new Event('change'));
             }
 
             const documentUploadGroups = [
@@ -2203,6 +2359,12 @@
                     documentType: 'identity_document',
                     acceptedDocumentTypes: ['identity_document', 'id_card', 'passport', 'house_registration', 'work_permit', 'name_change'],
                     defaultTypeLabel: 'เอกสารแสดงตน',
+                },
+                {
+                    key: 'referenceDocuments',
+                    documentType: 'reference_document',
+                    acceptedDocumentTypes: ['reference_document'],
+                    defaultTypeLabel: 'เอกสารผู้ค้ำ/ผู้แนะนำ',
                 },
             ];
 
@@ -2247,7 +2409,12 @@
             }
 
             function renderIncomeDocumentsExisting(customer) {
-                const documents = Array.isArray(customer?.incomeDocuments) ? customer.incomeDocuments : [];
+                const documents = [].concat(
+                    Array.isArray(customer?.incomeDocuments) ? customer.incomeDocuments : [],
+                    Array.isArray(customer?.identityDocuments) ? customer.identityDocuments : [],
+                    Array.isArray(customer?.referenceDocuments) ? customer.referenceDocuments : [],
+                    Array.isArray(customer?.documents) ? customer.documents : []
+                );
                 documentUploadStates.forEach(function(groupState) {
                     if (!groupState.existingWrapper || !groupState.existingList) {
                         return;
@@ -2400,6 +2567,7 @@
 
             async function prepareCreateModal() {
                 consentForm?.reset();
+                await refreshNextAppNo();
                 setFieldValue('consent_id', '');
                 currentStep = 1;
                 maxStepReached = 1;
@@ -2543,6 +2711,11 @@
                 setFieldValue('refHasExistingLoan', customer.refHasExistingLoan);
                 setFieldValue('refExistingLoanInstitutionCount', customer.refExistingLoanInstitutionCount);
                 setFieldValue('refExistingLoanTotalAmount', customer.refExistingLoanTotalAmount);
+                // Trigger change events so conditional wrappers show/hide based on populated values
+                const refHasOtherDebtsEl = consentForm?.querySelector('[name="refHasOtherDebts"]');
+                if (refHasOtherDebtsEl) refHasOtherDebtsEl.dispatchEvent(new Event('change'));
+                const refHasExistingLoanEl = consentForm?.querySelector('[name="refHasExistingLoan"]');
+                if (refHasExistingLoanEl) refHasExistingLoanEl.dispatchEvent(new Event('change'));
                 // Populate reference business type
                 setFieldValue('refBusinessType', customer.refBusinessType);
                 setFieldValue('loanTerm', customer.loanTerm);
@@ -2559,10 +2732,16 @@
                 setFieldValue('signatureData', customer.signatureData);
 
                 setSelectWithOther('title', 'title_other', customer.title, ['นาย', 'นาง', 'นางสาว']);
-                setSelectWithOther('occupation', 'occupationOther', customer.occupation, ['ข้าราชการ', 'พนักงานราชการ', 'พนักงานรัฐวิสาหกิจ', 'พนักงานบริษัทเอกชน', 'อาชีพอิสระ', 'เจ้าของกิจการที่จดทะเบียนพาณิชย์', 'เจ้าของกิจการที่ไม่จดทะเบียนพาณิชย์', 'อื่นๆ']);
-                setSelectWithOther('careerField', 'careerFieldOther', customer.careerField, ['ครู/อาจารย์', 'ตํารวจ/ทหาร', 'แพทย์/ทันตแพทย์/สัตวแพยท์', 'เภสัชกร', 'พยาบาล', 'สถาปนิก', 'วิศวกร', 'บัญชีการเงิน', 'พนักงานขาย', 'อื่นๆ']);
-                setSelectWithOther('extraIncomeSource', 'extraIncomeSourceOther', customer.extraIncomeSource, ['รับจ้าง/เงินเดือน', 'ค่าคอมมมิชั่น', 'โบนัส', 'ธุรกิจส่วนตัว', 'อื่นๆ']);
-                setSelectWithOther('businessType', 'businessTypeOther', customer.businessType, ['การศึกษา', 'รับเหมาก่อสร้าง', 'วัสดุก่อสร้าง / Construction materials', 'บริการ', 'ฟอร์นิเจอร์/โรงเลื่อย', 'สิ่งทอ', 'พลาสติก', 'เครื่องจักร/ผลิตภัณฑ์โลหะ', 'สาธารณูปโภค/ไฟฟ้า', 'ขนส่ง', 'สาธารณูปโภค', 'ไฟฟ้า', 'เวชภัณฑ์/โรงพยาบาล/คลินิก', 'อาหาร/เครื่องดื่ม', 'ร้านสะดวกซื้อ', 'โรงแรม/ร้านอาหาร', 'อื่นๆ']);
+                setSelectWithOther('occupation', 'occupationOther', customer.occupation, ['ข้าราชการ', 'พนักงานราชการ', 'พนักงานรัฐวิสาหกิจ', 'พนักงานบริษัทเอกชน', 'อาชีพอิสระ', 'เจ้าของกิจการที่จดทะเบียนพาณิชย์', 'เจ้าของกิจการที่ไม่จดทะเบียนพาณิชย์', 'อื่นๆ'], customer.occupationOther);
+                setSelectWithOther('careerField', 'careerFieldOther', customer.careerField, ['ครู/อาจารย์', 'ตํารวจ/ทหาร', 'แพทย์/ทันตแพทย์/สัตวแพยท์', 'เภสัชกร', 'พยาบาล', 'สถาปนิก', 'วิศวกร', 'บัญชีการเงิน', 'พนักงานขาย', 'อื่นๆ'], customer.careerFieldOther);
+                setSelectWithOther('refOccupation', 'refOccupationOther', customer.refOccupation, ['ข้าราชการ', 'พนักงานราชการ', 'พนักงานรัฐวิสาหกิจ', 'พนักงานบริษัทเอกชน', 'อาชีพอิสระ', 'เจ้าของกิจการที่จดทะเบียนพาณิชย์', 'เจ้าของกิจการที่ไม่จดทะเบียนพาณิชย์', 'อื่นๆ'], customer.refOccupationOther);
+                setSelectWithOther('refCareerField', 'refCareerFieldOther', customer.refCareerField, ['ครู/อาจารย์', 'ตํารวจ/ทหาร', 'แพทย์/ทันตแพทย์/สัตวแพยท์', 'เภสัชกร', 'พยาบาล', 'สถาปนิก', 'วิศวกร', 'บัญชีการเงิน', 'พนักงานขาย', 'อื่นๆ'], customer.refCareerFieldOther);
+                setSelectWithOther('extraIncomeSource', 'extraIncomeSourceOther', customer.extraIncomeSource, ['รับจ้าง/เงินเดือน', 'ค่าคอมมมิชั่น', 'โบนัส', 'ธุรกิจส่วนตัว', 'อื่นๆ'], customer.extraIncomeSourceOther);
+                setSelectWithOther('education', 'educationOther', customer.education, ['มัธยมต้น','มัธยมปลาย','อุดมศึกษา','ปริญญาตรี','ปริญญาโท','ปริญญาเอก','อื่นๆ'], customer.educationOther);
+                setSelectWithOther('refEducation', 'refEducationOther', customer.refEducation, ['มัธยมต้น','มัธยมปลาย','อุดมศึกษา','ปริญญาตรี','ปริญญาโท','ปริญญาเอก','อื่นๆ'], customer.refEducationOther);
+                setSelectWithOther('refExtraIncomeSource', 'refExtraIncomeSourceOther', customer.refExtraIncomeSource, ['รับจ้าง/เงินเดือน', 'ค่าคอมมมิชั่น', 'โบนัส', 'ธุรกิจส่วนตัว', 'อื่นๆ'], customer.refExtraIncomeSourceOther);
+                setSelectWithOther('businessType', 'businessTypeOther', customer.businessType, ['การศึกษา', 'รับเหมาก่อสร้าง', 'วัสดุก่อสร้าง / Construction materials', 'บริการ', 'ฟอร์นิเจอร์/โรงเลื่อย', 'สิ่งทอ', 'พลาสติก', 'เครื่องจักร/ผลิตภัณฑ์โลหะ', 'สาธารณูปโภค/ไฟฟ้า', 'ขนส่ง', 'สาธารณูปโภค', 'ไฟฟ้า', 'เวชภัณฑ์/โรงพยาบาล/คลินิก', 'อาหาร/เครื่องดื่ม', 'ร้านสะดวกซื้อ', 'โรงแรม/ร้านอาหาร', 'อื่นๆ'], customer.businessTypeOther);
+                setSelectWithOther('refBusinessType', 'refBusinessTypeOther', customer.refBusinessType, ['การศึกษา', 'รับเหมาก่อสร้าง', 'วัสดุก่อสร้าง / Construction materials', 'บริการ', 'ฟอร์นิเจอร์/โรงเลื่อย', 'สิ่งทอ', 'พลาสติก', 'เครื่องจักร/ผลิตภัณฑ์โลหะ', 'สาธารณูปโภค/ไฟฟ้า', 'ขนส่ง', 'สาธารณูปโภค', 'ไฟฟ้า', 'เวชภัณฑ์/โรงพยาบาล/คลินิก', 'อาหาร/เครื่องดื่ม', 'ร้านสะดวกซื้อ', 'โรงแรม/ร้านอาหาร', 'อื่นๆ'], customer.refBusinessTypeOther);
 
                 const extraIncomeSourceSelect = document.getElementById('extraIncomeSource');
                 if (extraIncomeSourceSelect) {
@@ -2622,6 +2801,7 @@
                 setFieldValue('refWorkFloor', customer.refWorkFloor);
                 setFieldValue('refWorkVillage', customer.refWorkVillage);
                 setFieldValue('refWorkBuildingName', customer.refWorkBuildingName || customer.refWorkBuilding);
+                setFieldValue('refWorkCompany', customer.refWorkCompany);
                 setFieldValue('refWorkSoi', customer.refWorkSoi);
                 setFieldValue('refWorkRoad', customer.refWorkRoad);
                 setFieldValue('refWorkDepartment', customer.refWorkDepartment);
@@ -2815,6 +2995,58 @@
                 });
             }
 
+            // Handle education 'อื่นๆ' other input
+            const educationSelect = document.getElementById('education');
+            const educationOtherWrapper = document.getElementById('educationOtherWrapper');
+            const educationOtherInput = document.getElementById('educationOther');
+            if (educationSelect && educationOtherWrapper && educationOtherInput) {
+                educationSelect.addEventListener('change', function() {
+                    if (this.value === 'อื่นๆ') {
+                        educationOtherWrapper.classList.remove('hidden');
+                        educationOtherInput.setAttribute('required', 'required');
+                    } else {
+                        educationOtherWrapper.classList.add('hidden');
+                        educationOtherInput.removeAttribute('required');
+                        educationOtherInput.value = '';
+                    }
+                });
+            }
+
+            // Mirror education 'อื่นๆ' behavior for reference
+            const refEducationSelect = document.getElementById('refEducation');
+            const refEducationOtherWrapper = document.getElementById('refEducationOtherWrapper');
+            const refEducationOtherInput = document.getElementById('refEducationOther');
+            if (refEducationSelect && refEducationOtherWrapper && refEducationOtherInput) {
+                refEducationSelect.addEventListener('change', function() {
+                    if (this.value === 'อื่นๆ') {
+                        refEducationOtherWrapper.classList.remove('hidden');
+                        refEducationOtherInput.setAttribute('required', 'required');
+                    } else {
+                        refEducationOtherWrapper.classList.add('hidden');
+                        refEducationOtherInput.removeAttribute('required');
+                        refEducationOtherInput.value = '';
+                    }
+                });
+            }
+
+            // Handle reference extra income source (mirror applicant behavior)
+            const refExtraIncomeSourceSelect = document.getElementById('refExtraIncomeSource');
+            const refExtraIncomeSourceOtherWrapper = document.getElementById('refExtraIncomeSourceOtherWrapper');
+            const refExtraIncomeSourceOtherInput = document.getElementById('refExtraIncomeSourceOther');
+
+            if (refExtraIncomeSourceSelect && refExtraIncomeSourceOtherWrapper && refExtraIncomeSourceOtherInput) {
+                refExtraIncomeSourceSelect.addEventListener('change', function() {
+                    if (this.value === 'อื่นๆ') {
+                        refExtraIncomeSourceOtherWrapper.classList.remove('hidden');
+                        refExtraIncomeSourceOtherInput.setAttribute('required', 'required');
+                    } else {
+                        refExtraIncomeSourceOtherWrapper.classList.add('hidden');
+                        refExtraIncomeSourceOtherInput.removeAttribute('required');
+                        refExtraIncomeSourceOtherInput.value = '';
+                    }
+                });
+            }
+
             // Handle other debts installment field
             const hasOtherDebtsSelect = document.getElementById('hasOtherDebts');
             const otherDebtInstallmentWrapper = document.getElementById('otherDebtInstallmentWrapper');
@@ -2822,7 +3054,8 @@
 
             if (hasOtherDebtsSelect) {
                 hasOtherDebtsSelect.addEventListener('change', function() {
-                    if (this.value === 'มี') {
+                    // option values are '1' for yes and '0' for no
+                    if (String(this.value) === '1') {
                         otherDebtInstallmentWrapper.classList.remove('hidden');
                         otherDebtInstallmentInput.setAttribute('required', 'required');
                     } else {
@@ -2831,6 +3064,8 @@
                         otherDebtInstallmentInput.value = '';
                     }
                 });
+                // initialize visibility
+                hasOtherDebtsSelect.dispatchEvent(new Event('change'));
             }
 
             // Handle existing loan fields
@@ -2842,7 +3077,7 @@
 
             if (hasExistingLoanSelect && existingLoanInstitutionCountWrapper && existingLoanInstitutionCountInput && existingLoanTotalAmountWrapper && existingLoanTotalAmountInput) {
                 hasExistingLoanSelect.addEventListener('change', function() {
-                    if (this.value === 'ใช่') {
+                    if (String(this.value) === '1') {
                         existingLoanInstitutionCountWrapper.classList.remove('hidden');
                         existingLoanTotalAmountWrapper.classList.remove('hidden');
                         existingLoanInstitutionCountInput.setAttribute('required', 'required');
@@ -2856,6 +3091,8 @@
                         existingLoanTotalAmountInput.value = '';
                     }
                 });
+                    // initialize visibility
+                    hasExistingLoanSelect.dispatchEvent(new Event('change'));
             }
 
             // Handle residence status
