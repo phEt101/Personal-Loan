@@ -404,8 +404,19 @@ class ConsentFormController extends Controller {
                 $consentId = $request->input('consent_id');
                 $consent = null;
                 if ($consentId) {
-                    $id = \Illuminate\Support\Facades\Crypt::decryptString($consentId);
-                    $consent = \App\Modules\Consent\Models\ConsentApplication::find($id);
+                    // Try module's own hash decode first (preferred), then fall back
+                    // to Laravel Crypt decryptString for legacy values.
+                    $decoded = ConsentApplication::decodeEncryptedId($consentId);
+                    if ($decoded !== null) {
+                        $consent = ConsentApplication::find($decoded);
+                    } else {
+                        try {
+                            $id = \Illuminate\Support\Facades\Crypt::decryptString($consentId);
+                            $consent = ConsentApplication::find($id);
+                        } catch (\Throwable $ex) {
+                            // ignore decryption errors - consent will remain null
+                        }
+                    }
                 }
 
                 $product = $consent?->loanProduct;
