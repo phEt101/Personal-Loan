@@ -39,7 +39,30 @@ class ConsentFormController extends Controller {
         ]);
 
         if ($consentId) {
+            // Attempt to resolve consent by the module's encrypted_id token first,
+            // then try legacy Laravel Crypt payloads safely.
             $consent = ConsentApplication::where('encrypted_id', $consentId)->first();
+
+            if (!$consent) {
+                // Try decoding module token (base62 style) -> numeric id
+                $decoded = ConsentApplication::decodeEncryptedId($consentId);
+                if ($decoded !== null) {
+                    $consent = ConsentApplication::find($decoded);
+                }
+            }
+
+            if (!$consent) {
+                // Try Laravel Crypt encrypted string, but guard with try/catch to avoid bubbling
+                try {
+                    $id = \Illuminate\Support\Facades\Crypt::decryptString($consentId);
+                    if (is_numeric($id)) {
+                        $consent = ConsentApplication::find((int) $id);
+                    }
+                } catch (\Throwable $ex) {
+                    Log::warning('Consent saveStep: decryptString failed for consent_id', ['consent_id' => $consentId, 'err' => $ex->getMessage()]);
+                }
+            }
+
             if (!$consent) {
                 Log::error("Consent saveStep: Consent not found", ['consent_id' => $consentId]);
                 return response()->json(['ok' => false, 'message' => 'ไม่พบข้อมูลใบคำขอ'], 404);
