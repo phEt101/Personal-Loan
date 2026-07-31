@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,7 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Schema::defaultStringLength(191);
         $this->loadRoutesFrom(app_path('Modules/Auth/Routes/web.php'));
         $this->loadViewsFrom(app_path('Modules/Auth/Resources/views'), 'auth');
         $this->loadTranslationsFrom(app_path('Modules/Auth/Resources/lang'), 'auth');
