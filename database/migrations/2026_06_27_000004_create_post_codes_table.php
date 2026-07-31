@@ -19,7 +19,6 @@ return new class extends Migration
 
             $table->index('post_code');
             $table->index(['province', 'city']);
-            $table->unique(['post_code', 'district', 'city', 'province', 'country_code'], 'post_codes_unique_row');
         });
     }
 
