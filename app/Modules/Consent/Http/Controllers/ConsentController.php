@@ -243,6 +243,7 @@ class ConsentController extends ConsentFormController
         // human-readable labels
         [$hasOtherDebtsLabel, $hasExistingLoanLabel] = $this->resolveDebtAndLoanLabels($applicant);
         $incomeDocuments = $this->buildIncomeDocuments($consent);
+        $referenceDocuments = $this->buildReferenceDocuments($consent);
 
         return array_merge($consent->toArray(), $this->buildFrontendPayload($consent, [
             'applicant' => $applicant,
@@ -262,6 +263,10 @@ class ConsentController extends ConsentFormController
             'hasExistingLoan' => $hasExistingLoanFlag,
             'hasExistingLoanLabel' => $hasExistingLoanLabel,
             'incomeDocuments' => $incomeDocuments,
+            'referenceDocuments' => $referenceDocuments,
+            // debug counts
+            'internalIncomeDocumentsCount' => $consent->incomeDocuments()->count(),
+            'internalReferenceDocumentsCount' => $consent->incomeDocuments()->where('document_type', 'reference_document')->count(),
             'applicantPhoto' => $applicantPhoto,
         ]));
     }
@@ -318,6 +323,34 @@ class ConsentController extends ConsentFormController
     private function buildIncomeDocuments(ConsentApplication $consent): array {
         return $consent
             ->incomeDocuments()
+            ->orderBy('id')
+            ->get()
+            ->map(function (ConsentDocumentFile $document) use ($consent) {
+                return [
+                    'id' => $document->id,
+                    'originalName' => $document->original_name,
+                    'documentType' => $document->document_type,
+                    'documentTypeLabel' => $this->getDocumentTypeLabel($document->document_type),
+                    'mimeType' => $document->mime_type,
+                    'size' => $document->size,
+                    'downloadUrl' => route('consent.income-documents.download', [
+                        'consent' => $consent->encrypted_id,
+                        'document' => $document->id,
+                    ]),
+                    'destroyUrl' => route('consent.income-documents.destroy', [
+                        'consent' => $consent->encrypted_id,
+                        'document' => $document->id,
+                    ]),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function buildReferenceDocuments(ConsentApplication $consent): array {
+        return $consent
+            ->incomeDocuments()
+            ->where('document_type', 'reference_document')
             ->orderBy('id')
             ->get()
             ->map(function (ConsentDocumentFile $document) use ($consent) {

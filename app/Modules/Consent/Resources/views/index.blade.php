@@ -633,6 +633,10 @@
             const incomeOnly = [];
 
             incomeDocuments.forEach(function(doc) {
+                // Skip special storage-only documents: applicant photo and reference docs
+                const docType = (doc?.documentType || '').toString();
+                if (docType === 'applicant_photo' || docType === 'reference_document') return;
+
                 const name = (doc?.originalName || '').toString();
                 if (identityKeywords.test(name)) {
                     identityCandidates.push(doc);
@@ -673,8 +677,19 @@
             }
 
             const incomeDocumentsHtml = await buildDocumentsHtml(incomeOnly);
-            const identityDocuments = Array.isArray(customer.identityDocuments) && customer.identityDocuments.length ? customer.identityDocuments : (identityCandidates.length ? identityCandidates : []);
+            // Exclude applicant_photo and reference_document from identity list as well
+            const rawIdentityDocuments = Array.isArray(customer.identityDocuments) && customer.identityDocuments.length ? customer.identityDocuments : (identityCandidates.length ? identityCandidates : []);
+            const identityDocuments = rawIdentityDocuments.filter(function(d) {
+                const dt = (d?.documentType || '').toString();
+                return dt !== 'applicant_photo' && dt !== 'reference_document';
+            });
             const identityDocumentsHtml = await buildDocumentsHtml(identityDocuments);
+
+            // Reference documents (collect from customer.referenceDocuments and any incomeDocuments items marked as reference_document)
+            const referenceDocumentsFromCustomer = Array.isArray(customer.referenceDocuments) ? customer.referenceDocuments : [];
+            const referenceDocumentsFromIncome = Array.isArray(incomeDocuments) ? incomeDocuments.filter(function(d) { return (d?.documentType || '').toString() === 'reference_document'; }) : [];
+            const referenceDocuments = [].concat(referenceDocumentsFromCustomer, referenceDocumentsFromIncome);
+            const referenceDocumentsHtml = await buildDocumentsHtml(referenceDocuments);
 
             
 
@@ -1170,6 +1185,12 @@
                             <td class="value">${refWorkYears} ปี ${refWorkMonths} เดือน</td>
                         </tr>
                         ` : ''}
+                        ${refType === 'guarantor' && referenceDocuments && referenceDocuments.length ? `
+                        <tr>
+                            <td class="label">{{ __('consent::messages.modal.form.attachment.reference_header') }}</td>
+                            <td class="value">${referenceDocumentsHtml}</td>
+                        </tr>
+                        ` : ''}
                         ` : ''}
                     </table>
                 </div>
@@ -1293,6 +1314,12 @@
                             <div><strong>{{ __('consent::messages.modal.form.attachment.identity_header') }}</strong></div>
                             <div>${identityDocumentsHtml}</div>
                         </div>
+                        ${refType === 'guarantor' && referenceDocuments && referenceDocuments.length ? `
+                        <div class="file-attachments-list" style="margin-top:0.75rem;">
+                            <div><strong>{{ __('consent::messages.modal.form.attachment.reference_header') }}</strong></div>
+                            <div>${referenceDocumentsHtml}</div>
+                        </div>
+                        ` : ''}
                         </div>
                     </div>
                 </div>
