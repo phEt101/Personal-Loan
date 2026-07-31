@@ -11,9 +11,9 @@ return new class extends Migration
         Schema::create('post_codes', function (Blueprint $table) {
             $table->id();
             $table->string('post_code', 10);
-            $table->string('district', 191);
-            $table->string('city', 191);
-            $table->string('province', 191);
+            $table->string('district', 100);
+            $table->string('city', 100);
+            $table->string('province', 100);
             $table->string('country_code', 10)->default('TH');
             $table->timestamps();
 
