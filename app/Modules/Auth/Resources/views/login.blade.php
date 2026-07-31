@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('auth::messages.heading') }} | {{ __('messages.layout.title') }}</title>
+    <title>{{ __('auth::messages.heading') }}</title>
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
 </head>
 <body class="auth-page">
