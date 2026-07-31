@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('consent_requests', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('Primary key');
-            $table->string('encrypted_id', 255)->nullable()->comment('รหัสอ้างอิงที่ถูกเข้ารหัส');
+            $table->string('encrypted_id', 191)->nullable()->comment('รหัสอ้างอิงที่ถูกเข้ารหัส');
             $table->date('app_date')->nullable()->comment('วันที่ยื่นคำขอ');
             $table->string('app_no', 50)->nullable()->comment('เลขที่ใบสมัคร');
             $table->string('officer_name', 100)->nullable()->comment('ชื่อเจ้าหน้าที่ผู้รับเรื่อง');
