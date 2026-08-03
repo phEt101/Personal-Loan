@@ -1155,12 +1155,58 @@
                 <div class="step-container" data-step="7">
                     <div class="form-grid">
                         <div class="form-section-title form-section-title--no-top-margin">
-                            {{ __('consent::messages.modal.form.step7.sections.consent') }}
+                            {{ __('consent::messages.modal.form.step7.sections.consent') }} / {{ __('consent::messages.modal.form.step7.sections.pdpa_disclosure') }}
+
                         </div>
 
                         <div class="form-group col-12">
                             <p class="text-left line-height-extra mb-1-5 text-indent-large">
                                 {{ __('consent::messages.modal.form.step7.paragraphs.pdpa_consent') }}</p>
+                        </div>
+
+                        <div class="form-group col-12">
+                            @php $pdpaSub = __('consent::messages.modal.form.step7.paragraphs.subtopics'); @endphp
+                            @if(is_array($pdpaSub) && count($pdpaSub) > 0)
+                                <ul class="pdpa-subtopics">
+                                    @foreach($pdpaSub as $sub)
+                                        @if(!empty($sub))
+                                            <li class="text-left line-height-extra mb-1-5 ">{{ $sub }}</li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            @else
+                                <p class="text-left line-height-extra mb-1-5 text-indent-large">
+                                    {{ __('consent::messages.modal.form.step7.paragraphs.subtopics.personal_data_consent') }}
+                                </p>
+                            @endif
+                        </div>
+
+                        <div class="form-group col-12">
+                            <p class="form-section-title form-section-title--no-top-margin">
+                                {{ __('consent::messages.modal.form.step7.paragraphs.pdpa_notice') }}
+                            </p>
+                        </div>
+
+                        <div class="form-group col-12">
+                            <p class="text-left line-height-extra mb-1-5 text-indent-large">
+                                {{ __('consent::messages.modal.form.step7.paragraphs.pdpa_acknowledgement') }}
+                            </p>
+                        </div>
+
+                        <div class="form-group col-12">
+                            <p class="form-section-title form-section-title--no-top-margin">
+                                {{ __('consent::messages.modal.form.step7.paragraphs.pdpa_contact') }}
+                            </p>
+                        </div>
+
+                        <div class="form-group col-12">
+                            <p class="text-left line-height-extra mb-1-5 ">
+                                {{ __('consent::messages.modal.form.step7.paragraphs.pdpa_contact_address') }}
+                                <br>
+                                {{ __('consent::messages.modal.form.step7.paragraphs.pdpa_contact_website') }}
+                                <br>
+                                {{ __('consent::messages.modal.form.step7.paragraphs.pdpa_contact_phone') }}
+                            </p>
                         </div>
 
                         <div class="form-group col-12">

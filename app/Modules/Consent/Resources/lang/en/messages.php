@@ -389,9 +389,25 @@ return [
             'step7' => [
                 'sections' => [
                     'consent' => 'Consent Statement',
+                    'pdpa_disclosure'=> 'disclosure of personal data',
                 ],
                 'paragraphs' => [
-                    'pdpa_consent' => 'I have read and acknowledged the details regarding the consent given to Big Money Plus Co., Ltd. to collect, use, and/or disclose my personal data in accordance with the Personal Data Protection Act B.E. 2562, including regulations, announcements, guidelines, interpretations, legal opinions, and amendments that may be issued by competent authorities from time to time under said Act, for the purposes specified below.',
+                    'pdpa_consent' => 'I have read and understand all details regarding my consent for Big Money Plus Co., Ltd. to collect, use, and/or disclose my personal data in accordance with the Personal Data Protection Act B.E. 2562 (2019), including regulations, notices, guidelines, interpretations, legal opinions, and amendments that may be issued by the relevant authorities from time to time under the said Act, for the purposes stated below.',
+                        'subtopics'=> [
+                            'pdpa_consent_personal_data'=> 'I consent to the company collecting, using, and disclosing my personal information in order to offer products and/or develop products or services of the company or its business partners that are suitable and meet my needs.',
+                            'pdpa_consent_personal_data2'=> 'I consent to the company collecting, using, and disclosing my personal information in order to contact me and offer products and services that the company deems suitable and relevant to my needs.',
+                            'pdpa_consent_personal_data3'=> "I consent to the company collecting, using, and disclosing my personal data in order to offer products and/or services, and to provide data analysis based on the company's personal data processing objectives, as stated in the company's privacy notice.",
+                            'pdpa_consent_personal_data4'=> "I consent to the company disclosing my personal information to companies within the company's financial group and its business partners for the purpose of offering or recommending products or services to me.",
+                            'pdpa_consent_personal_data5'=> 'I agree and consent to the company collecting and using sensitive personal data, information from my national ID card, and information from my passport that I have provided to the company at the time of signing this document And any information the company may receive as a result of providing services to me or from any other source, for comparison or to verify and confirm my identity in requesting various services and/or other persons as I may request in the future, including allowing the company to disclose the aforementioned information to such persons if necessary or relevant to the achievement of the aforementioned objectives.',
+                            'pdpa_consent_personal_data6'=> "I consent to the company collecting and using sensitive personal data, information from my national identity card, and information from my passport that I have provided to the company at the time of signing this document And any information that the company receives as a result of providing services to me, or from any other source, or any other similar information, for use in considering the provision of financial services, debt restructuring, or changes to debt repayment terms that are appropriate for me, including requiring the company to disclose the aforementioned information to companies within the company's financial group, if necessary or relevant to the achievement of the aforementioned objectives.",
+                        ],
+                    'pdpa_notice' => 'Personal Data Protection Notice',
+                    'pdpa_acknowledgement' =>'I confirm that I have read and understand all the details regarding my consent to the collection, use, and/or disclosure of my personal data. I acknowledge that I have the right to withdraw my consent to the collection, use, and/or disclosure of my personal data. I consent to the company collecting, using, and/or disclosing my personal data for the purposes stated in this document, and I sign this document to acknowledge this in writing.',
+                    'pdpa_contact' => 'Contact Channels for the Data Protection Officer (DPO)',
+                    'pdpa_contact_address'=> 'Big Money Plus Company Limited, with its office located at No. 65, 67 Soi Ram Inthra 52/1, Ram Inthra Subdistrict, Khan Na Yao District, Bangkok 10230, Thailand.',
+                    'pdpa_contact_website'=> 'Website Contact Channel : www.bigmoneyplus.com',
+                    'pdpa_contact_phone'=> 'Telephone Number : 082-257-7997',
+
                     'consent_statement' => 'I hereby certify that all statements above are true and acknowledge the terms and conditions governing the use of this credit service by signing this Personal Loan application. If the company approves such credit, I agree to comply with all obligations under the Personal Loan agreement contained in this application, including all terms/conditions for using the Personal Loan product of the company. This Personal Loan application shall be considered part of the Personal Loan agreement. I have read and fully understood all relevant terms and conditions and have already received a copy of the Personal Loan agreement, and therefore sign as evidence.',
                 ],
                 'warning' => [
@@ -415,7 +431,7 @@ return [
                 'income' => 'Income',
                 'reference' => 'Reference / Guarantor',
                 'loan' => 'Loan/Payment',
-                'consent' => 'Consent',
+                'consent' => 'Consent / Personal Data Disclosure',
                 'attachments' => 'Attachments',
             ],
             'attachment' => [
