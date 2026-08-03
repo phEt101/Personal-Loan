@@ -1160,6 +1160,11 @@
 
                         <div class="form-group col-12">
                             <p class="text-left line-height-extra mb-1-5 text-indent-large">
+                                {{ __('consent::messages.modal.form.step7.paragraphs.pdpa_consent') }}</p>
+                        </div>
+
+                        <div class="form-group col-12">
+                            <p class="text-left line-height-extra mb-1-5 text-indent-large">
                                 {{ __('consent::messages.modal.form.step7.paragraphs.consent_statement') }}</p>
                         </div>
 

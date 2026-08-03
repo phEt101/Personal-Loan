@@ -391,6 +391,7 @@ return [
                     'consent' => 'Consent Statement',
                 ],
                 'paragraphs' => [
+                    'pdpa_consent' => 'I have read and acknowledged the details regarding the consent given to Big Money Plus Co., Ltd. to collect, use, and/or disclose my personal data in accordance with the Personal Data Protection Act B.E. 2562, including regulations, announcements, guidelines, interpretations, legal opinions, and amendments that may be issued by competent authorities from time to time under said Act, for the purposes specified below.',
                     'consent_statement' => 'I hereby certify that all statements above are true and acknowledge the terms and conditions governing the use of this credit service by signing this Personal Loan application. If the company approves such credit, I agree to comply with all obligations under the Personal Loan agreement contained in this application, including all terms/conditions for using the Personal Loan product of the company. This Personal Loan application shall be considered part of the Personal Loan agreement. I have read and fully understood all relevant terms and conditions and have already received a copy of the Personal Loan agreement, and therefore sign as evidence.',
                 ],
                 'warning' => [
