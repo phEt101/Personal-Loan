@@ -13,6 +13,7 @@ return [
     'nav' => [
         'home' => 'Home',
         'consent' => 'Consent',
+        'customer_history' => 'Customer History',
         'consent_review' => 'Consent Review',
     ],
     'language' => [

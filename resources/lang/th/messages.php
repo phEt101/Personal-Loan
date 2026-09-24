@@ -13,6 +13,7 @@ return [
     'nav' => [
         'home' => 'หน้าหลัก',
         'consent' => 'ใบยินยอม',
+        'customer_history' => 'ประวัติลูกค้า',
         'consent_review' => 'พิจารณาใบยินยอม',
     ],
     'language' => [

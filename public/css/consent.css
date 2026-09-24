@@ -1,5 +1,142 @@
 /* Consent module styles moved from inline <style> blocks */
 
+/* Customer history form */
+.customer-form-modal {
+  max-width: 1080px;
+}
+
+.customer-form-intro {
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #dcebe4;
+  border-radius: 12px;
+  background: #f2f8f5;
+}
+
+.customer-form-kicker {
+  color: #159947;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.customer-form-intro p {
+  margin: 0.35rem 0 0;
+  color: #70818b;
+}
+
+.customer-history-steps {
+  margin: 0 0 1.4rem;
+  padding: 0.35rem 0 0.2rem;
+}
+
+.customer-history-steps .wizard-step-label {
+  color: #74828a;
+  font-size: 0.72rem;
+}
+
+.customer-history-steps .wizard-step.active .wizard-step-label {
+  color: #159947;
+}
+
+.customer-form-section {
+  margin-bottom: 1.25rem;
+  padding: 1.35rem 1.5rem 1.5rem;
+  border: 1px solid #e1ece7;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.customer-form-step {
+  display: none;
+}
+
+.customer-form-step.is-active {
+  display: block;
+}
+
+.customer-form-navigation.is-hidden {
+  display: none;
+}
+
+.customer-form-navigation:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.customer-form-section__heading {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid #e8f0ec;
+}
+
+.customer-form-section__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #39c51f;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.customer-form-section h4 {
+  margin: 0;
+  color: #173042;
+  font-size: 1rem;
+}
+
+.customer-form-section__heading p {
+  margin: 0.25rem 0 0;
+  color: #70818b;
+  font-size: 0.82rem;
+}
+
+.customer-form-grid {
+  row-gap: 1rem;
+}
+
+.customer-form-grid label {
+  color: #344d5b;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.customer-form-grid input,
+.customer-form-grid select,
+.customer-form-grid textarea {
+  border-color: #cfe5da;
+  background: #fbfdfc;
+}
+
+.customer-form-grid input:focus,
+.customer-form-grid select:focus,
+.customer-form-grid textarea:focus {
+  border-color: #39c51f;
+  box-shadow: 0 0 0 3px rgba(57, 197, 31, 0.12);
+  outline: none;
+}
+
+@media (max-width: 760px) {
+  .customer-form-section {
+    padding: 1rem;
+  }
+
+  .customer-form-grid .col-3,
+  .customer-form-grid .col-4,
+  .customer-form-grid .col-5,
+  .customer-form-grid .col-6 {
+    grid-column: span 12;
+  }
+}
+
 /* Modal date input fixes (from consent_form_modal) */
 #consentModal input[type="date"],
 .consent-modal input[type="date"] {
