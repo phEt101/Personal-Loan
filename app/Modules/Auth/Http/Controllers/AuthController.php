@@ -36,7 +36,7 @@ class AuthController extends Controller
         RateLimiter::clear($this->throttleKey($request));
         $request->session()->regenerate();
 
-        return redirect()->intended('/home');
+        return redirect()->route('consent.index');
     }
 
     public function logout(Request $request)
