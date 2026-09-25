@@ -8,21 +8,25 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('email_customers', function (Blueprint $table) {
+        Schema::create('customer_emails', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
 
-            // H Meter source: dbo.CustomerEmail, linked by CustomerNo and EmailId.
+            // อ้างอิงข้อมูลลูกค้าจากตาราง customers
             $table->string('CustomerNo', 16);
             $table->unsignedInteger('EmailId');
             $table->string('Email', 100);
-            $table->boolean('Status')->default(true);
 
             // H Meter audit fields; CreateUserId and UpdateUserId come from dbo.User.
             $table->dateTime('CreateDateTime')->nullable();
             $table->unsignedInteger('CreateUserId')->nullable();
             $table->unsignedInteger('UpdateUserId')->nullable();
             $table->dateTime('UpdateDateTime')->nullable();
-            $table->timestamps();
+
+            $table->boolean('Status')->default(true);
+            $table->string('Remark', 100)->nullable();
 
             $table->unique(['CustomerNo', 'EmailId']);
             $table->index('CustomerNo');
@@ -31,6 +35,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('email_customers');
+        Schema::dropIfExists('customer_emails');
     }
 };

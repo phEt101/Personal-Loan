@@ -8,19 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('phone_customers', function (Blueprint $table) {
+        Schema::create('customer_phones', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
-
-            // H Meter source: dbo.CustomerPhone, linked by CustomerNo and PhoneId.
+            // อ้างอิงข้อมูลลูกค้าจากตาราง customers
             $table->string('CustomerNo', 16);
             $table->unsignedInteger('PhoneId');
-            $table->unsignedInteger('PhoneSequense')->default(0);
+            $table->string('Remark', 100)->nullable();
             $table->string('Phone', 15);
-
-            // H Meter lookup source: PhoneType.
+            // ดึงประเภทโทรศัพท์จาก H Meter ตาราง dbo.PhoneType
             $table->string('PhoneType', 10);
+            // กำหนดค่า PhoneSequense เป็น 0 เสมอ
+            $table->unsignedInteger('PhoneSequense')->default(0);
             $table->boolean('Status')->default(true);
-            $table->timestamps();
 
             $table->unique(['CustomerNo', 'PhoneId']);
             $table->index('CustomerNo');
@@ -29,6 +31,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('phone_customers');
+        Schema::dropIfExists('customer_phones');
     }
 };

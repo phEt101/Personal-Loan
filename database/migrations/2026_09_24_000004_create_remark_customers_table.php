@@ -8,10 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('remark_customers', function (Blueprint $table) {
+        Schema::create('customer_remarks', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
 
-            // H Meter source: dbo.CustomerRemark, linked by CustomerNo and RemarkId.
+            // อ้างอิงข้อมูลลูกค้าจากตาราง customers
             $table->string('CustomerNo', 16);
             $table->unsignedInteger('RemarkId');
             $table->text('Comment');
@@ -21,7 +24,7 @@ return new class extends Migration
             $table->unsignedInteger('InsertUserId')->nullable();
             $table->unsignedInteger('UpdateUserId')->nullable();
             $table->dateTime('UpdateDateTime')->nullable();
-            $table->timestamps();
+
 
             $table->unique(['CustomerNo', 'RemarkId']);
             $table->index('CustomerNo');
@@ -30,6 +33,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('remark_customers');
+        Schema::dropIfExists('customer_remarks');
     }
 };

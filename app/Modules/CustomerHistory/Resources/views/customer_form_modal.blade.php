@@ -32,28 +32,16 @@
                 </div>
 
                 <section class="customer-form-section customer-form-step is-active" data-customer-step="1">
-                    <div class="customer-form-section__heading">
-                        <span class="customer-form-section__number">01</span>
-                        <div>
-                            <h4>{{ __('customerhistory::messages.form.personal.title') }}</h4>
-                            <p>{{ __('customerhistory::messages.form.personal.description') }}</p>
-                        </div>
-                    </div>
                     <div class="form-grid customer-form-grid">
-                        <div class="form-group col-3">
+                        <div class="form-group col-2">
                             <label for="customer_title">{{ __('customerhistory::messages.form.personal.title_label') }}</label>
-                            <select id="customer_title" name="TitleCode">
-                                <option value="">{{ __('customerhistory::messages.form.common.select') }}</option>
-                                <option value="1">{{ __('customerhistory::messages.form.personal.mr') }}</option>
-                                <option value="2">{{ __('customerhistory::messages.form.personal.mrs') }}</option>
-                                <option value="3">{{ __('customerhistory::messages.form.personal.ms') }}</option>
-                            </select>
+                            <input id="customer_title" name="TitleCode" type="text">
                         </div>
                         <div class="form-group col-5">
                             <label for="customer_firstname">{{ __('customerhistory::messages.form.personal.firstname') }} <span class="required-asterisk">*</span></label>
                             <input id="customer_firstname" name="Firstname" type="text" required>
                         </div>
-                        <div class="form-group col-4">
+                        <div class="form-group col-5">
                             <label for="customer_lastname">{{ __('customerhistory::messages.form.personal.lastname') }} <span class="required-asterisk">*</span></label>
                             <input id="customer_lastname" name="Lastname" type="text" required>
                         </div>
@@ -67,11 +55,7 @@
                         </div>
                         <div class="form-group col-3">
                             <label for="customer_gender">{{ __('customerhistory::messages.form.personal.gender') }}</label>
-                            <select id="customer_gender" name="GenderCode">
-                                <option value="">{{ __('customerhistory::messages.form.common.select') }}</option>
-                                <option value="1">{{ __('customerhistory::messages.form.personal.male') }}</option>
-                                <option value="2">{{ __('customerhistory::messages.form.personal.female') }}</option>
-                            </select>
+                            <input id="customer_gender" name="GenderCode" type="text">
                         </div>
                         <div class="form-group col-3">
                             <label for="customer_nationality">{{ __('customerhistory::messages.form.personal.nationality') }}</label>
@@ -83,10 +67,7 @@
                         </div>
                         <div class="form-group col-4">
                             <label for="customer_identity_type">{{ __('customerhistory::messages.form.personal.identity_type') }}</label>
-                            <select id="customer_identity_type" name="IdentityCardTypeCode">
-                                <option value="1">{{ __('customerhistory::messages.form.personal.identity_national_id') }}</option>
-                                <option value="2">{{ __('customerhistory::messages.form.personal.identity_passport') }}</option>
-                            </select>
+                            <input id="customer_identity_type" name="IdentityCardTypeCode" type="text">
                         </div>
                         <div class="form-group col-4">
                             <label for="customer_identity_issuer">{{ __('customerhistory::messages.form.personal.identity_issuer') }}</label>
@@ -102,13 +83,7 @@
                         </div>
                         <div class="form-group col-4">
                             <label for="customer_marital_status">{{ __('customerhistory::messages.form.personal.marital_status') }}</label>
-                            <select id="customer_marital_status" name="MaritalStatusCode">
-                                <option value="">{{ __('customerhistory::messages.form.common.select') }}</option>
-                                <option value="1">{{ __('customerhistory::messages.form.personal.single') }}</option>
-                                <option value="2">{{ __('customerhistory::messages.form.personal.married') }}</option>
-                                <option value="3">{{ __('customerhistory::messages.form.personal.divorced') }}</option>
-                                <option value="4">{{ __('customerhistory::messages.form.personal.widowed') }}</option>
-                            </select>
+                            <input id="customer_marital_status" name="MaritalStatusCode" type="text">
                         </div>
                         <div class="form-group col-4">
                             <label for="customer_race">{{ __('customerhistory::messages.form.personal.race') }}</label>
@@ -130,17 +105,22 @@
                             <label for="customer_address_type">{{ __('customerhistory::messages.form.address.type') }}</label>
                             <input id="customer_address_type" name="AddressTypeCode" type="text" inputmode="numeric">
                         </div>
+                        <div class="form-group col-4">
+                            <label for="customer_bank_code">{{ __('customerhistory::messages.form.bank.code') }}</label>
+                            <input id="customer_bank_code" name="BankCode" type="text" maxlength="5">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="customer_bank_branch">{{ __('customerhistory::messages.form.bank.branch') }}</label>
+                            <input id="customer_bank_branch" name="BankBookBranch" type="text" maxlength="50">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="customer_bank_account">{{ __('customerhistory::messages.form.bank.account') }}</label>
+                            <input id="customer_bank_account" name="BankBookCode" type="text" inputmode="numeric" maxlength="20">
+                        </div>
                     </div>
                 </section>
 
                 <section class="customer-form-section customer-form-step" data-customer-step="2">
-                    <div class="customer-form-section__heading">
-                        <span class="customer-form-section__number">02</span>
-                        <div>
-                            <h4>{{ __('customerhistory::messages.form.address.title') }}</h4>
-                            <p>{{ __('customerhistory::messages.form.address.description') }}</p>
-                        </div>
-                    </div>
                     <div class="form-grid customer-form-grid">
                         <div class="form-group col-6">
                             <label for="customer_address_line1">{{ __('customerhistory::messages.form.address.line1') }} <span class="required-asterisk">*</span></label>
@@ -167,38 +147,28 @@
                             <input id="customer_zipcode" name="ZipCode" type="text" inputmode="numeric" maxlength="10">
                         </div>
                         <div class="form-group col-12">
-                            <label for="customer_memo_note">{{ __('customerhistory::messages.form.address.memo_note') }}</label>
-                            <textarea id="customer_memo_note" name="MemoNote" rows="3"></textarea>
+                            <label for="customer_address_remark">{{ __('customerhistory::messages.form.address.address_remark') }}</label>
+                            <textarea id="customer_address_remark" name="AddressRemark" rows="3"></textarea>
                         </div>
                     </div>
                 </section>
 
                 <section class="customer-form-section customer-form-step" data-customer-step="3">
-                    <div class="customer-form-section__heading">
-                        <span class="customer-form-section__number">03</span>
-                        <div>
-                            <h4>{{ __('customerhistory::messages.form.contact.title') }}</h4>
-                            <p>{{ __('customerhistory::messages.form.contact.description') }}</p>
-                        </div>
-                    </div>
                     <div class="form-grid customer-form-grid">
-                        <div class="form-group col-4">
+                        <div class="form-group col-6">
                             <label for="customer_mobile">{{ __('customerhistory::messages.form.contact.phone') }}</label>
                             <input id="customer_mobile" name="Mobile" type="tel" inputmode="numeric" maxlength="15">
                         </div>
-                        <div class="form-group col-4">
+                        <div class="form-group col-6">
                             <label for="customer_phone_type">{{ __('customerhistory::messages.form.contact.phone_type') }}</label>
                             <input id="customer_phone_type" name="PhoneType" type="text">
                         </div>
-                        <div class="form-group col-4">
-                            <label for="customer_home_phone">{{ __('customerhistory::messages.form.contact.home_phone') }}</label>
-                            <input id="customer_home_phone" name="HomeTelephone" type="tel" inputmode="numeric" maxlength="15">
-                        </div>
-                        <div class="form-group col-6">
+                        <div class="form-group col-12">
                             <label for="customer_phone_note">{{ __('customerhistory::messages.form.contact.phone_note') }}</label>
                             <textarea id="customer_phone_note" name="PhoneRemark" rows="2"></textarea>
                         </div>
-                        <div class="form-group col-6">
+                        <div class="customer-contact-divider col-12" aria-hidden="true"></div>
+                        <div class="form-group col-12">
                             <label for="customer_email">{{ __('customerhistory::messages.form.contact.email') }}</label>
                             <input id="customer_email" name="Email" type="email" maxlength="50">
                         </div>
@@ -210,45 +180,50 @@
                 </section>
 
                 <section class="customer-form-section customer-form-step" data-customer-step="4">
-                    <div class="customer-form-section__heading">
-                        <span class="customer-form-section__number">04</span>
-                        <div>
-                            <h4>{{ __('customerhistory::messages.form.income.title') }}</h4>
-                            <p>{{ __('customerhistory::messages.form.income.description') }}</p>
-                        </div>
-                    </div>
                     <div class="form-grid customer-form-grid">
+                        <div class="form-group col-12">
+                            <label for="customer_workplace">{{ __('customerhistory::messages.form.income.workplace') }}</label>
+                            <input id="customer_workplace" name="WorkPlace" type="text" maxlength="255">
+                        </div>
                         <div class="form-group col-4">
                             <label for="customer_income">{{ __('customerhistory::messages.form.income.monthly_income') }}</label>
-                            <input id="customer_income" name="MonthlyIncomeAmount" type="number" min="0" step="0.01">
+                            <div class="customer-input-unit">
+                                <input id="customer_income" name="MonthlyIncomeAmount" type="number" min="0" step="0.01">
+                                <span>{{ __('customerhistory::messages.form.income.monthly_unit') }}</span>
+                            </div>
                         </div>
                         <div class="form-group col-4">
                             <label for="customer_expense">{{ __('customerhistory::messages.form.income.monthly_expense') }}</label>
-                            <input id="customer_expense" name="MonthlyExpenseAmount" type="number" min="0" step="0.01">
+                            <div class="customer-input-unit">
+                                <input id="customer_expense" name="MonthlyExpenseAmount" type="number" min="0" step="0.01">
+                                <span>{{ __('customerhistory::messages.form.income.monthly_unit') }}</span>
+                            </div>
                         </div>
                         <div class="form-group col-4">
                             <label for="customer_bonus">{{ __('customerhistory::messages.form.income.yearly_bonus') }}</label>
-                            <input id="customer_bonus" name="YearlyBonusAmount" type="number" min="0" step="0.01">
+                            <div class="customer-input-unit">
+                                <input id="customer_bonus" name="YearlyBonusAmount" type="number" min="0" step="0.01">
+                                <span>{{ __('customerhistory::messages.form.income.yearly_unit') }}</span>
+                            </div>
                         </div>
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="customer_net_income">{{ __('customerhistory::messages.form.income.net_income') }}</label>
-                            <input id="customer_net_income" type="number" min="0" step="0.01" readonly>
+                            <div class="customer-input-unit">
+                                <input id="customer_net_income" type="number" min="0" step="0.01" readonly>
+                                <span>{{ __('customerhistory::messages.form.income.yearly_unit') }}</span>
+                            </div>
                         </div>
-                        <div class="form-group col-6">
+                        <div class="form-group col-4">
                             <label for="customer_average_income">{{ __('customerhistory::messages.form.income.average_income') }}</label>
-                            <input id="customer_average_income" type="number" min="0" step="0.01" readonly>
+                            <div class="customer-input-unit">
+                                <input id="customer_average_income" type="number" min="0" step="0.01" readonly>
+                                <span>{{ __('customerhistory::messages.form.income.monthly_unit') }}</span>
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 <section class="customer-form-section customer-form-step" data-customer-step="5">
-                    <div class="customer-form-section__heading">
-                        <span class="customer-form-section__number">05</span>
-                        <div>
-                            <h4>{{ __('customerhistory::messages.form.profile.remark_title') }}</h4>
-                            <p>{{ __('customerhistory::messages.form.profile.remark_description') }}</p>
-                        </div>
-                    </div>
                     <div class="form-grid customer-form-grid">
                         <div class="form-group col-12">
                             <label for="customer_comment">{{ __('customerhistory::messages.form.profile.comment') }}</label>

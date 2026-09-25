@@ -5,6 +5,7 @@ return [
         'page_title' => 'ประวัติลูกค้า',
         'subtitle' => 'ข้อมูลลูกค้าสำหรับตรวจสอบและเชื่อมต่อกับ H Meter',
         'create_button' => '+ เพิ่มประวัติลูกค้า',
+        'terms_title' => 'เอกสารและเงื่อนไข',
         'sale_sheet' => '1. Sale Sheet',
         'application_terms' => '2. เงื่อนไขและข้อตกลงการสมัคร',
         'pdf_unavailable' => 'ไม่สามารถแสดงเอกสารในเบราว์เซอร์นี้ได้',
@@ -67,7 +68,7 @@ return [
             'subdistrict' => 'ตำบล / แขวง',
             'zipcode' => 'รหัสไปรษณีย์',
             'type' => 'ประเภทที่อยู่',
-            'memo_note' => 'Memo note',
+            'address_remark' => 'หมายเหตุที่อยู่',
         ],
         'contact' => [
             'title' => 'ช่องทางติดต่อ',
@@ -92,11 +93,19 @@ return [
         'income' => [
             'title' => 'ข้อมูลรายได้',
             'description' => 'ข้อมูลรายได้และค่าใช้จ่ายของลูกค้า',
+            'workplace' => 'สถานที่ทำงาน',
             'monthly_income' => 'รายได้ บาทต่อเดือน',
             'monthly_expense' => 'ค่าใช้จ่าย บาทต่อเดือน',
             'yearly_bonus' => 'รายได้พิเศษ บาทต่อปี',
             'net_income' => 'รายได้สุทธิ บาทต่อปี',
             'average_income' => 'รายได้เฉลี่ย บาทต่อเดือน',
+            'monthly_unit' => 'บาทต่อเดือน',
+            'yearly_unit' => 'บาทต่อปี',
+        ],
+        'bank' => [
+            'code' => 'รหัสธนาคาร',
+            'branch' => 'สาขาธนาคาร',
+            'account' => 'เลขที่บัญชีธนาคาร',
         ],
     ],
 ];

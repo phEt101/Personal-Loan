@@ -8,30 +8,31 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('address_customers', function (Blueprint $table) {
+        Schema::create('customer_addresses', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
-
-            // H Meter source: dbo.CustomerAddress, linked by CustomerNo and AddressId.
+            // อ้างอิงข้อมูลลูกค้าจากตาราง customers
             $table->string('CustomerNo', 16);
             $table->unsignedInteger('AddressId');
             $table->string('AddressLine1', 100);
             $table->string('AddressLine2', 100);
-
-            // H Meter lookup sources: Province, District, and SubDistrict.
+            // ดึงข้อมูลจาก H Meter ตาราง dbo.Province
             $table->string('ProvinceCode', 20)->nullable();
             $table->string('ProvinceDesc', 150)->nullable();
+            // ดึงข้อมูลจาก H Meter ตาราง dbo.District
             $table->string('DistrictCode', 20)->nullable();
             $table->string('DistrictDesc', 150)->nullable();
+            // ดึงข้อมูลจาก H Meter ตาราง dbo.SubDistrict
             $table->string('SubDistrictCode', 20)->nullable();
             $table->string('SubDistrictDesc', 150)->nullable();
             $table->string('ZipCode', 10);
+            // กำหนดค่า AddressTypeCode เป็น 1 เสมอ
+            $table->unsignedInteger('AddressTypeCode')->default(1);
+            $table->string('Remark', 200)->nullable();
 
-            // H Meter lookup source: AddressType; InsertUserId comes from dbo.User.
             $table->boolean('Status')->default(true);
-            $table->dateTime('InsertDate')->nullable();
-            $table->unsignedInteger('InsertUserId')->nullable();
-            $table->unsignedInteger('AddressTypeCode')->nullable();
-            $table->timestamps();
 
             $table->unique(['CustomerNo', 'AddressId']);
             $table->index('CustomerNo');
@@ -40,6 +41,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('address_customers');
+        Schema::dropIfExists('customer_addresses');
     }
 };

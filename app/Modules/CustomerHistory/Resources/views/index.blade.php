@@ -18,7 +18,7 @@
     <div id="customerHistoryTermsModal" class="modal">
         <div class="modal-content modal-lg">
             <div class="modal-header">
-                <h3 class="modal-title">{{ __('consent::messages.modal.pdf.title') }}</h3>
+                <h3 class="modal-title">{{ __('customerhistory::messages.index.terms_title') }}</h3>
                 <button type="button" class="close-btn" id="closeCustomerHistoryTerms" aria-label="Close modal">&times;</button>
             </div>
             <div class="modal-body modal-body--pdf">

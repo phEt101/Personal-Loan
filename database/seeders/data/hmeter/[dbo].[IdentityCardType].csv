@@ -1,0 +1,6 @@
+﻿IdentityCardTypeCode,IdentityCardTypeDesc,NcbIDTypeCode,BOTCode
+1,บัตรประชาชน,01,324001
+2,Passport,07,324002
+3,บัตรข้าราชการ,1150001,
+4,อื่นๆ,09,324012
+5,Tax Id,02,324003

@@ -5,6 +5,7 @@ return [
         'page_title' => 'Customer History',
         'subtitle' => 'Customer records for review and H Meter integration',
         'create_button' => '+ Add Customer History',
+        'terms_title' => 'Documents and Terms',
         'sale_sheet' => '1. Sale Sheet',
         'application_terms' => '2. Application Terms and Conditions',
         'pdf_unavailable' => 'This document cannot be displayed in this browser.',
@@ -67,7 +68,7 @@ return [
             'subdistrict' => 'Subdistrict',
             'zipcode' => 'Postal code',
             'type' => 'Address type',
-            'memo_note' => 'Memo note',
+            'address_remark' => 'Address remark',
         ],
         'contact' => [
             'title' => 'Contact Channels',
@@ -92,11 +93,19 @@ return [
         'income' => [
             'title' => 'Income Information',
             'description' => 'Customer income and expense details',
+            'workplace' => 'Workplace',
             'monthly_income' => 'Income per month',
             'monthly_expense' => 'Expense per month',
             'yearly_bonus' => 'Additional income per year',
             'net_income' => 'Net income per year',
             'average_income' => 'Average income per month',
+            'monthly_unit' => 'per month',
+            'yearly_unit' => 'per year',
+        ],
+        'bank' => [
+            'code' => 'Bank code',
+            'branch' => 'Bank branch',
+            'account' => 'Bank account number',
         ],
     ],
 ];
