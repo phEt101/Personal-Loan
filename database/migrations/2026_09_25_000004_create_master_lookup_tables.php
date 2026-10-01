@@ -9,6 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('address_types', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedTinyInteger('AddressTypeCode')->primary();
             $table->string('AddressTypeDesc', 100);
             $table->unsignedTinyInteger('Score');
@@ -17,6 +18,7 @@ return new class extends Migration
         });
 
         Schema::create('age_ranges', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedInteger('AgeRangeId')->primary();
             $table->unsignedTinyInteger('FromAge');
             $table->unsignedTinyInteger('ToAge');
@@ -25,6 +27,7 @@ return new class extends Migration
         });
 
         Schema::create('banks', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->string('BankCode', 5)->primary();
             $table->string('BankDesc', 150);
             $table->boolean('SncSet');
@@ -36,6 +39,7 @@ return new class extends Migration
         });
 
         Schema::create('districts', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->string('ProvinceCode', 2);
             $table->string('DistrictCode', 5);
             $table->string('DistrictDesc', 100);
@@ -43,6 +47,7 @@ return new class extends Migration
         });
 
         Schema::create('genders', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedTinyInteger('GenderId')->primary();
             $table->string('GenderDesc', 50);
             $table->unsignedTinyInteger('Score');
@@ -51,6 +56,7 @@ return new class extends Migration
         });
 
         Schema::create('identity_card_types', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedTinyInteger('IdentityCardTypeCode')->primary();
             $table->string('IdentityCardTypeDesc', 100);
             $table->string('NcbIDTypeCode', 10)->nullable();
@@ -58,6 +64,7 @@ return new class extends Migration
         });
 
         Schema::create('marital_statuses', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedTinyInteger('MaritalStatusCode')->primary();
             $table->string('MaritalStatusName', 100);
             $table->string('Remark', 255)->nullable();
@@ -65,6 +72,7 @@ return new class extends Migration
         });
 
         Schema::create('net_income_ranges', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedInteger('NetIncomeRangeId')->primary();
             $table->unsignedInteger('FromNetIncomeRange');
             $table->unsignedInteger('ToNetIncomeRange');
@@ -73,6 +81,7 @@ return new class extends Migration
         });
 
         Schema::create('occupations', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedInteger('OccupationCode')->primary();
             $table->string('OccupationDesc', 255);
             $table->string('Remark', 255)->nullable();
@@ -86,11 +95,13 @@ return new class extends Migration
         });
 
         Schema::create('phone_types', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->string('PhoneTypeCode', 2)->primary();
             $table->string('PhoneTypeDesc', 50);
         });
 
         Schema::create('provinces', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->string('ProvinceCode', 2)->primary();
             $table->string('ProvinceDesc', 100);
             $table->string('NcbProvinceCatalogId', 10)->nullable();
@@ -98,6 +109,7 @@ return new class extends Migration
         });
 
         Schema::create('sub_districts', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->string('ProvinceCode', 2);
             $table->string('DistrictCode', 5);
             $table->string('SubDistrictCode', 5);
@@ -107,6 +119,7 @@ return new class extends Migration
         });
 
         Schema::create('titles', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedTinyInteger('TitleCode')->primary();
             $table->string('TitleDesc', 100)->nullable();
             $table->string('TitleCodeName', 10)->nullable();
@@ -118,6 +131,7 @@ return new class extends Migration
         });
 
         Schema::create('type_of_businesses', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedInteger('TypeOfBusinessId')->primary();
             $table->string('TypeOfBusinessName', 150);
             $table->string('BOTCode', 10)->nullable();
@@ -125,6 +139,7 @@ return new class extends Migration
         });
 
         Schema::create('working_conditions', function (Blueprint $table) {
+            $this->configureTable($table);
             $table->unsignedInteger('WorkingConditionId')->primary();
             $table->string('CodeBOT', 10)->nullable();
             $table->string('Description', 255);
@@ -212,5 +227,12 @@ return new class extends Migration
         Schema::dropIfExists('banks');
         Schema::dropIfExists('age_ranges');
         Schema::dropIfExists('address_types');
+    }
+
+    private function configureTable(Blueprint $table): void
+    {
+        $table->engine = 'InnoDB';
+        $table->charset = 'utf8mb4';
+        $table->collation = 'utf8mb4_unicode_ci';
     }
 };
