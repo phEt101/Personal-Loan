@@ -2,7 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login');
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('customer-history.index')
+        : redirect()->route('login');
+});
 
 Route::get('/locale/{locale}', function (string $locale) {
     abort_unless(in_array($locale, ['th', 'en'], true), 404);

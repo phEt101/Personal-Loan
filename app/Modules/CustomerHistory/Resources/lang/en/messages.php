@@ -28,6 +28,7 @@ return [
         'load_failed' => 'Unable to load customer data. Please try again.',
         'actions' => 'Actions',
         'view' => 'View',
+        'edit' => 'Edit',
         'detail_title' => 'Customer details',
         'close' => 'Close',
         'detail_load_failed' => 'Unable to load customer details. Please try again.',
@@ -52,6 +53,8 @@ return [
         'next' => 'Next',
         'save' => 'Save Customer Data',
         'saved_successfully' => 'Customer information saved successfully.',
+        'updated_successfully' => 'Customer information updated successfully.',
+        'edit_title' => 'Edit Customer History',
         'save_failed' => 'Unable to save customer information. Please try again.',
         'common' => [
             'select' => 'Select an option',
@@ -63,6 +66,12 @@ return [
             'contact' => 'Contact',
             'income' => 'Income',
             'profile' => 'Remarks',
+        ],
+        'sections' => [
+            'personal' => 'Personal information',
+            'identity' => 'Identity and marital information',
+            'work' => 'Employment information',
+            'additional' => 'Additional and bank information',
         ],
         'personal' => [
             'title' => 'Personal Information',

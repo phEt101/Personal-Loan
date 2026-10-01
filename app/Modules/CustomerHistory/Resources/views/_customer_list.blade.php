@@ -77,6 +77,7 @@
                         @endif
                         <td>{{ $customer->sysInsertDateTime ? \Carbon\Carbon::parse($customer->sysInsertDateTime)->format('d/m/Y H:i') : '-' }}</td>
                         <td>
+                            <div class="customer-history-row-actions">
                             <button
                                 type="button"
                                 class="action-btn outline table-action-btn-small customer-view-button"
@@ -84,6 +85,15 @@
                             >
                                 {{ __('customerhistory::messages.index.view') }}
                             </button>
+                            <button
+                                type="button"
+                                class="action-btn outline table-action-btn-small customer-edit-button"
+                                data-detail-url="{{ route('customer-history.show', $customer->CustomerNo) }}"
+                                data-update-url="{{ route('customer-history.update', $customer->CustomerNo) }}"
+                            >
+                                {{ __('customerhistory::messages.index.edit') }}
+                            </button>
+                            </div>
                         </td>
                     </tr>
                 @empty

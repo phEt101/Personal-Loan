@@ -33,6 +33,9 @@
 
                 <section class="customer-form-section customer-form-step is-active" data-customer-step="1">
                     <div class="form-grid customer-form-grid">
+                        <div class="customer-fieldset-title col-12">
+                            <span>{{ __('customerhistory::messages.form.sections.personal') }}</span>
+                        </div>
                         <div class="form-group col-2">
                             <label for="customer_title">{{ __('customerhistory::messages.form.personal.title_label') }} <span class="required-asterisk">*</span></label>
                             <select id="customer_title" name="TitleCode" required>
@@ -70,6 +73,9 @@
                         <div class="form-group col-4">
                             <label for="customer_birth_date">{{ __('customerhistory::messages.form.personal.birth_date') }} <span class="required-asterisk">*</span></label>
                             <input id="customer_birth_date" name="BirthDate" type="date" required>
+                        </div>
+                        <div class="customer-fieldset-title col-12">
+                            <span>{{ __('customerhistory::messages.form.sections.identity') }}</span>
                         </div>
                         <div class="form-group col-4">
                             <label for="customer_identity_type">{{ __('customerhistory::messages.form.personal.identity_type') }} <span class="required-asterisk">*</span></label>
@@ -117,6 +123,9 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="customer-fieldset-title col-12">
+                            <span>{{ __('customerhistory::messages.form.sections.work') }}</span>
+                        </div>
                         <div class="form-group col-4 customer-layout-col-1">
                             <label for="customer_working_condition">{{ __('customerhistory::messages.form.profile.working_condition') }} <span class="required-asterisk">*</span></label>
                             <select id="customer_working_condition" name="WorkingConditionId" required>
@@ -159,6 +168,9 @@
                         <div class="form-group col-4 customer-layout-col-3" id="customer_other_occupation_group" hidden>
                             <label for="customer_other_occupation">{{ __('customerhistory::messages.form.profile.other_occupation_desc') }}</label>
                             <input id="customer_other_occupation" name="OtherOccupationDesc" type="text" maxlength="255" data-conditional-required disabled>
+                        </div>
+                        <div class="customer-fieldset-title col-12">
+                            <span>{{ __('customerhistory::messages.form.sections.additional') }}</span>
                         </div>
                         <div class="form-group col-4 customer-layout-col-1">
                             <label for="customer_address_type">{{ __('customerhistory::messages.form.address.type') }}</label>
@@ -407,6 +419,7 @@
         const modal = document.getElementById('customerHistoryFormModal');
         const modalTitle = modal?.querySelector('.modal-title');
         const createModalTitle = modalTitle?.textContent || '';
+        const storeUrl = form?.action || '';
         const steps = Array.from(document.querySelectorAll('[data-customer-step]'));
         const indicators = Array.from(document.querySelectorAll('.customer-history-steps .wizard-step'));
         const cancelButton = document.getElementById('cancelCustomerHistoryForm');
@@ -509,6 +522,8 @@
         let currentStep = 1;
         let maxReachedStep = 1;
         let isViewMode = false;
+        let isEditMode = false;
+        let editingCustomerNo = '';
 
         const setFieldError = (field, hasError, message = requiredMessage) => {
             const group = field.closest('.form-group');
@@ -566,6 +581,9 @@
 
             const url = new URL(identityCardCheckUrl, window.location.origin);
             url.searchParams.set('identity_card_id', identityInput.value);
+            if (isEditMode && editingCustomerNo) {
+                url.searchParams.set('customer_no', editingCustomerNo);
+            }
 
             const response = await fetch(url, {
                 headers: {
@@ -1067,13 +1085,72 @@
 
         window.prepareCustomerHistoryCreateForm = () => {
             isViewMode = false;
+            isEditMode = false;
+            editingCustomerNo = '';
+            form.action = storeUrl;
             modal?.classList.remove('is-view-mode');
             if (modalTitle) modalTitle.textContent = createModalTitle;
             resetCustomerForm();
         };
 
+        window.openCustomerHistoryEdit = async (detailUrl, updateUrl) => {
+            isViewMode = false;
+            isEditMode = true;
+            modal?.classList.remove('is-view-mode');
+            if (modalTitle) modalTitle.textContent = config.messages.editTitle;
+            modal.style.display = 'flex';
+            modal.offsetHeight;
+            modal.classList.add('show', 'is-loading');
+
+            try {
+                const response = await fetch(detailUrl, {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!response.ok) throw new Error(config.messages.detailLoadFailed);
+
+                const result = await response.json();
+                resetCustomerForm();
+                isViewMode = false;
+                isEditMode = true;
+                editingCustomerNo = String(result.customer.CustomerNo || '');
+                form.action = updateUrl;
+                if (modalTitle) modalTitle.textContent = config.messages.editTitle;
+
+                Object.entries(result.customer).forEach(([name, value]) => {
+                    const field = form.elements.namedItem(name);
+                    if (!(field instanceof HTMLElement)) return;
+                    field.value = field.type === 'date' && value ? String(value).slice(0, 10) : (value ?? '');
+                });
+                form.elements.namedItem('EmailRemark').value = result.email_remark ?? '';
+                form.elements.namedItem('Comment').value = result.comment ?? '';
+                addresses = result.addresses || [];
+                phones = result.phones || [];
+                renderAddresses();
+                renderPhones();
+                identityCardAddress.value = String(result.customer.IdentityCardAddressId ?? '');
+                houseRegistrationAddress.value = String(result.customer.HouseRegistrationAddressId ?? '');
+                currentAddress.value = String(result.customer.CurrentAddressId ?? '');
+                mailingAddress.value = String(result.customer.MailingAddressId ?? '');
+                primaryPhoneInput.value = String(result.customer.MobileTelephoneId ?? '');
+                updateIdentityField();
+                updateOccupationFields();
+                calculateIncome();
+                currentStep = 1;
+                maxReachedStep = steps.length;
+                updateStep();
+            } catch (error) {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                window.alert(error.message || config.messages.detailLoadFailed);
+            } finally {
+                modal.classList.remove('is-loading');
+            }
+        };
+
         window.openCustomerHistoryDetail = async (url) => {
             isViewMode = true;
+            isEditMode = false;
+            editingCustomerNo = '';
             modal?.classList.add('is-view-mode');
             if (modalTitle) modalTitle.textContent = config.messages.detailTitle;
             modal.style.display = 'flex';
@@ -1250,9 +1327,11 @@
             saveButton.disabled = true;
 
             try {
+                const formData = new FormData(form);
+                if (isEditMode) formData.set('_method', 'PUT');
                 const response = await fetch(form.action, {
                     method: 'POST',
-                    body: new FormData(form),
+                    body: formData,
                     headers: {
                         Accept: 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',

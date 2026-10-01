@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/customer-history', [CustomerHistoryController::class, 'index'])->name('customer-history.index');
     Route::post('/customer-history', [CustomerHistoryController::class, 'store'])->name('customer-history.store');
+    Route::put('/customer-history/{customerNo}', [CustomerHistoryController::class, 'update'])->name('customer-history.update');
     Route::get('/customer-history/locations/districts', [CustomerHistoryController::class, 'districts'])
         ->name('customer-history.locations.districts');
     Route::get('/customer-history/locations/sub-districts', [CustomerHistoryController::class, 'subDistricts'])

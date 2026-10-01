@@ -19,7 +19,7 @@ class LoginTest extends TestCase
 
     public function test_guest_cannot_access_home(): void
     {
-        $this->get('/home')->assertRedirect(self::LOGIN_PATH);
+        $this->get('/customer-history')->assertRedirect(self::LOGIN_PATH);
     }
 
     public function test_user_can_login_and_logout(): void
@@ -32,7 +32,7 @@ class LoginTest extends TestCase
         $this->post('/login', [
             'email' => $user->email,
             'password' => 'password',
-        ])->assertRedirect('/home');
+        ])->assertRedirect('/customer-history');
 
         $this->assertAuthenticatedAs($user);
 

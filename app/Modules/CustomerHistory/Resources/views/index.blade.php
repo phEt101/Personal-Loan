@@ -126,6 +126,13 @@
             });
 
             listRegion?.addEventListener('click', (event) => {
+                const editButton = event.target.closest('.customer-edit-button');
+                if (editButton) {
+                    event.preventDefault();
+                    window.openCustomerHistoryEdit?.(editButton.dataset.detailUrl, editButton.dataset.updateUrl);
+                    return;
+                }
+
                 const viewButton = event.target.closest('.customer-view-button');
                 if (viewButton) {
                     event.preventDefault();

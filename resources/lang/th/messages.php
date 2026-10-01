@@ -14,6 +14,9 @@ return [
         'home' => 'หน้าหลัก',
         'consent' => 'ใบยินยอม',
         'customer_history' => 'ประวัติลูกค้า',
+        'settings' => 'ตั้งค่า',
+        'add_user' => 'เพิ่มผู้ใช้งาน',
+        'users' => 'จัดการผู้ใช้งาน',
         'consent_review' => 'พิจารณาใบยินยอม',
     ],
     'language' => [

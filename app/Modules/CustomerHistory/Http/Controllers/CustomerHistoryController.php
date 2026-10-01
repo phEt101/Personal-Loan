@@ -178,6 +178,7 @@ class CustomerHistoryController extends Controller
                     'savePhone' => __('customerhistory::messages.form.contact.confirm_edit'),
                     'phoneNoData' => __('customerhistory::messages.form.contact.no_data'),
                     'detailTitle' => __('customerhistory::messages.index.detail_title'),
+                    'editTitle' => __('customerhistory::messages.form.edit_title'),
                     'detailLoadFailed' => __('customerhistory::messages.index.detail_load_failed'),
                     'duplicateNationalId' => __('customerhistory::messages.form.personal.duplicate_national_id'),
                     'identityCheckFailed' => __('customerhistory::messages.form.personal.identity_check_failed'),
@@ -252,12 +253,15 @@ class CustomerHistoryController extends Controller
             'identity_card_id' => ['required', 'digits:13'],
         ]);
 
-        return response()->json([
-            'exists' => DB::table('customers')
-                ->where('IdentityCardTypeCode', 1)
-                ->where('IdentityCardId', $validated['identity_card_id'])
-                ->exists(),
-        ]);
+        $query = DB::table('customers')
+            ->where('IdentityCardTypeCode', 1)
+            ->where('IdentityCardId', $validated['identity_card_id']);
+
+        if ($request->filled('customer_no')) {
+            $query->where('CustomerNo', '<>', (string) $request->query('customer_no'));
+        }
+
+        return response()->json(['exists' => $query->exists()]);
     }
 
     public function show(Request $request, string $customerNo): JsonResponse
@@ -601,6 +605,153 @@ class CustomerHistoryController extends Controller
             'message' => __('customerhistory::messages.form.saved_successfully'),
             'customer_no' => $customerNo,
         ], 201);
+    }
+
+    public function update(Request $request, string $customerNo): JsonResponse
+    {
+        $customerQuery = DB::table('customers')->where('CustomerNo', $customerNo);
+        if ($request->user()->user_type === 'external') {
+            $customerQuery->where('sysInsertUserId', $request->user()->getAuthIdentifier());
+        }
+        $customerQuery->firstOrFail();
+
+        foreach (['MonthlyIncomeAmount', 'MonthlyExpenseAmount', 'YearlyBonusAmount'] as $field) {
+            if ($request->filled($field)) {
+                $request->merge([$field => str_replace(',', '', (string) $request->input($field))]);
+            }
+        }
+        $request->merge([
+            'AddressItems' => json_decode((string) $request->input('Addresses', ''), true),
+            'PhoneItems' => json_decode((string) $request->input('Phones', ''), true),
+        ]);
+        $validated = $request->validate($this->customerUpdateRules());
+
+        $addressIds = collect($validated['AddressItems'])->pluck('AddressId')->map(fn ($id) => (int) $id);
+        foreach (['IdentityCardAddressId', 'HouseRegistrationAddressId', 'CurrentAddressId', 'MailingAddressId'] as $field) {
+            if (!$addressIds->contains((int) $validated[$field])) {
+                throw ValidationException::withMessages([$field => __('customerhistory::messages.form.required')]);
+            }
+        }
+        foreach ($validated['AddressItems'] as $index => $address) {
+            $locationExists = DB::table('sub_districts')
+                ->where('ProvinceCode', $address['ProvinceCode'])
+                ->where('DistrictCode', $address['DistrictCode'])
+                ->where('SubDistrictCode', $address['SubDistrictCode'])
+                ->exists();
+            if (!$locationExists) {
+                throw ValidationException::withMessages([
+                    "AddressItems.$index.SubDistrictCode" => __('customerhistory::messages.form.required'),
+                ]);
+            }
+        }
+        $phoneIds = collect($validated['PhoneItems'])->pluck('PhoneId')->map(fn ($id) => (int) $id);
+        if (!$phoneIds->contains((int) $validated['MobileTelephoneId'])) {
+            throw ValidationException::withMessages(['MobileTelephoneId' => __('customerhistory::messages.form.required')]);
+        }
+
+        $workingCondition = DB::table('working_conditions')->where('WorkingConditionId', $validated['WorkingConditionId'])->first(['IsRequireOccupation']);
+        if ($workingCondition?->IsRequireOccupation && empty($validated['OccupationCode'])) {
+            throw ValidationException::withMessages(['OccupationCode' => __('customerhistory::messages.form.required')]);
+        }
+        $occupation = !empty($validated['OccupationCode'])
+            ? DB::table('occupations')->where('OccupationCode', $validated['OccupationCode'])->first(['OccupationDesc', 'IsOtherOccupation', 'Score'])
+            : null;
+        if ($occupation?->IsOtherOccupation && empty($validated['OtherOccupationDesc'])) {
+            throw ValidationException::withMessages(['OtherOccupationDesc' => __('customerhistory::messages.form.required')]);
+        }
+        if ((string) $validated['IdentityCardTypeCode'] === '1' && !$this->isValidThaiNationalId($validated['IdentityCardId'])) {
+            throw ValidationException::withMessages(['IdentityCardId' => __('customerhistory::messages.form.personal.invalid_national_id')]);
+        }
+        if ((string) $validated['IdentityCardTypeCode'] === '1' && DB::table('customers')
+            ->where('IdentityCardTypeCode', 1)->where('IdentityCardId', $validated['IdentityCardId'])
+            ->where('CustomerNo', '<>', $customerNo)->exists()) {
+            throw ValidationException::withMessages(['IdentityCardId' => __('customerhistory::messages.form.personal.duplicate_national_id')]);
+        }
+
+        DB::transaction(function () use ($validated, $occupation, $request, $customerNo): void {
+            $now = now();
+            $hMeterUserId = 4;
+            $addressTypeCode = $validated['AddressTypeCode'] ?? 1;
+            $title = DB::table('titles')->where('TitleCode', $validated['TitleCode'])->first(['TitleDesc']);
+            $maritalStatus = DB::table('marital_statuses')->where('MaritalStatusCode', $validated['MaritalStatusCode'])->first(['MaritalStatusName', 'Score']);
+            $businessType = !empty($validated['TypeOfBusinessId']) ? DB::table('type_of_businesses')->where('TypeOfBusinessId', $validated['TypeOfBusinessId'])->first(['TypeOfBusinessName', 'BOTCode']) : null;
+            $addressType = DB::table('address_types')->where('AddressTypeCode', $addressTypeCode)->first(['AddressTypeDesc', 'Score']);
+            $age = Carbon::parse($validated['BirthDate'])->age;
+            $ageRangeScore = DB::table('age_ranges')->where('FromAge', '<=', $age)->where('ToAge', '>=', $age)->value('Score') ?? 0;
+            $monthlyNetIncome = max(0, ((float) ($validated['MonthlyIncomeAmount'] ?? 0)) - ((float) ($validated['MonthlyExpenseAmount'] ?? 0)) + (((float) ($validated['YearlyBonusAmount'] ?? 0)) / 12));
+            $netIncomeRangeScore = DB::table('net_income_ranges')->where('FromNetIncomeRange', '<=', $monthlyNetIncome)->where('ToNetIncomeRange', '>=', $monthlyNetIncome)->value('Score') ?? 0;
+            $currentAddressItem = collect($validated['AddressItems'])->firstWhere('AddressId', (int) $validated['CurrentAddressId']);
+            $primaryPhone = collect($validated['PhoneItems'])->firstWhere('PhoneId', (int) $validated['MobileTelephoneId']);
+            $currentAddress = implode(' ', array_filter([$currentAddressItem['AddressLine1'], $currentAddressItem['AddressLine2'] ?? null, $currentAddressItem['SubDistrictDesc'], $currentAddressItem['DistrictDesc'], $currentAddressItem['ProvinceDesc'], $currentAddressItem['ZipCode']]));
+
+            DB::table('customers')->where('CustomerNo', $customerNo)->update([
+                'QuickSearchKey' => mb_substr(implode(' ', array_filter([$validated['Nickname'] ?? null, $validated['Firstname'], $validated['Lastname'], $validated['IdentityCardId'], $primaryPhone['Phone']])), 0, 150),
+                'Firstname' => $validated['Firstname'], 'Lastname' => $validated['Lastname'], 'Nickname' => $validated['Nickname'] ?? null,
+                'TitleCode' => $validated['TitleCode'], 'TitleDesc' => $title?->TitleDesc, 'BirthDate' => $validated['BirthDate'], 'GenderCode' => $validated['GenderCode'],
+                'IdentityCardId' => $validated['IdentityCardId'], 'IdentityCardTypeCode' => $validated['IdentityCardTypeCode'], 'IdentityCardIssuer' => $validated['IdentityCardIssuer'] ?? null,
+                'IdentityCardEffectiveDate' => $validated['IdentityCardEffectiveDate'] ?? null, 'IdentityCardExpireDate' => $validated['IdentityCardExpireDate'] ?? null,
+                'Nationality' => $validated['Nationality'] ?? null, 'Race' => $validated['Race'] ?? null,
+                'MaritalStatusCode' => $validated['MaritalStatusCode'], 'MaritalStatusDesc' => $maritalStatus?->MaritalStatusName, 'MaritalStatusScore' => $maritalStatus?->Score ?? 0,
+                'WorkingConditionId' => $validated['WorkingConditionId'], 'OccupationCode' => $validated['OccupationCode'] ?? null, 'OccupationDesc' => $occupation?->OccupationDesc,
+                'OccupationScore' => $occupation?->Score, 'OtherOccupationDesc' => $validated['OtherOccupationDesc'] ?? null,
+                'TypeOfBusinessId' => $validated['TypeOfBusinessId'] ?? null, 'TypeOfBusinessName' => $businessType?->TypeOfBusinessName, 'TypeOfBusinessBotCode' => $businessType?->BOTCode,
+                'AddressTypeCode' => $addressTypeCode, 'AddressTypeDesc' => $addressType?->AddressTypeDesc, 'AddressTypeScore' => $addressType?->Score,
+                'AgeRangeScore' => $ageRangeScore, 'NetIncomeRangeScore' => $netIncomeRangeScore,
+                'IdentityCardAddressId' => $validated['IdentityCardAddressId'], 'HouseRegistrationAddressId' => $validated['HouseRegistrationAddressId'],
+                'CurrentAddressId' => $validated['CurrentAddressId'], 'MailingAddressId' => $validated['MailingAddressId'], 'CurrentAddressAsText' => $currentAddress,
+                'Mobile' => $primaryPhone['Phone'], 'MobileTelephoneId' => $validated['MobileTelephoneId'], 'Email' => $validated['Email'] ?? null,
+                'BankCode' => $validated['BankCode'] ?? null, 'BankBookBranch' => $validated['BankBookBranch'] ?? null, 'BankBookCode' => $validated['BankBookCode'] ?? null,
+                'WorkPlace' => $validated['WorkPlace'] ?? null, 'MonthlyIncomeAmount' => $validated['MonthlyIncomeAmount'] ?? null,
+                'MonthlyExpenseAmount' => $validated['MonthlyExpenseAmount'] ?? null, 'YearlyBonusAmount' => $validated['YearlyBonusAmount'] ?? null,
+                'UpdateUserId' => $hMeterUserId, 'UpdateDate' => $now, 'sysUpdateUserId' => $request->user()->getAuthIdentifier(), 'sysUpdateDateTime' => $now,
+            ]);
+
+            DB::table('customer_addresses')->where('CustomerNo', $customerNo)->delete();
+            foreach ($validated['AddressItems'] as $address) {
+                DB::table('customer_addresses')->insert([
+                    'CustomerNo' => $customerNo, 'AddressId' => $address['AddressId'], 'AddressLine1' => $address['AddressLine1'], 'AddressLine2' => $address['AddressLine2'] ?? null,
+                    'ProvinceCode' => $address['ProvinceCode'], 'ProvinceDesc' => $address['ProvinceDesc'], 'DistrictCode' => $address['DistrictCode'], 'DistrictDesc' => $address['DistrictDesc'],
+                    'SubDistrictCode' => $address['SubDistrictCode'], 'SubDistrictDesc' => $address['SubDistrictDesc'], 'ZipCode' => $address['ZipCode'], 'AddressTypeCode' => $addressTypeCode, 'Remark' => $address['Remark'] ?? null,
+                ]);
+            }
+            DB::table('customer_phones')->where('CustomerNo', $customerNo)->delete();
+            foreach ($validated['PhoneItems'] as $phone) {
+                DB::table('customer_phones')->insert(['CustomerNo' => $customerNo, 'PhoneId' => $phone['PhoneId'], 'Remark' => $phone['Remark'] ?? null, 'Phone' => $phone['Phone'], 'PhoneType' => $phone['PhoneType']]);
+            }
+            DB::table('customer_emails')->where('CustomerNo', $customerNo)->delete();
+            if (!empty($validated['Email'])) {
+                DB::table('customer_emails')->insert(['CustomerNo' => $customerNo, 'EmailId' => 1, 'Email' => $validated['Email'], 'CreateDateTime' => $now, 'CreateUserId' => $hMeterUserId, 'Remark' => $validated['EmailRemark'] ?? null]);
+            }
+            DB::table('customer_remarks')->where('CustomerNo', $customerNo)->delete();
+            if (!empty($validated['Comment'])) {
+                DB::table('customer_remarks')->insert(['CustomerNo' => $customerNo, 'RemarkId' => 1, 'Comment' => $validated['Comment'], 'InsertDateTime' => $now, 'InsertUserId' => $hMeterUserId]);
+            }
+        }, 3);
+
+        return response()->json(['message' => __('customerhistory::messages.form.updated_successfully'), 'customer_no' => $customerNo]);
+    }
+
+    private function customerUpdateRules(): array
+    {
+        return [
+            'TitleCode' => ['required', Rule::exists('titles', 'TitleCode')], 'Firstname' => ['required', 'string', 'max:100'], 'Lastname' => ['required', 'string', 'max:50'],
+            'Nickname' => ['nullable', 'string', 'max:10'], 'GenderCode' => ['required', Rule::exists('genders', 'GenderId')], 'BirthDate' => ['required', 'date'],
+            'IdentityCardTypeCode' => ['required', Rule::exists('identity_card_types', 'IdentityCardTypeCode')], 'IdentityCardId' => ['required', 'string', 'max:20'],
+            'IdentityCardIssuer' => ['nullable', 'string', 'max:100'], 'IdentityCardEffectiveDate' => ['nullable', 'date'], 'IdentityCardExpireDate' => ['nullable', 'date', 'after_or_equal:IdentityCardEffectiveDate'],
+            'Nationality' => ['nullable', 'string', 'max:50'], 'Race' => ['nullable', 'string', 'max:50'], 'MaritalStatusCode' => ['required', Rule::exists('marital_statuses', 'MaritalStatusCode')],
+            'WorkingConditionId' => ['required', Rule::exists('working_conditions', 'WorkingConditionId')], 'OccupationCode' => ['nullable', Rule::exists('occupations', 'OccupationCode')],
+            'TypeOfBusinessId' => ['nullable', Rule::exists('type_of_businesses', 'TypeOfBusinessId')], 'OtherOccupationDesc' => ['nullable', 'string', 'max:255'],
+            'AddressTypeCode' => ['nullable', Rule::exists('address_types', 'AddressTypeCode')], 'BankCode' => ['nullable', Rule::exists('banks', 'BankCode')], 'BankBookBranch' => ['nullable', 'string', 'max:50'], 'BankBookCode' => ['nullable', 'string', 'max:20'],
+            'Addresses' => ['required', 'json'], 'AddressItems' => ['required', 'array', 'min:1'], 'AddressItems.*.AddressId' => ['required', 'integer', 'min:1', 'distinct'],
+            'AddressItems.*.AddressLine1' => ['required', 'string', 'max:100'], 'AddressItems.*.AddressLine2' => ['nullable', 'string', 'max:100'], 'AddressItems.*.ProvinceCode' => ['required', Rule::exists('provinces', 'ProvinceCode')],
+            'AddressItems.*.ProvinceDesc' => ['required', 'string', 'max:150'], 'AddressItems.*.DistrictCode' => ['required', 'string', 'max:5'], 'AddressItems.*.DistrictDesc' => ['required', 'string', 'max:150'],
+            'AddressItems.*.SubDistrictCode' => ['required', 'string', 'max:5'], 'AddressItems.*.SubDistrictDesc' => ['required', 'string', 'max:150'], 'AddressItems.*.ZipCode' => ['required', 'string', 'max:10'], 'AddressItems.*.Remark' => ['nullable', 'string', 'max:200'],
+            'IdentityCardAddressId' => ['required', 'integer', 'min:1'], 'HouseRegistrationAddressId' => ['required', 'integer', 'min:1'], 'CurrentAddressId' => ['required', 'integer', 'min:1'], 'MailingAddressId' => ['required', 'integer', 'min:1'],
+            'Phones' => ['required', 'json'], 'PhoneItems' => ['required', 'array', 'min:1'], 'PhoneItems.*.PhoneId' => ['required', 'integer', 'min:1', 'distinct'], 'PhoneItems.*.Phone' => ['required', 'string', 'max:15'],
+            'PhoneItems.*.PhoneType' => ['required', Rule::exists('phone_types', 'PhoneTypeCode')], 'PhoneItems.*.Remark' => ['nullable', 'string', 'max:100'], 'MobileTelephoneId' => ['required', 'integer', 'min:1'],
+            'Email' => ['nullable', 'email', 'max:100'], 'EmailRemark' => ['nullable', 'string', 'max:100'], 'WorkPlace' => ['nullable', 'string', 'max:255'],
+            'MonthlyIncomeAmount' => ['nullable', 'numeric', 'min:0'], 'MonthlyExpenseAmount' => ['nullable', 'numeric', 'min:0'], 'YearlyBonusAmount' => ['nullable', 'numeric', 'min:0'], 'Comment' => ['nullable', 'string'],
+        ];
     }
 
     private function nextMockCustomerNo(): string

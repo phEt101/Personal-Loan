@@ -30,5 +30,9 @@ class AppServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(app_path('Modules/Profile/Routes/web.php'));
         $this->loadViewsFrom(app_path('Modules/Profile/Resources/views'), 'profile');
         $this->loadTranslationsFrom(app_path('Modules/Profile/Resources/lang'), 'profile');
+
+        $this->loadRoutesFrom(app_path('Modules/Settings/Routes/web.php'));
+        $this->loadViewsFrom(app_path('Modules/Settings/Resources/views'), 'settings');
+        $this->loadTranslationsFrom(app_path('Modules/Settings/Resources/lang'), 'settings');
     }
 }

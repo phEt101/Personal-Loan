@@ -14,6 +14,9 @@ return [
         'home' => 'Home',
         'consent' => 'Consent',
         'customer_history' => 'Customer History',
+        'settings' => 'Settings',
+        'add_user' => 'Add User',
+        'users' => 'User Management',
         'consent_review' => 'Consent Review',
     ],
     'language' => [
