@@ -16,20 +16,20 @@
         </div>
         <div class="user-box">
             <button class="user-toggle" id="userToggle" type="button">
-                <div class="user-avatar-compact">{{ strtoupper(substr(auth()->user()->name ?? __('messages.layout.guest_name'), 0, 1)) }}</div>
-                <span class="user-name-compact">{{ auth()->user()->name ?? __('messages.layout.guest_name') }}</span>
+                <div class="user-avatar-compact">{{ strtoupper(substr(auth()->user()->full_name ?? __('messages.layout.guest_name'), 0, 1)) }}</div>
+                <span class="user-name-compact">{{ auth()->user()->full_name ?? __('messages.layout.guest_name') }}</span>
             </button>
             <div class="user-dropdown" id="userDropdown">
                 <div class="user-dropdown-card">
                     <div class="user-dropdown-header">
-                        <div class="user-avatar-large">{{ strtoupper(substr(auth()->user()->name ?? __('messages.layout.guest_name'), 0, 1)) }}</div>
+                        <div class="user-avatar-large">{{ strtoupper(substr(auth()->user()->full_name ?? __('messages.layout.guest_name'), 0, 1)) }}</div>
                         <div>
-                            <div class="user-dropdown-name">{{ auth()->user()->name ?? __('messages.layout.guest_name') }}</div>
+                            <div class="user-dropdown-name">{{ auth()->user()->full_name ?? __('messages.layout.guest_name') }}</div>
                             <div class="user-dropdown-email">{{ auth()->user()->email ?? __('messages.layout.guest_email') }}</div>
                         </div>
                     </div>
                     <div class="user-dropdown-links">
-                        <a href="#" class="user-dropdown-item">{{ __('messages.layout.my_profile') }}</a>
+                        <a href="{{ route('profile.show') }}" class="user-dropdown-item">{{ __('messages.layout.my_profile') }}</a>
                         <form method="POST" action="{{ route('logout') }}" class="user-dropdown-form">
                             @csrf
                             <button type="submit" class="user-dropdown-item user-dropdown-signout">{{ __('messages.layout.sign_out') }}</button>

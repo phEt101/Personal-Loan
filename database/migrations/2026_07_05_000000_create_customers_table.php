@@ -25,14 +25,14 @@ return new class extends Migration
             $table->string('Firstname', 100);
             $table->string('Lastname', 50);
             $table->string('Nickname', 10)->nullable();
-            $table->unsignedInteger('TitleCode')->nullable();
+            $table->unsignedTinyInteger('TitleCode')->nullable();
             $table->date('BirthDate')->nullable();
             $table->string('IdentityCardId', 20)->nullable();
-            $table->unsignedInteger('IdentityCardTypeCode')->nullable();
+            $table->unsignedTinyInteger('IdentityCardTypeCode')->nullable();
             $table->string('IdentityCardIssuer', 100)->nullable();
             $table->string('Nationality', 50)->nullable();
             // ดึงสถานภาพสมรสจาก H Meter ตาราง dbo.MaritalStatus
-            $table->unsignedInteger('MaritalStatusCode')->nullable();
+            $table->unsignedTinyInteger('MaritalStatusCode')->nullable();
             // ดึงรายละเอียดอาชีพและคะแนนจาก H Meter ตาราง dbo.Occupation
             $table->unsignedInteger('OccupationCode')->nullable();
             $table->string('Mobile', 15)->nullable();
@@ -46,32 +46,41 @@ return new class extends Migration
             $table->decimal('MonthlyIncomeAmount', 18, 2)->nullable();
             $table->decimal('MonthlyExpenseAmount', 18, 2)->nullable();
             $table->decimal('YearlyBonusAmount', 18, 2)->nullable();
-            $table->decimal('Score', 18, 2)->nullable();
-            $table->decimal('CreditLimitAmount', 18, 2)->nullable();
-            $table->decimal('CreditUsedAmount', 18, 2)->nullable();
+            $table->decimal('Score', 18, 2)->nullable()->default(0);
+            $table->decimal('CreditLimitAmount', 18, 2)->nullable()->default(0);
+            $table->decimal('CreditUsedAmount', 18, 2)->nullable()->default(0);
             // ข้อมูลนิติบุคคลอยู่นอกขอบเขต จึงกำหนดเป็น 0
             $table->unsignedInteger('OrganizationBranchTypeCode')->default(0);
+            $table->string('OrganizationBranchNo', 50)->nullable();
             $table->string('Email', 50)->nullable();
+            $table->string('LineUserId', 100)->nullable();
+            $table->string('ContactPerson', 255)->nullable();
             // ตรวจสอบผู้บันทึกจาก H Meter ตาราง dbo.User
             $table->unsignedInteger('InsertUserId')->nullable();
             $table->date('InsertDate')->nullable();
-            $table->unsignedInteger('GenderCode')->nullable();
+            $table->unsignedInteger('UpdateUserId')->nullable();
+            $table->dateTime('UpdateDate')->nullable();
+            $table->unsignedInteger('DeleteUserId')->nullable();
+            $table->dateTime('DeleteDate')->nullable();
+            $table->string('CustomerAvatar', 255)->nullable();
+            $table->unsignedTinyInteger('GenderCode')->nullable();
+            $table->string('CustomerGradeCode', 20)->nullable();
             // ระบบประกอบข้อความที่อยู่จากข้อมูลใน customer_addresses
             $table->text('CurrentAddressAsText')->nullable();
             // ดึงประเภทที่อยู่และคะแนนจาก H Meter ตาราง dbo.AddressType
-            $table->unsignedInteger('AddressTypeCode')->nullable();
+            $table->unsignedTinyInteger('AddressTypeCode')->nullable();
             // คำนวณคะแนนจาก H Meter ตาราง dbo.AgeRange และ dbo.NetIncomeRange
-            $table->unsignedInteger('AgeRangeScore')->nullable();
-            $table->unsignedInteger('NetIncomeRangeScore')->nullable();
+            $table->unsignedInteger('AgeRangeScore')->default(0);
+            $table->unsignedInteger('NetIncomeRangeScore')->default(0);
             // คะแนนจาก H Meter ตาราง dbo.AddressType, dbo.Occupation และ dbo.MaritalStatus
             $table->unsignedInteger('AddressTypeScore')->nullable();
             $table->unsignedInteger('OccupationScore')->nullable();
-            $table->unsignedInteger('MaritalStatusScore')->nullable();
+            $table->unsignedInteger('MaritalStatusScore')->default(0);
             // สถานะและบทบาทลูกค้าที่กำหนดจากระบบนี้
             $table->boolean('IsCreditor')->default(false);
-            $table->boolean('IsDebtor')->default(false);
-            $table->unsignedInteger('CreditorCreditDay')->nullable();
-            $table->decimal('CreditorCreditAmount', 18, 2)->nullable();
+            $table->boolean('IsDebtor')->default(true);
+            $table->unsignedInteger('CreditorCreditDay')->nullable()->default(0);
+            $table->decimal('CreditorCreditAmount', 18, 2)->nullable()->default(0);
             $table->boolean('IsDealer')->default(false);
             $table->boolean('IsInsurer')->default(false);
             $table->boolean('IsOutsource')->default(false);
@@ -79,11 +88,26 @@ return new class extends Migration
             $table->string('BankCode', 5)->nullable();
             $table->string('BankBookCode', 20)->nullable();
             $table->string('BankBookBranch', 50)->nullable();
+            $table->boolean('IsSalesRepresentative')->default(false);
             $table->string('TitleDesc', 100)->nullable();
+            $table->string('RegistrationNo', 50)->nullable();
+            // รอสถานะจากกระบวนการของ H Meter ภายหลัง
+            $table->boolean('Status')->nullable()->default(null);
+            $table->boolean('IsAuction')->default(false);
             $table->string('MaritalStatusDesc', 100)->nullable();
             $table->string('OccupationDesc', 255)->nullable();
+            $table->string('AddressTypeDesc', 100)->nullable();
+            $table->unsignedInteger('CustomerAddressLetterId')->default(0);
+            $table->unsignedInteger('CustomerAddressDebtId')->default(0);
+            $table->unsignedInteger('StatementAddressId')->default(0);
+            $table->unsignedInteger('ReceiptAddressId')->default(0);
+            $table->unsignedInteger('HomeTelephoneId')->default(0);
+            $table->unsignedInteger('OfficeTelephoneId')->default(0);
             // อ้างอิง PhoneId ของเบอร์โทรหลักจากตาราง customer_phones
             $table->unsignedInteger('MobileTelephoneId')->nullable();
+            $table->unsignedInteger('OtherTelephoneId')->default(0);
+            $table->unsignedInteger('CollectionTelephoneId')->default(0);
+            $table->unsignedInteger('FaxId')->default(0);
             $table->string('Race', 50)->nullable();
             // ดึงข้อมูลประเภทธุรกิจจาก H Meter ตาราง dbo.TypeOfBusiness
             $table->unsignedInteger('TypeOfBusinessId')->nullable();
@@ -92,6 +116,9 @@ return new class extends Migration
             $table->string('OtherOccupationDesc', 255)->nullable();
             // ตรวจสอบสภาพการทำงานจาก H Meter ตาราง dbo.WorkingCondition
             $table->unsignedInteger('WorkingConditionId')->nullable();
+            $table->string('AccountApDeposit', 50)->nullable();
+            $table->string('AccountAp', 50)->nullable();
+            $table->string('AccountOtherSuspend', 50)->nullable();
             $table->unsignedInteger('CustomerRegistrationTypeCode')->default(0);
             $table->string('RegistrationTypeValue', 255)->nullable();
             $table->string('OrganizationNameNcb', 255)->nullable();
@@ -103,9 +130,19 @@ return new class extends Migration
             $table->boolean('IsSupplier')->default(false);
             $table->boolean('IsFinance')->default(false);
 
+            $table->date('OrganizationRegisteredDate')->nullable();
+            $table->decimal('OrganizationRegisteredCapital', 18, 2)->nullable();
+            $table->string('HeadquartersBranchNo', 50)->nullable();
+            $table->string('HeadquartersBranchDesc', 255)->nullable();
+
             // ใช้เลขเดียวกับ CustomerNo สำหรับอ้างอิงลูกค้า
             $table->string('CustomerRefNo', 16)->nullable();
 
+            // ผู้สร้างและผู้แก้ไขข้อมูลจากระบบ Personal Loan (ไม่ใช่รหัสผู้ใช้ H Meter)
+            $table->foreignId('sysInsertUserId')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('sysUpdateUserId')->nullable()->constrained('users')->nullOnDelete();
+            $table->dateTime('sysInsertDateTime')->nullable();
+            $table->dateTime('sysUpdateDateTime')->nullable();
 
             $table->index('IdentityCardId');
         });

@@ -17,19 +17,19 @@ return new class extends Migration
             $table->string('CustomerNo', 16);
             $table->unsignedInteger('AddressId');
             $table->string('AddressLine1', 100);
-            $table->string('AddressLine2', 100);
+            $table->string('AddressLine2', 100)->nullable();
             // ดึงข้อมูลจาก H Meter ตาราง dbo.Province
-            $table->string('ProvinceCode', 20)->nullable();
+            $table->string('ProvinceCode', 2)->nullable();
             $table->string('ProvinceDesc', 150)->nullable();
             // ดึงข้อมูลจาก H Meter ตาราง dbo.District
-            $table->string('DistrictCode', 20)->nullable();
+            $table->string('DistrictCode', 5)->nullable();
             $table->string('DistrictDesc', 150)->nullable();
             // ดึงข้อมูลจาก H Meter ตาราง dbo.SubDistrict
-            $table->string('SubDistrictCode', 20)->nullable();
+            $table->string('SubDistrictCode', 5)->nullable();
             $table->string('SubDistrictDesc', 150)->nullable();
             $table->string('ZipCode', 10);
             // กำหนดค่า AddressTypeCode เป็น 1 เสมอ
-            $table->unsignedInteger('AddressTypeCode')->default(1);
+            $table->unsignedTinyInteger('AddressTypeCode')->default(1);
             $table->string('Remark', 200)->nullable();
 
             $table->boolean('Status')->default(true);

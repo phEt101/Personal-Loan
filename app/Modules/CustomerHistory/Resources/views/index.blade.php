@@ -13,6 +13,15 @@
                 </button>
             </div>
         </div>
+
+        <div id="customerHistoryListContent" class="customer-history-ajax-region">
+            <div class="customer-history-loading" role="status" aria-live="polite" data-error-message="{{ __('customerhistory::messages.index.load_failed') }}">
+                <span class="customer-history-spinner" aria-hidden="true"></span>
+            </div>
+            <div id="customerHistoryListPartial">
+                @include('customerhistory::_customer_list')
+            </div>
+        </div>
     </section>
 
     <div id="customerHistoryTermsModal" class="modal">
@@ -63,9 +72,78 @@
             const proceedButton = document.getElementById('proceedCustomerHistoryForm');
             const closeFormButton = document.getElementById('closeCustomerHistoryForm');
             const cancelFormButton = document.getElementById('cancelCustomerHistoryForm');
+            const listRegion = document.getElementById('customerHistoryListContent');
+            const listPartial = document.getElementById('customerHistoryListPartial');
+            const listLoading = listRegion?.querySelector('.customer-history-loading');
+
+            window.refreshCustomerHistoryList = async (url = window.location.href, updateHistory = false) => {
+                if (!listRegion || !listPartial) return false;
+
+                const requestUrl = new URL(url, window.location.origin);
+                requestUrl.searchParams.set('partial', '1');
+                listRegion.classList.add('is-loading');
+                listRegion.setAttribute('aria-busy', 'true');
+
+                try {
+                    const response = await fetch(requestUrl, {
+                        headers: {
+                            Accept: 'text/html',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+
+                    if (!response.ok) throw new Error(listLoading?.dataset.errorMessage || 'Unable to load data');
+                    listPartial.innerHTML = await response.text();
+
+                    if (updateHistory) {
+                        requestUrl.searchParams.delete('partial');
+                        window.history.pushState({}, '', requestUrl);
+                    }
+
+                    return true;
+                } catch (error) {
+                    window.alert(error.message || listLoading?.dataset.errorMessage);
+                    return false;
+                } finally {
+                    listRegion.classList.remove('is-loading');
+                    listRegion.removeAttribute('aria-busy');
+                }
+            };
+
+            listRegion?.addEventListener('submit', (event) => {
+                const form = event.target.closest('.customer-history-filter-form, .customer-history-per-page-form');
+                if (!form) return;
+                event.preventDefault();
+                const url = new URL(form.action, window.location.origin);
+                new FormData(form).forEach((value, key) => url.searchParams.set(key, value));
+                window.refreshCustomerHistoryList(url, true);
+            });
+
+            listRegion?.addEventListener('change', (event) => {
+                if (event.target.matches('.customer-history-per-page-form select')) {
+                    event.target.form?.requestSubmit();
+                }
+            });
+
+            listRegion?.addEventListener('click', (event) => {
+                const viewButton = event.target.closest('.customer-view-button');
+                if (viewButton) {
+                    event.preventDefault();
+                    window.openCustomerHistoryDetail?.(viewButton.dataset.detailUrl);
+                    return;
+                }
+
+                const link = event.target.closest('.pagination-link, .customer-history-filter-clear');
+                if (!link || link.classList.contains('is-disabled')) return;
+                event.preventDefault();
+                window.refreshCustomerHistoryList(link.href, true);
+            });
+
+            window.addEventListener('popstate', () => window.refreshCustomerHistoryList(window.location.href));
 
             const openFormModal = () => {
                 if (!formModal) return;
+                window.prepareCustomerHistoryCreateForm?.();
                 formModal.style.display = 'flex';
                 formModal.offsetHeight;
                 formModal.classList.add('show');

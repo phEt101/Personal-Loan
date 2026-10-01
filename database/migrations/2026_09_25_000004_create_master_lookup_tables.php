@@ -130,10 +130,73 @@ return new class extends Migration
             $table->string('Description', 255);
             $table->boolean('IsRequireOccupation');
         });
+
+        Schema::table('districts', function (Blueprint $table) {
+            $table->foreign('ProvinceCode', 'districts_province_fk')->references('ProvinceCode')->on('provinces');
+        });
+        Schema::table('titles', function (Blueprint $table) {
+            $table->foreign('GenderCode', 'titles_gender_fk')->references('GenderId')->on('genders');
+        });
+        Schema::table('occupations', function (Blueprint $table) {
+            $table->foreign('TypeOfBusinessId', 'occupations_business_fk')->references('TypeOfBusinessId')->on('type_of_businesses');
+        });
+        Schema::table('customers', function (Blueprint $table) {
+            $table->foreign('TitleCode', 'customers_title_fk')->references('TitleCode')->on('titles');
+            $table->foreign('IdentityCardTypeCode', 'customers_id_type_fk')->references('IdentityCardTypeCode')->on('identity_card_types');
+            $table->foreign('MaritalStatusCode', 'customers_marital_fk')->references('MaritalStatusCode')->on('marital_statuses');
+            $table->foreign('OccupationCode', 'customers_occupation_fk')->references('OccupationCode')->on('occupations');
+            $table->foreign('GenderCode', 'customers_gender_fk')->references('GenderId')->on('genders');
+            $table->foreign('AddressTypeCode', 'customers_address_type_fk')->references('AddressTypeCode')->on('address_types');
+            $table->foreign('BankCode', 'customers_bank_fk')->references('BankCode')->on('banks');
+            $table->foreign('TypeOfBusinessId', 'customers_business_fk')->references('TypeOfBusinessId')->on('type_of_businesses');
+            $table->foreign('WorkingConditionId', 'customers_work_condition_fk')->references('WorkingConditionId')->on('working_conditions');
+        });
+        Schema::table('customer_addresses', function (Blueprint $table) {
+            $table->foreign('CustomerNo', 'customer_addresses_customer_fk')->references('CustomerNo')->on('customers');
+            $table->foreign('ProvinceCode', 'customer_addresses_province_fk')->references('ProvinceCode')->on('provinces');
+            $table->foreign(['ProvinceCode', 'DistrictCode', 'SubDistrictCode'], 'customer_addresses_sub_district_fk')
+                ->references(['ProvinceCode', 'DistrictCode', 'SubDistrictCode'])->on('sub_districts');
+            $table->foreign('AddressTypeCode', 'customer_addresses_type_fk')->references('AddressTypeCode')->on('address_types');
+        });
+        Schema::table('customer_phones', function (Blueprint $table) {
+            $table->foreign('CustomerNo', 'customer_phones_customer_fk')->references('CustomerNo')->on('customers');
+            $table->foreign('PhoneType', 'customer_phones_type_fk')->references('PhoneTypeCode')->on('phone_types');
+        });
     }
 
     public function down(): void
     {
+        Schema::table('customer_phones', function (Blueprint $table) {
+            $table->dropForeign('customer_phones_type_fk');
+            $table->dropForeign('customer_phones_customer_fk');
+        });
+        Schema::table('customer_addresses', function (Blueprint $table) {
+            $table->dropForeign('customer_addresses_type_fk');
+            $table->dropForeign('customer_addresses_sub_district_fk');
+            $table->dropForeign('customer_addresses_province_fk');
+            $table->dropForeign('customer_addresses_customer_fk');
+        });
+        Schema::table('customers', function (Blueprint $table) {
+            $table->dropForeign('customers_work_condition_fk');
+            $table->dropForeign('customers_business_fk');
+            $table->dropForeign('customers_bank_fk');
+            $table->dropForeign('customers_address_type_fk');
+            $table->dropForeign('customers_gender_fk');
+            $table->dropForeign('customers_occupation_fk');
+            $table->dropForeign('customers_marital_fk');
+            $table->dropForeign('customers_id_type_fk');
+            $table->dropForeign('customers_title_fk');
+        });
+        Schema::table('occupations', function (Blueprint $table) {
+            $table->dropForeign('occupations_business_fk');
+        });
+        Schema::table('titles', function (Blueprint $table) {
+            $table->dropForeign('titles_gender_fk');
+        });
+        Schema::table('districts', function (Blueprint $table) {
+            $table->dropForeign('districts_province_fk');
+        });
+
         Schema::dropIfExists('working_conditions');
         Schema::dropIfExists('type_of_businesses');
         Schema::dropIfExists('titles');

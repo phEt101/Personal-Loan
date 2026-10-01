@@ -11,18 +11,36 @@ class HMeterMasterSeeder extends Seeder
         '[dbo].[AddressType].csv' => 'address_types',
         '[dbo].[AgeRange].csv' => 'age_ranges',
         '[dbo].[Bank].csv' => 'banks',
-        '[dbo].[District].csv' => 'districts',
         '[dbo].[Gender].csv' => 'genders',
         '[dbo].[IdentityCardType].csv' => 'identity_card_types',
         '[dbo].[MaritalStatus].csv' => 'marital_statuses',
         '[dbo].[NetIncomeRange].csv' => 'net_income_ranges',
-        '[dbo].[Occupation].csv' => 'occupations',
         '[dbo].[PhoneType].csv' => 'phone_types',
         '[dbo].[Province].csv' => 'provinces',
+        '[dbo].[District].csv' => 'districts',
         '[dbo].[SubDistrict].csv' => 'sub_districts',
-        '[dbo].[Title].csv' => 'titles',
         '[dbo].[TypeOfBusiness].csv' => 'type_of_businesses',
+        '[dbo].[Occupation].csv' => 'occupations',
+        '[dbo].[Title].csv' => 'titles',
         '[dbo].[WorkingCondition].csv' => 'working_conditions',
+    ];
+
+    private const UNIQUE_KEYS = [
+        'address_types' => ['AddressTypeCode'],
+        'age_ranges' => ['AgeRangeId'],
+        'banks' => ['BankCode'],
+        'districts' => ['ProvinceCode', 'DistrictCode'],
+        'genders' => ['GenderId'],
+        'identity_card_types' => ['IdentityCardTypeCode'],
+        'marital_statuses' => ['MaritalStatusCode'],
+        'net_income_ranges' => ['NetIncomeRangeId'],
+        'occupations' => ['OccupationCode'],
+        'phone_types' => ['PhoneTypeCode'],
+        'provinces' => ['ProvinceCode'],
+        'sub_districts' => ['ProvinceCode', 'DistrictCode', 'SubDistrictCode'],
+        'titles' => ['TitleCode'],
+        'type_of_businesses' => ['TypeOfBusinessId'],
+        'working_conditions' => ['WorkingConditionId'],
     ];
 
     public function run(): void
@@ -39,7 +57,6 @@ class HMeterMasterSeeder extends Seeder
         $headers = fgetcsv($handle);
         $headers[0] = preg_replace('/^\xEF\xBB\xBF/', '', $headers[0]);
 
-        DB::table($table)->truncate();
         $records = [];
 
         while (($row = fgetcsv($handle)) !== false) {
@@ -50,15 +67,23 @@ class HMeterMasterSeeder extends Seeder
             $records[] = array_combine($headers, $values);
 
             if (count($records) === 500) {
-                DB::table($table)->insert($records);
+                $this->upsertRecords($table, $records);
                 $records = [];
             }
         }
 
         if ($records !== []) {
-            DB::table($table)->insert($records);
+            $this->upsertRecords($table, $records);
         }
 
         fclose($handle);
+    }
+
+    private function upsertRecords(string $table, array $records): void
+    {
+        $columns = array_keys($records[0]);
+        $updateColumns = array_values(array_diff($columns, self::UNIQUE_KEYS[$table]));
+
+        DB::table($table)->upsert($records, self::UNIQUE_KEYS[$table], $updateColumns);
     }
 }

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('Remark', 100)->nullable();
             $table->string('Phone', 15);
             // ดึงประเภทโทรศัพท์จาก H Meter ตาราง dbo.PhoneType
-            $table->string('PhoneType', 10);
+            $table->string('PhoneType', 2);
             // กำหนดค่า PhoneSequense เป็น 0 เสมอ
             $table->unsignedInteger('PhoneSequense')->default(0);
             $table->boolean('Status')->default(true);

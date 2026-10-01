@@ -2,12 +2,634 @@
 
 namespace App\Modules\CustomerHistory\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Routing\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CustomerHistoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('customerhistory::index');
+        $user = $request->user();
+        $perPageOptions = [5, 10, 25, 50, 100];
+        $perPage = (int) $request->query('per_page', 10);
+
+        if (!in_array($perPage, $perPageOptions, true)) {
+            $perPage = 10;
+        }
+
+        $customersQuery = DB::table('customers as customer')
+            ->select([
+                'customer.CustomerNo',
+                'customer.Firstname',
+                'customer.Lastname',
+                'customer.Mobile',
+                'customer.sysInsertDateTime',
+            ]);
+
+        if ($user->user_type === 'external') {
+            $customersQuery->where('customer.sysInsertUserId', $user->getAuthIdentifier());
+        } else {
+            $customersQuery
+                ->leftJoin('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+                ->addSelect([
+                    'creator.employee_code as CreatorEmployeeCode',
+                    'creator.first_name as CreatorFirstname',
+                    'creator.last_name as CreatorLastname',
+                ]);
+        }
+
+        $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
+        $dateFrom = $this->validDateFilter($request->query('date_from'));
+        $dateTo = $this->validDateFilter($request->query('date_to'));
+        $creatorType = $user->user_type === 'internal'
+            && in_array($request->query('creator_type'), ['internal', 'external'], true)
+                ? $request->query('creator_type')
+                : '';
+
+        if ($dateFrom !== '') {
+            $customersQuery->whereDate('customer.sysInsertDateTime', '>=', $dateFrom);
+        }
+
+        if ($dateTo !== '') {
+            $customersQuery->whereDate('customer.sysInsertDateTime', '<=', $dateTo);
+        }
+
+        if ($creatorType !== '') {
+            $customersQuery->where('creator.user_type', $creatorType);
+        }
+
+        if ($search !== '') {
+            $customersQuery->where(function ($query) use ($search, $user) {
+                $query
+                    ->where('customer.CustomerNo', 'like', "%{$search}%")
+                    ->orWhere('customer.Firstname', 'like', "%{$search}%")
+                    ->orWhere('customer.Lastname', 'like', "%{$search}%")
+                    ->orWhere('customer.Mobile', 'like', "%{$search}%")
+                    ->orWhereRaw("CONCAT(customer.Firstname, ' ', customer.Lastname) LIKE ?", ["%{$search}%"]);
+
+                if ($user->user_type === 'internal') {
+                    $query
+                        ->orWhere('creator.employee_code', 'like', "%{$search}%")
+                        ->orWhere('creator.first_name', 'like', "%{$search}%")
+                        ->orWhere('creator.last_name', 'like', "%{$search}%");
+                }
+            });
+        }
+
+        $customers = $customersQuery
+            ->orderByDesc('customer.sysInsertDateTime')
+            ->orderByDesc('customer.id')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $customerListData = [
+            'customers' => $customers,
+            'paginationPages' => $this->paginationPages($customers->currentPage(), $customers->lastPage()),
+            'isInternalUser' => $user->user_type === 'internal',
+            'perPage' => $perPage,
+            'perPageOptions' => $perPageOptions,
+            'search' => $search,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'creatorType' => $creatorType,
+            'hasActiveFilters' => $search !== '' || $dateFrom !== '' || $dateTo !== '' || $creatorType !== '',
+        ];
+
+        if ($request->boolean('partial')) {
+            return view('customerhistory::_customer_list', $customerListData);
+        }
+
+        return view('customerhistory::index', array_merge($customerListData, [
+            'titles' => DB::table('titles')
+                ->where('Active', true)
+                ->whereNotNull('TitleDesc')
+                ->where('TitleDesc', '<>', '')
+                ->orderBy('TitleCode')
+                ->get(['TitleCode', 'TitleDesc']),
+            'identityCardTypes' => DB::table('identity_card_types')
+                ->orderBy('IdentityCardTypeCode')
+                ->get(['IdentityCardTypeCode', 'IdentityCardTypeDesc']),
+            'maritalStatuses' => DB::table('marital_statuses')
+                ->orderBy('MaritalStatusCode')
+                ->get(['MaritalStatusCode', 'MaritalStatusName']),
+            'genders' => DB::table('genders')
+                ->orderBy('GenderId')
+                ->get(['GenderId', 'GenderDesc']),
+            'occupations' => DB::table('occupations')
+                ->orderBy('OccupationCode')
+                ->get(['OccupationCode', 'OccupationDesc', 'IsOtherOccupation']),
+            'workingConditions' => DB::table('working_conditions')
+                ->orderBy('WorkingConditionId')
+                ->get(['WorkingConditionId', 'Description', 'IsRequireOccupation']),
+            'businessTypes' => DB::table('type_of_businesses')
+                ->where('Active', true)
+                ->orderBy('TypeOfBusinessId')
+                ->get(['TypeOfBusinessId', 'TypeOfBusinessName']),
+            'addressTypes' => DB::table('address_types')
+                ->orderBy('AddressTypeCode')
+                ->get(['AddressTypeCode', 'AddressTypeDesc']),
+            'banks' => DB::table('banks')
+                ->where('Active', true)
+                ->orderBy('BankCode')
+                ->get(['BankCode', 'BankDesc']),
+            'provinces' => DB::table('provinces')
+                ->orderBy('ProvinceDesc')
+                ->get(['ProvinceCode', 'ProvinceDesc']),
+            'phoneTypes' => DB::table('phone_types')
+                ->orderBy('PhoneTypeCode')
+                ->get(['PhoneTypeCode', 'PhoneTypeDesc']),
+            'customerFormConfig' => [
+                'urls' => [
+                    'districts' => route('customer-history.locations.districts'),
+                    'subDistricts' => route('customer-history.locations.sub-districts'),
+                    'identityCardCheck' => route('customer-history.identity-card.check'),
+                ],
+                'identityNumberLabels' => [
+                    1 => __('customerhistory::messages.form.personal.identity_card'),
+                    2 => __('customerhistory::messages.form.personal.passport_number'),
+                    3 => __('customerhistory::messages.form.personal.government_card_number'),
+                    4 => __('customerhistory::messages.form.personal.other_document_number'),
+                    5 => __('customerhistory::messages.form.personal.tax_id_number'),
+                ],
+                'messages' => [
+                    'searchOption' => __('customerhistory::messages.form.search_option'),
+                    'noSearchResults' => __('customerhistory::messages.form.no_search_results'),
+                    'noOptions' => __('customerhistory::messages.form.no_options'),
+                    'required' => __('customerhistory::messages.form.required'),
+                    'invalidNationalId' => __('customerhistory::messages.form.personal.invalid_national_id'),
+                    'identityDocumentNumber' => __('customerhistory::messages.form.personal.identity_document_number'),
+                    'saveFailed' => __('customerhistory::messages.form.save_failed'),
+                    'addressRequired' => __('customerhistory::messages.form.address.address_required'),
+                    'selectOption' => __('customerhistory::messages.form.select_option'),
+                    'editAddress' => __('customerhistory::messages.form.address.edit'),
+                    'deleteAddress' => __('customerhistory::messages.form.address.delete'),
+                    'addAddress' => __('customerhistory::messages.form.address.confirm_add'),
+                    'saveAddress' => __('customerhistory::messages.form.address.confirm_edit'),
+                    'addressNoData' => __('customerhistory::messages.form.address.no_data'),
+                    'phoneRequired' => __('customerhistory::messages.form.contact.phone_required'),
+                    'editPhone' => __('customerhistory::messages.form.contact.edit'),
+                    'deletePhone' => __('customerhistory::messages.form.contact.delete'),
+                    'addPhone' => __('customerhistory::messages.form.contact.confirm_add'),
+                    'savePhone' => __('customerhistory::messages.form.contact.confirm_edit'),
+                    'phoneNoData' => __('customerhistory::messages.form.contact.no_data'),
+                    'detailTitle' => __('customerhistory::messages.index.detail_title'),
+                    'detailLoadFailed' => __('customerhistory::messages.index.detail_load_failed'),
+                    'duplicateNationalId' => __('customerhistory::messages.form.personal.duplicate_national_id'),
+                    'identityCheckFailed' => __('customerhistory::messages.form.personal.identity_check_failed'),
+                ],
+            ],
+        ]));
+    }
+
+    public function districts(Request $request): JsonResponse
+    {
+        $provinceCode = (string) $request->query('province_code', '');
+
+        return response()->json(
+            DB::table('districts')
+                ->where('ProvinceCode', $provinceCode)
+                ->orderBy('DistrictDesc')
+                ->get(['DistrictCode', 'DistrictDesc'])
+        );
+    }
+
+    private function validDateFilter(mixed $value): string
+    {
+        $date = trim((string) $value);
+
+        if ($date === '') {
+            return '';
+        }
+
+        try {
+            $parsedDate = Carbon::createFromFormat('Y-m-d', $date);
+
+            return $parsedDate->format('Y-m-d') === $date ? $date : '';
+        } catch (\Throwable) {
+            return '';
+        }
+    }
+
+    private function paginationPages(int $currentPage, int $lastPage): array
+    {
+        if ($lastPage <= 1) {
+            return [1];
+        }
+
+        $pages = [1, $lastPage];
+
+        for ($page = max(1, $currentPage - 2); $page <= min($lastPage, $currentPage + 2); $page++) {
+            $pages[] = $page;
+        }
+
+        sort($pages);
+
+        return array_values(array_unique($pages));
+    }
+
+    public function subDistricts(Request $request): JsonResponse
+    {
+        $provinceCode = (string) $request->query('province_code', '');
+        $districtCode = (string) $request->query('district_code', '');
+
+        return response()->json(
+            DB::table('sub_districts')
+                ->where('ProvinceCode', $provinceCode)
+                ->where('DistrictCode', $districtCode)
+                ->orderBy('SubDistrictDesc')
+                ->get(['SubDistrictCode', 'SubDistrictDesc', 'Zipcode'])
+        );
+    }
+
+    public function checkIdentityCard(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'identity_card_id' => ['required', 'digits:13'],
+        ]);
+
+        return response()->json([
+            'exists' => DB::table('customers')
+                ->where('IdentityCardTypeCode', 1)
+                ->where('IdentityCardId', $validated['identity_card_id'])
+                ->exists(),
+        ]);
+    }
+
+    public function show(Request $request, string $customerNo): JsonResponse
+    {
+        $user = $request->user();
+        $customerQuery = DB::table('customers as customer')
+            ->leftJoin('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+            ->leftJoin('identity_card_types as identity_type', 'identity_type.IdentityCardTypeCode', '=', 'customer.IdentityCardTypeCode')
+            ->leftJoin('genders as gender', 'gender.GenderId', '=', 'customer.GenderCode')
+            ->leftJoin('working_conditions as working_condition', 'working_condition.WorkingConditionId', '=', 'customer.WorkingConditionId')
+            ->leftJoin('banks as bank', 'bank.BankCode', '=', 'customer.BankCode')
+            ->where('customer.CustomerNo', $customerNo)
+            ->select([
+                'customer.*',
+                'identity_type.IdentityCardTypeDesc',
+                'gender.GenderDesc',
+                'working_condition.Description as WorkingConditionDesc',
+                'bank.BankDesc',
+                'creator.employee_code as CreatorEmployeeCode',
+                'creator.first_name as CreatorFirstname',
+                'creator.last_name as CreatorLastname',
+            ]);
+
+        if ($user->user_type === 'external') {
+            $customerQuery->where('customer.sysInsertUserId', $user->getAuthIdentifier());
+        }
+
+        $customer = $customerQuery->firstOrFail();
+
+        $email = DB::table('customer_emails')->where('CustomerNo', $customerNo)->orderBy('EmailId')->first();
+        $remark = DB::table('customer_remarks')->where('CustomerNo', $customerNo)->orderBy('RemarkId')->first();
+
+        return response()->json([
+            'customer' => $customer,
+            'addresses' => DB::table('customer_addresses')->where('CustomerNo', $customerNo)->orderBy('AddressId')->get(),
+            'phones' => DB::table('customer_phones')->where('CustomerNo', $customerNo)->orderBy('PhoneId')->get(),
+            'email_remark' => $email?->Remark,
+            'comment' => $remark?->Comment,
+        ]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        foreach (['MonthlyIncomeAmount', 'MonthlyExpenseAmount', 'YearlyBonusAmount'] as $field) {
+            if ($request->filled($field)) {
+                $request->merge([$field => str_replace(',', '', (string) $request->input($field))]);
+            }
+        }
+
+        $request->merge([
+            'AddressItems' => json_decode((string) $request->input('Addresses', ''), true),
+            'PhoneItems' => json_decode((string) $request->input('Phones', ''), true),
+        ]);
+
+        $validated = $request->validate([
+            'TitleCode' => ['required', Rule::exists('titles', 'TitleCode')],
+            'Firstname' => ['required', 'string', 'max:100'],
+            'Lastname' => ['required', 'string', 'max:50'],
+            'Nickname' => ['nullable', 'string', 'max:10'],
+            'GenderCode' => ['required', Rule::exists('genders', 'GenderId')],
+            'BirthDate' => ['required', 'date'],
+            'IdentityCardTypeCode' => ['required', Rule::exists('identity_card_types', 'IdentityCardTypeCode')],
+            'IdentityCardId' => ['required', 'string', 'max:20'],
+            'IdentityCardIssuer' => ['nullable', 'string', 'max:100'],
+            'IdentityCardEffectiveDate' => ['nullable', 'date'],
+            'IdentityCardExpireDate' => ['nullable', 'date', 'after_or_equal:IdentityCardEffectiveDate'],
+            'Nationality' => ['nullable', 'string', 'max:50'],
+            'Race' => ['nullable', 'string', 'max:50'],
+            'MaritalStatusCode' => ['required', Rule::exists('marital_statuses', 'MaritalStatusCode')],
+            'WorkingConditionId' => ['required', Rule::exists('working_conditions', 'WorkingConditionId')],
+            'OccupationCode' => ['nullable', Rule::exists('occupations', 'OccupationCode')],
+            'TypeOfBusinessId' => ['nullable', Rule::exists('type_of_businesses', 'TypeOfBusinessId')],
+            'OtherOccupationDesc' => ['nullable', 'string', 'max:255'],
+            'AddressTypeCode' => ['nullable', Rule::exists('address_types', 'AddressTypeCode')],
+            'BankCode' => ['nullable', Rule::exists('banks', 'BankCode')],
+            'BankBookBranch' => ['nullable', 'string', 'max:50'],
+            'BankBookCode' => ['nullable', 'string', 'max:20'],
+            'Addresses' => ['required', 'json'],
+            'AddressItems' => ['required', 'array', 'min:1'],
+            'AddressItems.*.AddressId' => ['required', 'integer', 'min:1', 'distinct'],
+            'AddressItems.*.AddressLine1' => ['required', 'string', 'max:100'],
+            'AddressItems.*.AddressLine2' => ['nullable', 'string', 'max:100'],
+            'AddressItems.*.ProvinceCode' => ['required', Rule::exists('provinces', 'ProvinceCode')],
+            'AddressItems.*.ProvinceDesc' => ['required', 'string', 'max:150'],
+            'AddressItems.*.DistrictCode' => ['required', 'string', 'max:5'],
+            'AddressItems.*.DistrictDesc' => ['required', 'string', 'max:150'],
+            'AddressItems.*.SubDistrictCode' => ['required', 'string', 'max:5'],
+            'AddressItems.*.SubDistrictDesc' => ['required', 'string', 'max:150'],
+            'AddressItems.*.ZipCode' => ['required', 'string', 'max:10'],
+            'AddressItems.*.Remark' => ['nullable', 'string', 'max:200'],
+            'IdentityCardAddressId' => ['required', 'integer', 'min:1'],
+            'HouseRegistrationAddressId' => ['required', 'integer', 'min:1'],
+            'CurrentAddressId' => ['required', 'integer', 'min:1'],
+            'MailingAddressId' => ['required', 'integer', 'min:1'],
+            'Phones' => ['required', 'json'],
+            'PhoneItems' => ['required', 'array', 'min:1'],
+            'PhoneItems.*.PhoneId' => ['required', 'integer', 'min:1', 'distinct'],
+            'PhoneItems.*.Phone' => ['required', 'string', 'max:15'],
+            'PhoneItems.*.PhoneType' => ['required', Rule::exists('phone_types', 'PhoneTypeCode')],
+            'PhoneItems.*.Remark' => ['nullable', 'string', 'max:100'],
+            'MobileTelephoneId' => ['required', 'integer', 'min:1'],
+            'Email' => ['nullable', 'email', 'max:100'],
+            'EmailRemark' => ['nullable', 'string', 'max:100'],
+            'WorkPlace' => ['nullable', 'string', 'max:255'],
+            'MonthlyIncomeAmount' => ['nullable', 'numeric', 'min:0'],
+            'MonthlyExpenseAmount' => ['nullable', 'numeric', 'min:0'],
+            'YearlyBonusAmount' => ['nullable', 'numeric', 'min:0'],
+            'Comment' => ['nullable', 'string'],
+        ]);
+
+        $addressIds = collect($validated['AddressItems'])->pluck('AddressId')->map(fn ($id) => (int) $id);
+        foreach (['IdentityCardAddressId', 'HouseRegistrationAddressId', 'CurrentAddressId', 'MailingAddressId'] as $field) {
+            if (!$addressIds->contains((int) $validated[$field])) {
+                throw ValidationException::withMessages([$field => __('customerhistory::messages.form.required')]);
+            }
+        }
+
+        foreach ($validated['AddressItems'] as $index => $address) {
+            $locationExists = DB::table('sub_districts')
+                ->where('ProvinceCode', $address['ProvinceCode'])
+                ->where('DistrictCode', $address['DistrictCode'])
+                ->where('SubDistrictCode', $address['SubDistrictCode'])
+                ->exists();
+            if (!$locationExists) {
+                throw ValidationException::withMessages([
+                    "AddressItems.$index.SubDistrictCode" => __('customerhistory::messages.form.required'),
+                ]);
+            }
+        }
+
+        $phoneIds = collect($validated['PhoneItems'])->pluck('PhoneId')->map(fn ($id) => (int) $id);
+        if (!$phoneIds->contains((int) $validated['MobileTelephoneId'])) {
+            throw ValidationException::withMessages(['MobileTelephoneId' => __('customerhistory::messages.form.required')]);
+        }
+
+        $workingCondition = DB::table('working_conditions')
+            ->where('WorkingConditionId', $validated['WorkingConditionId'])
+            ->first(['IsRequireOccupation']);
+
+        if ($workingCondition?->IsRequireOccupation && empty($validated['OccupationCode'])) {
+            throw ValidationException::withMessages(['OccupationCode' => __('customerhistory::messages.form.required')]);
+        }
+
+        if (!empty($validated['OccupationCode'])) {
+            $occupation = DB::table('occupations')
+                ->where('OccupationCode', $validated['OccupationCode'])
+                ->first(['OccupationDesc', 'IsOtherOccupation', 'Score']);
+
+            if ($occupation?->IsOtherOccupation && empty($validated['OtherOccupationDesc'])) {
+                throw ValidationException::withMessages(['OtherOccupationDesc' => __('customerhistory::messages.form.required')]);
+            }
+        } else {
+            $occupation = null;
+        }
+
+        if ((string) $validated['IdentityCardTypeCode'] === '1' && !$this->isValidThaiNationalId($validated['IdentityCardId'])) {
+            throw ValidationException::withMessages([
+                'IdentityCardId' => __('customerhistory::messages.form.personal.invalid_national_id'),
+            ]);
+        }
+
+        if ((string) $validated['IdentityCardTypeCode'] === '1'
+            && DB::table('customers')
+                ->where('IdentityCardTypeCode', 1)
+                ->where('IdentityCardId', $validated['IdentityCardId'])
+                ->exists()) {
+            throw ValidationException::withMessages([
+                'IdentityCardId' => __('customerhistory::messages.form.personal.duplicate_national_id'),
+            ]);
+        }
+
+        $systemUserId = $request->user()->getAuthIdentifier();
+
+        $customerNo = DB::transaction(function () use ($validated, $occupation, $systemUserId): string {
+            $customerNo = $this->nextMockCustomerNo();
+            $now = now();
+            // Temporary H Meter user id until user mapping/API integration is available.
+            $hMeterUserId = 4;
+            $addressTypeCode = $validated['AddressTypeCode'] ?? 1;
+            $title = DB::table('titles')->where('TitleCode', $validated['TitleCode'])->first(['TitleDesc']);
+            $maritalStatus = DB::table('marital_statuses')->where('MaritalStatusCode', $validated['MaritalStatusCode'])->first(['MaritalStatusName', 'Score']);
+            $businessType = !empty($validated['TypeOfBusinessId'])
+                ? DB::table('type_of_businesses')->where('TypeOfBusinessId', $validated['TypeOfBusinessId'])->first(['TypeOfBusinessName', 'BOTCode'])
+                : null;
+            $addressType = DB::table('address_types')->where('AddressTypeCode', $addressTypeCode)->first(['AddressTypeDesc', 'Score']);
+            $age = Carbon::parse($validated['BirthDate'])->age;
+            $ageRangeScore = DB::table('age_ranges')
+                ->where('FromAge', '<=', $age)
+                ->where('ToAge', '>=', $age)
+                ->value('Score') ?? 0;
+            $monthlyNetIncome = max(0, ((float) ($validated['MonthlyIncomeAmount'] ?? 0))
+                - ((float) ($validated['MonthlyExpenseAmount'] ?? 0))
+                + (((float) ($validated['YearlyBonusAmount'] ?? 0)) / 12));
+            $netIncomeRangeScore = DB::table('net_income_ranges')
+                ->where('FromNetIncomeRange', '<=', $monthlyNetIncome)
+                ->where('ToNetIncomeRange', '>=', $monthlyNetIncome)
+                ->value('Score') ?? 0;
+            $currentAddressItem = collect($validated['AddressItems'])->firstWhere('AddressId', (int) $validated['CurrentAddressId']);
+            $primaryPhone = collect($validated['PhoneItems'])->firstWhere('PhoneId', (int) $validated['MobileTelephoneId']);
+            $currentAddress = implode(' ', array_filter([
+                $currentAddressItem['AddressLine1'],
+                $currentAddressItem['AddressLine2'] ?? null,
+                $currentAddressItem['SubDistrictDesc'],
+                $currentAddressItem['DistrictDesc'],
+                $currentAddressItem['ProvinceDesc'],
+                $currentAddressItem['ZipCode'],
+            ]));
+
+            DB::table('customers')->insert([
+                'QuickSearchKey' => mb_substr(implode(' ', array_filter([
+                    $validated['Nickname'] ?? null,
+                    $validated['Firstname'],
+                    $validated['Lastname'],
+                    $validated['IdentityCardId'],
+                    $primaryPhone['Phone'],
+                ])), 0, 150),
+                'CustomerNo' => $customerNo,
+                'CustomerRefNo' => $customerNo,
+                'Firstname' => $validated['Firstname'],
+                'Lastname' => $validated['Lastname'],
+                'Nickname' => $validated['Nickname'] ?? null,
+                'TitleCode' => $validated['TitleCode'],
+                'TitleDesc' => $title?->TitleDesc,
+                'BirthDate' => $validated['BirthDate'],
+                'GenderCode' => $validated['GenderCode'],
+                'IdentityCardId' => $validated['IdentityCardId'],
+                'IdentityCardTypeCode' => $validated['IdentityCardTypeCode'],
+                'IdentityCardIssuer' => $validated['IdentityCardIssuer'] ?? null,
+                'IdentityCardEffectiveDate' => $validated['IdentityCardEffectiveDate'] ?? null,
+                'IdentityCardExpireDate' => $validated['IdentityCardExpireDate'] ?? null,
+                'Nationality' => $validated['Nationality'] ?? null,
+                'Race' => $validated['Race'] ?? null,
+                'MaritalStatusCode' => $validated['MaritalStatusCode'],
+                'MaritalStatusDesc' => $maritalStatus?->MaritalStatusName,
+                'MaritalStatusScore' => $maritalStatus?->Score,
+                'WorkingConditionId' => $validated['WorkingConditionId'],
+                'OccupationCode' => $validated['OccupationCode'] ?? null,
+                'OccupationDesc' => $occupation?->OccupationDesc,
+                'OccupationScore' => $occupation?->Score,
+                'OtherOccupationDesc' => $validated['OtherOccupationDesc'] ?? null,
+                'TypeOfBusinessId' => $validated['TypeOfBusinessId'] ?? null,
+                'TypeOfBusinessName' => $businessType?->TypeOfBusinessName,
+                'TypeOfBusinessBotCode' => $businessType?->BOTCode,
+                'AddressTypeCode' => $addressTypeCode,
+                'AddressTypeDesc' => $addressType?->AddressTypeDesc,
+                'AddressTypeScore' => $addressType?->Score,
+                'AgeRangeScore' => $ageRangeScore,
+                'NetIncomeRangeScore' => $netIncomeRangeScore,
+                'IdentityCardAddressId' => $validated['IdentityCardAddressId'],
+                'HouseRegistrationAddressId' => $validated['HouseRegistrationAddressId'],
+                'CurrentAddressId' => $validated['CurrentAddressId'],
+                'MailingAddressId' => $validated['MailingAddressId'],
+                'CurrentAddressAsText' => $currentAddress,
+                'Mobile' => $primaryPhone['Phone'],
+                'MobileTelephoneId' => $validated['MobileTelephoneId'],
+                'CustomerAddressLetterId' => 0,
+                'CustomerAddressDebtId' => 0,
+                'StatementAddressId' => 0,
+                'ReceiptAddressId' => 0,
+                'HomeTelephoneId' => 0,
+                'OfficeTelephoneId' => 0,
+                'OtherTelephoneId' => 0,
+                'CollectionTelephoneId' => 0,
+                'FaxId' => 0,
+                'Email' => $validated['Email'] ?? null,
+                'BankCode' => $validated['BankCode'] ?? null,
+                'BankBookBranch' => $validated['BankBookBranch'] ?? null,
+                'BankBookCode' => $validated['BankBookCode'] ?? null,
+                'WorkPlace' => $validated['WorkPlace'] ?? null,
+                'MonthlyIncomeAmount' => $validated['MonthlyIncomeAmount'] ?? null,
+                'MonthlyExpenseAmount' => $validated['MonthlyExpenseAmount'] ?? null,
+                'YearlyBonusAmount' => $validated['YearlyBonusAmount'] ?? null,
+                'Score' => 0,
+                'CreditLimitAmount' => 0,
+                'CreditUsedAmount' => 0,
+                'CreditorCreditDay' => 0,
+                'CreditorCreditAmount' => 0,
+                'IsDebtor' => true,
+                'Status' => null,
+                'InsertUserId' => $hMeterUserId,
+                'InsertDate' => $now->toDateString(),
+                'sysInsertUserId' => $systemUserId,
+                'sysUpdateUserId' => null,
+                'sysInsertDateTime' => $now,
+                'sysUpdateDateTime' => null,
+            ]);
+
+            foreach ($validated['AddressItems'] as $address) {
+                DB::table('customer_addresses')->insert([
+                    'CustomerNo' => $customerNo,
+                    'AddressId' => $address['AddressId'],
+                    'AddressLine1' => $address['AddressLine1'],
+                    'AddressLine2' => $address['AddressLine2'] ?? null,
+                    'ProvinceCode' => $address['ProvinceCode'],
+                    'ProvinceDesc' => $address['ProvinceDesc'],
+                    'DistrictCode' => $address['DistrictCode'],
+                    'DistrictDesc' => $address['DistrictDesc'],
+                    'SubDistrictCode' => $address['SubDistrictCode'],
+                    'SubDistrictDesc' => $address['SubDistrictDesc'],
+                    'ZipCode' => $address['ZipCode'],
+                    'AddressTypeCode' => $addressTypeCode,
+                    'Remark' => $address['Remark'] ?? null,
+                ]);
+            }
+
+            foreach ($validated['PhoneItems'] as $phone) {
+                DB::table('customer_phones')->insert([
+                    'CustomerNo' => $customerNo,
+                    'PhoneId' => $phone['PhoneId'],
+                    'Remark' => $phone['Remark'] ?? null,
+                    'Phone' => $phone['Phone'],
+                    'PhoneType' => $phone['PhoneType'],
+                ]);
+            }
+
+            if (!empty($validated['Email'])) {
+                DB::table('customer_emails')->insert([
+                    'CustomerNo' => $customerNo,
+                    'EmailId' => 1,
+                    'Email' => $validated['Email'],
+                    'CreateDateTime' => $now,
+                    'CreateUserId' => $hMeterUserId,
+                    'Remark' => $validated['EmailRemark'] ?? null,
+                ]);
+            }
+
+            if (!empty($validated['Comment'])) {
+                DB::table('customer_remarks')->insert([
+                    'CustomerNo' => $customerNo,
+                    'RemarkId' => 1,
+                    'Comment' => $validated['Comment'],
+                    'InsertDateTime' => $now,
+                    'InsertUserId' => $hMeterUserId,
+                ]);
+            }
+
+            return $customerNo;
+        }, 3);
+
+        return response()->json([
+            'message' => __('customerhistory::messages.form.saved_successfully'),
+            'customer_no' => $customerNo,
+        ], 201);
+    }
+
+    private function nextMockCustomerNo(): string
+    {
+        $latest = DB::table('customers')
+            ->where('CustomerNo', 'like', 'MOCK%')
+            ->orderByDesc('CustomerNo')
+            ->lockForUpdate()
+            ->value('CustomerNo');
+        $nextNumber = $latest ? ((int) substr($latest, 4)) + 1 : 1;
+
+        if ($nextNumber > 999999999999) {
+            throw new \RuntimeException('Mock customer number range is exhausted.');
+        }
+
+        return 'MOCK'.str_pad((string) $nextNumber, 12, '0', STR_PAD_LEFT);
+    }
+
+    private function isValidThaiNationalId(string $identity): bool
+    {
+        if (!preg_match('/^\d{13}$/', $identity) || count(array_unique(str_split($identity))) === 1) {
+            return false;
+        }
+
+        $sum = 0;
+        for ($index = 0; $index < 12; $index++) {
+            $sum += ((int) $identity[$index]) * (13 - $index);
+        }
+
+        return ((11 - ($sum % 11)) % 10) === (int) $identity[12];
     }
 }

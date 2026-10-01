@@ -27,11 +27,15 @@ class UserFactory extends Factory
         $token = Str::lower((string) Str::ulid());
 
         return [
-            'name' => 'User ' . Str::upper(Str::substr($token, 0, 6)),
+            'employee_code' => 'EMP'.Str::upper(Str::substr($token, 0, 8)),
+            'user_type' => 'internal',
+            'first_name' => 'User',
+            'last_name' => Str::upper(Str::substr($token, 0, 6)),
             'email' => $token . '@example.com',
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'note' => null,
         ];
     }
 
