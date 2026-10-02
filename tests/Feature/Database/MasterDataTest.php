@@ -21,7 +21,7 @@ class MasterDataTest extends TestCase
             'address_types', 'age_ranges', 'banks', 'districts', 'genders',
             'identity_card_types', 'marital_statuses', 'net_income_ranges',
             'occupations', 'phone_types', 'provinces', 'sub_districts',
-            'titles', 'type_of_businesses', 'working_conditions',
+            'titles', 'type_of_businesses', 'working_conditions', 'document_types',
         ] as $table) {
             $this->assertGreaterThan(0, DB::table($table)->count(), "{$table} was not seeded");
         }

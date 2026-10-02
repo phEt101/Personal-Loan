@@ -79,6 +79,70 @@
   background: #ffffff;
 }
 
+.customer-attachment-editor {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #e1ece7;
+  border-radius: 0.9rem;
+  background: #fff;
+}
+
+.customer-attachment-editor[hidden] { display: none !important; }
+.customer-attachment-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.customer-attachment-list table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.9rem;
+}
+
+.customer-attachment-list th,
+.customer-attachment-list td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid #dbe5e1;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.customer-attachment-list th {
+  background: #f0f2f5;
+  color: #344d5b;
+}
+
+.customer-attachment-list th:first-child { width: 5rem; }
+.customer-attachment-list th:last-child { width: 10rem; }
+.customer-attachment-add { margin-bottom: 1rem; }
+.customer-attachment-row-actions { display: flex; gap: 0.5rem; }
+.customer-attachment-row-actions button { padding: 0.45rem 0.7rem; }
+
+#customerHistoryFormModal.is-view-mode .customer-attachment-editor,
+#customerHistoryFormModal.is-view-mode .customer-attachment-add,
+#customerHistoryFormModal.is-view-mode .customer-attachment-list th:last-child,
+#customerHistoryFormModal.is-view-mode .customer-attachment-list td:last-child {
+  display: none;
+}
+
+.customer-attachment-row {
+  color: #344a55;
+}
+
+.customer-attachment-row a {
+  overflow-wrap: anywhere;
+  color: #078b61;
+}
+
+.customer-address-empty td,
+.customer-phone-empty td,
+.customer-attachment-list td.customer-attachment-empty {
+  padding: 0.75rem 0.9rem;
+  color: #70818b;
+  text-align: center !important;
+}
+
 .customer-form-step {
   display: none;
 }
@@ -184,7 +248,6 @@
 .customer-address-list th:first-child { width: 5rem; }
 .customer-address-list th:nth-child(3) { width: 18rem; }
 .customer-address-list th:last-child { width: 10rem; }
-.customer-address-empty td { color: #70818b; }
 .customer-address-add { margin-bottom: 1rem; }
 .customer-address-row-actions { display: flex; gap: 0.5rem; }
 .customer-address-row-actions button { padding: 0.45rem 0.7rem; }

@@ -5,7 +5,9 @@ namespace Tests\Feature\CustomerHistory;
 use App\Models\User;
 use Database\Seeders\MasterLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CustomerHistoryTest extends TestCase
@@ -63,6 +65,21 @@ class CustomerHistoryTest extends TestCase
         $this->assertDatabaseHas('customer_remarks', ['CustomerNo' => $customerNo, 'Comment' => 'updated remark']);
     }
 
+    public function test_customer_form_config_is_rendered_as_valid_json(): void
+    {
+        $user = User::factory()->create();
+        $html = $this->actingAs($user)->get('/customer-history')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<script type="application\/json" id="customerHistoryFormConfig">(.*?)<\/script>/s',
+            $html
+        );
+        preg_match('/<script type="application\/json" id="customerHistoryFormConfig">(.*?)<\/script>/s', $html, $matches);
+
+        $config = json_decode($matches[1], true, 512, JSON_THROW_ON_ERROR);
+        $this->assertArrayHasKey('attachmentTypes', $config);
+    }
+
     public function test_customer_number_is_generated_uniquely_by_the_system(): void
     {
         $user = User::factory()->create();
@@ -83,6 +100,63 @@ class CustomerHistoryTest extends TestCase
         $this->assertSame($prefix.'000001', $firstCustomerNo);
         $this->assertSame($prefix.'000002', $secondCustomerNo);
         $this->assertNotSame($firstCustomerNo, $secondCustomerNo);
+    }
+
+    public function test_customer_attachments_can_be_uploaded_downloaded_and_removed(): void
+    {
+        Storage::fake('local');
+        $owner = User::factory()->create(['user_type' => 'external']);
+        $otherUser = User::factory()->create(['user_type' => 'external']);
+        $nationalIdType = DB::table('document_types')->where('DocumentTypeNameEn', 'National ID copy')->value('id');
+        $salarySlipType = DB::table('document_types')->where('DocumentTypeNameEn', 'Salary slip')->value('id');
+        $payload = $this->customerPayload([
+            'NewAttachments' => [
+                [
+                    'DocumentName' => 'สำเนาบัตรประชาชน',
+                    'DocumentTypeId' => $nationalIdType,
+                    'File' => UploadedFile::fake()->create('national-id.pdf', 100, 'application/pdf'),
+                ],
+                [
+                    'DocumentName' => 'สลิปเดือนล่าสุด',
+                    'DocumentTypeId' => $salarySlipType,
+                    'File' => UploadedFile::fake()->image('salary-slip.jpg'),
+                ],
+            ],
+        ]);
+
+        $customerNo = $this->actingAs($owner)
+            ->withHeader('Accept', 'application/json')
+            ->post('/customer-history', $payload)
+            ->assertCreated()
+            ->json('customer_no');
+
+        $attachments = DB::table('customer_attachments')->where('CustomerNo', $customerNo)->get();
+        $this->assertCount(2, $attachments);
+        $this->assertSame('สำเนาบัตรประชาชน', $attachments->firstWhere('DocumentTypeId', $nationalIdType)->DocumentName);
+        Storage::disk('local')->assertExists($attachments->pluck('FilePath')->all());
+
+        $detail = $this->getJson("/customer-history/{$customerNo}")
+            ->assertOk()
+            ->assertJsonCount(2, 'attachments');
+        $downloadUrl = $detail->json('attachments.0.download_url');
+        $attachmentId = $detail->json('attachments.0.id');
+
+        $this->get($downloadUrl)
+            ->assertOk()
+            ->assertHeader('content-disposition', 'inline; filename=national-id.pdf');
+        $this->actingAs($otherUser)->get($downloadUrl)->assertNotFound();
+
+        $filePath = DB::table('customer_attachments')->where('id', $attachmentId)->value('FilePath');
+        $this->actingAs($owner)
+            ->withHeader('Accept', 'application/json')
+            ->post("/customer-history/{$customerNo}", array_merge($this->customerPayload(), [
+                '_method' => 'PUT',
+                'RemoveAttachmentIds' => [$attachmentId],
+            ]))
+            ->assertOk();
+
+        $this->assertDatabaseMissing('customer_attachments', ['id' => $attachmentId]);
+        Storage::disk('local')->assertMissing($filePath);
     }
 
     public function test_customer_creation_rejects_invalid_or_incomplete_data(): void

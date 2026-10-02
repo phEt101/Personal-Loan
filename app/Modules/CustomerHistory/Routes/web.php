@@ -13,6 +13,8 @@ Route::middleware(['web', 'auth'])->group(function () {
         ->name('customer-history.locations.sub-districts');
     Route::get('/customer-history/identity-card/check', [CustomerHistoryController::class, 'checkIdentityCard'])
         ->name('customer-history.identity-card.check');
+    Route::get('/customer-history/attachments/{attachment}/download', [CustomerHistoryController::class, 'downloadAttachment'])
+        ->name('customer-history.attachments.download');
     Route::get('/customer-history/{customerNo}', [CustomerHistoryController::class, 'show'])
         ->name('customer-history.show');
 });

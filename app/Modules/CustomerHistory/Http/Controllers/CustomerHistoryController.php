@@ -3,10 +3,12 @@
 namespace App\Modules\CustomerHistory\Http\Controllers;
 
 use Carbon\Carbon;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -111,6 +113,12 @@ class CustomerHistoryController extends Controller
             return view('customerhistory::_customer_list', $customerListData);
         }
 
+        $documentTypes = DB::table('document_types')
+            ->where('Active', true)
+            ->orderBy('SortOrder')
+            ->orderBy('id')
+            ->get(['id', 'DocumentTypeNameTh', 'DocumentTypeNameEn']);
+
         return view('customerhistory::index', array_merge($customerListData, [
             'titles' => DB::table('titles')
                 ->where('Active', true)
@@ -150,6 +158,7 @@ class CustomerHistoryController extends Controller
             'phoneTypes' => DB::table('phone_types')
                 ->orderBy('PhoneTypeCode')
                 ->get(['PhoneTypeCode', 'PhoneTypeDesc']),
+            'documentTypes' => $documentTypes,
             'customerFormConfig' => [
                 'urls' => [
                     'districts' => route('customer-history.locations.districts'),
@@ -163,6 +172,11 @@ class CustomerHistoryController extends Controller
                     4 => __('customerhistory::messages.form.personal.other_document_number'),
                     5 => __('customerhistory::messages.form.personal.tax_id_number'),
                 ],
+                'attachmentTypes' => $documentTypes->mapWithKeys(fn ($documentType) => [
+                    $documentType->id => app()->getLocale() === 'th'
+                        ? $documentType->DocumentTypeNameTh
+                        : $documentType->DocumentTypeNameEn,
+                ]),
                 'messages' => [
                     'searchOption' => __('customerhistory::messages.form.search_option'),
                     'noSearchResults' => __('customerhistory::messages.form.no_search_results'),
@@ -189,6 +203,12 @@ class CustomerHistoryController extends Controller
                     'detailLoadFailed' => __('customerhistory::messages.index.detail_load_failed'),
                     'duplicateNationalId' => __('customerhistory::messages.form.personal.duplicate_national_id'),
                     'identityCheckFailed' => __('customerhistory::messages.form.personal.identity_check_failed'),
+                    'removeAttachment' => __('customerhistory::messages.form.attachments.remove'),
+                    'noAttachments' => __('customerhistory::messages.form.attachments.no_files'),
+                    'invalidAttachment' => __('customerhistory::messages.form.attachments.invalid_file'),
+                    'editAttachment' => __('customerhistory::messages.form.attachments.edit'),
+                    'addAttachment' => __('customerhistory::messages.form.attachments.confirm_add'),
+                    'saveAttachment' => __('customerhistory::messages.form.attachments.confirm_edit'),
                 ],
             ],
         ]));
@@ -307,7 +327,39 @@ class CustomerHistoryController extends Controller
             'phones' => DB::table('customer_phones')->where('CustomerNo', $customerNo)->orderBy('PhoneId')->get(),
             'email_remark' => $email?->Remark,
             'comment' => $remark?->Comment,
+            'attachments' => DB::table('customer_attachments as attachment')
+                ->join('document_types as document_type', 'document_type.id', '=', 'attachment.DocumentTypeId')
+                ->where('attachment.CustomerNo', $customerNo)
+                ->orderBy('document_type.SortOrder')
+                ->orderBy('attachment.id')
+                ->select('attachment.*')
+                ->get()
+                ->map(fn ($attachment) => [
+                    'id' => $attachment->id,
+                    'document_name' => $attachment->DocumentName ?: $attachment->OriginalName,
+                    'document_type_id' => $attachment->DocumentTypeId,
+                    'original_name' => $attachment->OriginalName,
+                    'file_size' => $attachment->FileSize,
+                    'download_url' => route('customer-history.attachments.download', $attachment->id),
+                ]),
         ]);
+    }
+
+    public function downloadAttachment(Request $request, int $attachment)
+    {
+        $record = DB::table('customer_attachments')->where('id', $attachment)->firstOrFail();
+        $customerQuery = DB::table('customers')->where('CustomerNo', $record->CustomerNo);
+
+        if ($request->user()->user_type === 'external') {
+            $customerQuery->where('sysInsertUserId', $request->user()->getAuthIdentifier());
+        }
+
+        $customerQuery->firstOrFail();
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+        abort_unless($disk->exists($record->FilePath), 404);
+
+        return $disk->response($record->FilePath, $record->OriginalName, [], 'inline');
     }
 
     public function store(Request $request): JsonResponse
@@ -377,6 +429,7 @@ class CustomerHistoryController extends Controller
             'MonthlyExpenseAmount' => ['nullable', 'numeric', 'min:0'],
             'YearlyBonusAmount' => ['nullable', 'numeric', 'min:0'],
             'Comment' => ['nullable', 'string'],
+            ...$this->attachmentRules(),
         ]);
 
         $addressIds = collect($validated['AddressItems'])->pluck('AddressId')->map(fn ($id) => (int) $id);
@@ -605,6 +658,8 @@ class CustomerHistoryController extends Controller
             return $customerNo;
         }, 3);
 
+        $this->storeAttachments($request, $customerNo, $systemUserId);
+
         return response()->json([
             'message' => __('customerhistory::messages.form.saved_successfully'),
             'customer_no' => $customerNo,
@@ -730,6 +785,9 @@ class CustomerHistoryController extends Controller
             }
         }, 3);
 
+        $this->removeAttachments($request, $customerNo);
+        $this->storeAttachments($request, $customerNo, $request->user()->getAuthIdentifier());
+
         return response()->json(['message' => __('customerhistory::messages.form.updated_successfully'), 'customer_no' => $customerNo]);
     }
 
@@ -753,37 +811,89 @@ class CustomerHistoryController extends Controller
             'PhoneItems.*.PhoneType' => ['required', Rule::exists('phone_types', 'PhoneTypeCode')], 'PhoneItems.*.Remark' => ['nullable', 'string', 'max:100'], 'MobileTelephoneId' => ['required', 'integer', 'min:1'],
             'Email' => ['required', 'email', 'max:50'], 'EmailRemark' => ['nullable', 'string', 'max:100'], 'WorkPlace' => ['nullable', 'string', 'max:255'],
             'MonthlyIncomeAmount' => ['nullable', 'numeric', 'min:0'], 'MonthlyExpenseAmount' => ['nullable', 'numeric', 'min:0'], 'YearlyBonusAmount' => ['nullable', 'numeric', 'min:0'], 'Comment' => ['nullable', 'string'],
+            ...$this->attachmentRules(),
         ];
+    }
+
+    private function attachmentRules(): array
+    {
+        $rules = [
+            'NewAttachments' => ['nullable', 'array'],
+            'NewAttachments.*.DocumentName' => ['required', 'string', 'max:255'],
+            'NewAttachments.*.DocumentTypeId' => [
+                'required',
+                Rule::exists('document_types', 'id')->where('Active', true),
+            ],
+            'NewAttachments.*.File' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'RemoveAttachmentIds' => ['nullable', 'array'],
+            'RemoveAttachmentIds.*' => ['integer'],
+        ];
+
+        return $rules;
+    }
+
+    private function storeAttachments(Request $request, string $customerNo, int|string|null $userId): void
+    {
+        foreach ($request->input('NewAttachments', []) as $index => $attachment) {
+            $file = $request->file("NewAttachments.$index.File");
+            $path = $file->store("customer-attachments/$customerNo", 'local');
+
+            if (!$path) {
+                throw new \RuntimeException('Unable to store customer attachment.');
+            }
+
+            DB::table('customer_attachments')->insert([
+                'CustomerNo' => $customerNo,
+                'DocumentName' => $attachment['DocumentName'],
+                'DocumentTypeId' => $attachment['DocumentTypeId'],
+                'OriginalName' => $file->getClientOriginalName(),
+                'FilePath' => $path,
+                'MimeType' => $file->getMimeType(),
+                'FileSize' => $file->getSize(),
+                'UploadedBy' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    private function removeAttachments(Request $request, string $customerNo): void
+    {
+        $ids = collect($request->input('RemoveAttachmentIds', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        $attachments = DB::table('customer_attachments')
+            ->where('CustomerNo', $customerNo)
+            ->whereIn('id', $ids)
+            ->get();
+
+        DB::table('customer_attachments')->whereIn('id', $attachments->pluck('id'))->delete();
+        Storage::disk('local')->delete($attachments->pluck('FilePath')->all());
     }
 
     private function nextCustomerNo(): string
     {
         $customerNumberDate = now();
-        $customerDate = $customerNumberDate->toDateString();
+        $prefix = '00CU'.$customerNumberDate->format('ymd');
+        $latestCustomerNo = DB::table('customers')
+            ->where('CustomerNo', 'like', $prefix.'%')
+            ->orderByDesc('CustomerNo')
+            ->lockForUpdate()
+            ->value('CustomerNo');
+        $sequence = $latestCustomerNo ? ((int) substr($latestCustomerNo, 10)) + 1 : 1;
 
-        DB::table('customer_number_sequences')->insertOrIgnore([
-            'sequence_date' => $customerDate,
-            'last_number' => 0,
-        ]);
+        if ($sequence > 999999) {
+            throw new \RuntimeException('Daily customer number range is exhausted.');
+        }
 
-        do {
-            $sequence = (int) DB::table('customer_number_sequences')
-                ->where('sequence_date', $customerDate)
-                ->lockForUpdate()
-                ->value('last_number') + 1;
-
-            if ($sequence > 999999) {
-                throw new \RuntimeException('Daily customer number range is exhausted.');
-            }
-
-            DB::table('customer_number_sequences')
-                ->where('sequence_date', $customerDate)
-                ->update(['last_number' => $sequence]);
-
-            $customerNo = '00CU'.$customerNumberDate->format('ymd').str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
-        } while (DB::table('customers')->where('CustomerNo', $customerNo)->exists());
-
-        return $customerNo;
+        return $prefix.str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
     }
 
     private function isValidThaiNationalId(string $identity): bool

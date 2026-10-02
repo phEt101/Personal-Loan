@@ -48,6 +48,8 @@ class MasterLookupSeeder extends Seeder
         foreach (self::SOURCES as $fileName => $table) {
             $this->seedTable($fileName, $table);
         }
+
+        $this->call(DocumentTypeSeeder::class);
     }
 
     private function seedTable(string $fileName, string $table): void

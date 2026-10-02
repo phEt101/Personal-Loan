@@ -254,31 +254,19 @@ class CustomerMockSeeder extends Seeder
 
     private function nextCustomerNo(Carbon $customerNumberDate): string
     {
-        $customerDate = $customerNumberDate->toDateString();
+        $prefix = '00CU'.$customerNumberDate->format('ymd');
+        $latestCustomerNo = DB::table('customers')
+            ->where('CustomerNo', 'like', $prefix.'%')
+            ->orderByDesc('CustomerNo')
+            ->lockForUpdate()
+            ->value('CustomerNo');
+        $sequence = $latestCustomerNo ? ((int) substr($latestCustomerNo, 10)) + 1 : 1;
 
-        DB::table('customer_number_sequences')->insertOrIgnore([
-            'sequence_date' => $customerDate,
-            'last_number' => 0,
-        ]);
+        if ($sequence > 999999) {
+            throw new \RuntimeException('Daily customer number range is exhausted.');
+        }
 
-        do {
-            $sequence = (int) DB::table('customer_number_sequences')
-                ->where('sequence_date', $customerDate)
-                ->lockForUpdate()
-                ->value('last_number') + 1;
-
-            if ($sequence > 999999) {
-                throw new \RuntimeException('Daily customer number range is exhausted.');
-            }
-
-            DB::table('customer_number_sequences')
-                ->where('sequence_date', $customerDate)
-                ->update(['last_number' => $sequence]);
-
-            $customerNo = '00CU'.$customerNumberDate->format('ymd').str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
-        } while (DB::table('customers')->where('CustomerNo', $customerNo)->exists());
-
-        return $customerNo;
+        return $prefix.str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
     }
 
     private function thaiIdentityCardNumber(int $sequence): string
