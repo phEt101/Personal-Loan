@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ __('auth::messages.heading') }}</title>
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('icon/S__.ico') }}?v={{ filemtime(public_path('icon/S__.ico')) }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v={{ filemtime(public_path('css/auth.css')) }}">
 </head>
 <body class="auth-page">
     <div class="auth-orb auth-orb-left"></div>
@@ -12,7 +13,10 @@
 
     <main class="auth-shell">
         <section class="auth-marketing">
-            <div class="auth-brand">{{ __('messages.layout.title') }}</div>
+            <div class="auth-brand">
+                <img class="auth-brand-icon" src="{{ asset('icon/S__.ico') }}?v={{ filemtime(public_path('icon/S__.ico')) }}" alt="" aria-hidden="true">
+                <span>{{ __('messages.layout.title') }}</span>
+            </div>
             <p class="auth-kicker">{{ __('auth::messages.kicker') }}</p>
             <h1>{{ __('auth::messages.heading') }}</h1>
 

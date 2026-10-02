@@ -363,7 +363,7 @@ class CustomerHistoryController extends Controller
             'PhoneItems.*.PhoneType' => ['required', Rule::exists('phone_types', 'PhoneTypeCode')],
             'PhoneItems.*.Remark' => ['nullable', 'string', 'max:100'],
             'MobileTelephoneId' => ['required', 'integer', 'min:1'],
-            'Email' => ['nullable', 'email', 'max:100'],
+            'Email' => ['required', 'email', 'max:50'],
             'EmailRemark' => ['nullable', 'string', 'max:100'],
             'WorkPlace' => ['nullable', 'string', 'max:255'],
             'MonthlyIncomeAmount' => ['nullable', 'numeric', 'min:0'],
@@ -526,7 +526,7 @@ class CustomerHistoryController extends Controller
                 'OtherTelephoneId' => 0,
                 'CollectionTelephoneId' => 0,
                 'FaxId' => 0,
-                'Email' => $validated['Email'] ?? null,
+                'Email' => $validated['Email'],
                 'BankCode' => $validated['BankCode'] ?? null,
                 'BankBookBranch' => $validated['BankBookBranch'] ?? null,
                 'BankBookCode' => $validated['BankBookCode'] ?? null,
@@ -577,16 +577,14 @@ class CustomerHistoryController extends Controller
                 ]);
             }
 
-            if (!empty($validated['Email'])) {
-                DB::table('customer_emails')->insert([
-                    'CustomerNo' => $customerNo,
-                    'EmailId' => 1,
-                    'Email' => $validated['Email'],
-                    'CreateDateTime' => $now,
-                    'CreateUserId' => $hMeterUserId,
-                    'Remark' => $validated['EmailRemark'] ?? null,
-                ]);
-            }
+            DB::table('customer_emails')->insert([
+                'CustomerNo' => $customerNo,
+                'EmailId' => 1,
+                'Email' => $validated['Email'],
+                'CreateDateTime' => $now,
+                'CreateUserId' => $hMeterUserId,
+                'Remark' => $validated['EmailRemark'] ?? null,
+            ]);
 
             if (!empty($validated['Comment'])) {
                 DB::table('customer_remarks')->insert([
@@ -699,7 +697,7 @@ class CustomerHistoryController extends Controller
                 'AgeRangeScore' => $ageRangeScore, 'NetIncomeRangeScore' => $netIncomeRangeScore,
                 'IdentityCardAddressId' => $validated['IdentityCardAddressId'], 'HouseRegistrationAddressId' => $validated['HouseRegistrationAddressId'],
                 'CurrentAddressId' => $validated['CurrentAddressId'], 'MailingAddressId' => $validated['MailingAddressId'], 'CurrentAddressAsText' => $currentAddress,
-                'Mobile' => $primaryPhone['Phone'], 'MobileTelephoneId' => $validated['MobileTelephoneId'], 'Email' => $validated['Email'] ?? null,
+                'Mobile' => $primaryPhone['Phone'], 'MobileTelephoneId' => $validated['MobileTelephoneId'], 'Email' => $validated['Email'],
                 'BankCode' => $validated['BankCode'] ?? null, 'BankBookBranch' => $validated['BankBookBranch'] ?? null, 'BankBookCode' => $validated['BankBookCode'] ?? null,
                 'WorkPlace' => $validated['WorkPlace'] ?? null, 'MonthlyIncomeAmount' => $validated['MonthlyIncomeAmount'] ?? null,
                 'MonthlyExpenseAmount' => $validated['MonthlyExpenseAmount'] ?? null, 'YearlyBonusAmount' => $validated['YearlyBonusAmount'] ?? null,
@@ -719,9 +717,7 @@ class CustomerHistoryController extends Controller
                 DB::table('customer_phones')->insert(['CustomerNo' => $customerNo, 'PhoneId' => $phone['PhoneId'], 'Remark' => $phone['Remark'] ?? null, 'Phone' => $phone['Phone'], 'PhoneType' => $phone['PhoneType']]);
             }
             DB::table('customer_emails')->where('CustomerNo', $customerNo)->delete();
-            if (!empty($validated['Email'])) {
-                DB::table('customer_emails')->insert(['CustomerNo' => $customerNo, 'EmailId' => 1, 'Email' => $validated['Email'], 'CreateDateTime' => $now, 'CreateUserId' => $hMeterUserId, 'Remark' => $validated['EmailRemark'] ?? null]);
-            }
+            DB::table('customer_emails')->insert(['CustomerNo' => $customerNo, 'EmailId' => 1, 'Email' => $validated['Email'], 'CreateDateTime' => $now, 'CreateUserId' => $hMeterUserId, 'Remark' => $validated['EmailRemark'] ?? null]);
             DB::table('customer_remarks')->where('CustomerNo', $customerNo)->delete();
             if (!empty($validated['Comment'])) {
                 DB::table('customer_remarks')->insert(['CustomerNo' => $customerNo, 'RemarkId' => 1, 'Comment' => $validated['Comment'], 'InsertDateTime' => $now, 'InsertUserId' => $hMeterUserId]);
@@ -749,7 +745,7 @@ class CustomerHistoryController extends Controller
             'IdentityCardAddressId' => ['required', 'integer', 'min:1'], 'HouseRegistrationAddressId' => ['required', 'integer', 'min:1'], 'CurrentAddressId' => ['required', 'integer', 'min:1'], 'MailingAddressId' => ['required', 'integer', 'min:1'],
             'Phones' => ['required', 'json'], 'PhoneItems' => ['required', 'array', 'min:1'], 'PhoneItems.*.PhoneId' => ['required', 'integer', 'min:1', 'distinct'], 'PhoneItems.*.Phone' => ['required', 'string', 'max:15'],
             'PhoneItems.*.PhoneType' => ['required', Rule::exists('phone_types', 'PhoneTypeCode')], 'PhoneItems.*.Remark' => ['nullable', 'string', 'max:100'], 'MobileTelephoneId' => ['required', 'integer', 'min:1'],
-            'Email' => ['nullable', 'email', 'max:100'], 'EmailRemark' => ['nullable', 'string', 'max:100'], 'WorkPlace' => ['nullable', 'string', 'max:255'],
+            'Email' => ['required', 'email', 'max:50'], 'EmailRemark' => ['nullable', 'string', 'max:100'], 'WorkPlace' => ['nullable', 'string', 'max:255'],
             'MonthlyIncomeAmount' => ['nullable', 'numeric', 'min:0'], 'MonthlyExpenseAmount' => ['nullable', 'numeric', 'min:0'], 'YearlyBonusAmount' => ['nullable', 'numeric', 'min:0'], 'Comment' => ['nullable', 'string'],
         ];
     }

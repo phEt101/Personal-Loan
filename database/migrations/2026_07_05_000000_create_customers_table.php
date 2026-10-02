@@ -52,7 +52,7 @@ return new class extends Migration
             // ข้อมูลนิติบุคคลอยู่นอกขอบเขต จึงกำหนดเป็น 0
             $table->unsignedInteger('OrganizationBranchTypeCode')->default(0);
             $table->string('OrganizationBranchNo', 50)->nullable();
-            $table->string('Email', 50)->nullable();
+            $table->string('Email', 50);
             $table->string('LineUserId', 100)->nullable();
             $table->string('ContactPerson', 255)->nullable();
             // ตรวจสอบผู้บันทึกจาก H Meter ตาราง dbo.User

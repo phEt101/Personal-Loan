@@ -1,6 +1,9 @@
 <aside class="sidebar" id="sidebar">
     <div>
-        <div class="brand">{{ __('messages.layout.title') }}</div>
+        <div class="brand">
+            <img class="brand-icon" src="{{ asset('icon/S__.ico') }}?v={{ filemtime(public_path('icon/S__.ico')) }}" alt="" aria-hidden="true">
+            <span>{{ __('messages.layout.title') }}</span>
+        </div>
         <nav class="nav-group">
             <a href="{{ route('customer-history.index') }}" class="nav-item {{ Request::routeIs('customer-history.*') ? 'active' : '' }}">
                 <span class="nav-icon" aria-hidden="true">

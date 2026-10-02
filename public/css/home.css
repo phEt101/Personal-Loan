@@ -1909,17 +1909,12 @@ body {
     letter-spacing: 0.02em;
 }
 
-.brand::before {
-    content: "PL";
-    display: grid;
+.brand-icon {
+    display: block;
     width: 2.15rem;
     height: 2.15rem;
-    place-items: center;
     border-radius: 0.7rem;
-    background: var(--shell-teal);
-    color: #ffffff;
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
+    object-fit: contain;
 }
 
 .nav-group {

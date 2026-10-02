@@ -36,7 +36,7 @@ return [
         'next_page' => 'Next',
         'terms_title' => 'Documents and Terms',
         'sale_sheet' => '1. Sale Sheet',
-        'application_terms' => '2. Application Terms and Conditions',
+        'application_terms' => '2. Applicant Eligibility and Application Terms',
         'pdf_unavailable' => 'This document cannot be displayed in this browser.',
         'cancel' => 'Cancel',
         'proceed' => 'Accept and Continue',

@@ -325,8 +325,8 @@
                         </div>
                         <div class="customer-contact-divider col-12" aria-hidden="true"></div>
                         <div class="form-group col-12">
-                            <label for="customer_email">{{ __('customerhistory::messages.form.contact.email') }}</label>
-                            <input id="customer_email" name="Email" type="email" maxlength="50">
+                            <label for="customer_email">{{ __('customerhistory::messages.form.contact.email') }} <span class="required-asterisk">*</span></label>
+                            <input id="customer_email" name="Email" type="email" maxlength="50" required>
                         </div>
                         <div class="form-group col-12">
                             <label for="customer_email_note">{{ __('customerhistory::messages.form.contact.email_note') }}</label>
