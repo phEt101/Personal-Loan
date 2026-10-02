@@ -34,7 +34,7 @@
                 @csrf
 
                 <div class="profile-form-grid">
-                    <div class="profile-field profile-field-full">
+                    <div class="profile-field">
                         <label for="setting_user_type">{{ __('settings::messages.user_type') }} <span class="required-asterisk">*</span></label>
                         <select id="setting_user_type" name="user_type" required>
                             <option value="">{{ __('settings::messages.select_user_type') }}</option>
@@ -42,7 +42,15 @@
                             <option value="external" @selected(old('user_type') === 'external')>{{ __('settings::messages.external') }}</option>
                         </select>
                         @error('user_type') <span class="profile-field-error">{{ $message }}</span> @enderror
-                        <small>{{ __('settings::messages.employee_code_automatic') }}</small>
+                    </div>
+                    <div class="profile-field">
+                        <label for="setting_role">{{ __('settings::messages.role') }} <span class="required-asterisk">*</span></label>
+                        <select id="setting_role" name="role" required>
+                            <option value="">{{ __('settings::messages.select_role') }}</option>
+                            <option value="user" @selected(old('role', 'user') === 'user')>{{ __('settings::messages.role_user') }}</option>
+                            <option value="admin" @selected(old('role') === 'admin')>{{ __('settings::messages.role_admin') }}</option>
+                        </select>
+                        @error('role') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field">
                         <label for="setting_first_name">{{ __('settings::messages.first_name') }} <span class="required-asterisk">*</span></label>
@@ -60,9 +68,11 @@
                         @error('email') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field">
-                        <label for="setting_password">{{ __('settings::messages.password') }} <span class="required-asterisk">*</span></label>
+                        <div class="profile-field-label-row">
+                            <label for="setting_password">{{ __('settings::messages.password') }} <span class="required-asterisk">*</span></label>
+                            <small>{{ __('settings::messages.password_hint') }}</small>
+                        </div>
                         <input id="setting_password" name="password" type="password" minlength="8" required autocomplete="new-password">
-                        <small>{{ __('settings::messages.password_hint') }}</small>
                         @error('password') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field">

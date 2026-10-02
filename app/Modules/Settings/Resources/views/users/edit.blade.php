@@ -32,14 +32,28 @@
 
                 <div class="profile-form-grid">
                     <div class="profile-field profile-field-full">
+                        <label for="setting_edit_role">{{ __('settings::messages.role') }} <span class="required-asterisk">*</span></label>
+                        <select id="setting_edit_role" name="role" required @disabled($user->employee_code === 'EMP0001')>
+                            <option value="user" @selected(old('role', $user->role) === 'user')>{{ __('settings::messages.role_user') }}</option>
+                            <option value="admin" @selected(old('role', $user->role) === 'admin')>{{ __('settings::messages.role_admin') }}</option>
+                        </select>
+                        @if ($user->employee_code === 'EMP0001')
+                            <input type="hidden" name="role" value="admin">
+                            <small>{{ __('settings::messages.primary_admin_role_locked') }}</small>
+                        @endif
+                        @error('role') <span class="profile-field-error">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="profile-field profile-field-full">
                         <label for="setting_edit_email">{{ __('settings::messages.email') }} <span class="required-asterisk">*</span></label>
                         <input id="setting_edit_email" name="email" type="email" value="{{ old('email', $user->email) }}" maxlength="191" required autocomplete="email">
                         @error('email') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field">
-                        <label for="setting_edit_password">{{ __('settings::messages.password') }}</label>
+                        <div class="profile-field-label-row">
+                            <label for="setting_edit_password">{{ __('settings::messages.password') }}</label>
+                            <small>{{ __('profile::messages.password_hint') }}</small>
+                        </div>
                         <input id="setting_edit_password" name="password" type="password" minlength="8" autocomplete="new-password">
-                        <small>{{ __('profile::messages.password_hint') }}</small>
                         @error('password') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field">

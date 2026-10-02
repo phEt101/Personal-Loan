@@ -27,8 +27,9 @@ class UserFactory extends Factory
         $token = Str::lower((string) Str::ulid());
 
         return [
-            'employee_code' => 'EMP'.Str::upper(Str::substr($token, 0, 8)),
+            'employee_code' => 'TEST'.Str::upper(Str::random(12)),
             'user_type' => 'internal',
+            'role' => User::ROLE_USER,
             'first_name' => 'User',
             'last_name' => Str::upper(Str::substr($token, 0, 6)),
             'email' => $token . '@example.com',

@@ -47,6 +47,7 @@
                             <th>{{ __('settings::messages.full_name') }}</th>
                             <th>{{ __('settings::messages.email') }}</th>
                             <th>{{ __('settings::messages.user_type') }}</th>
+                            <th>{{ __('settings::messages.role') }}</th>
                             <th>{{ __('settings::messages.status') }}</th>
                             <th>{{ __('settings::messages.created_at') }}</th>
                             <th>{{ __('settings::messages.actions') }}</th>
@@ -61,6 +62,11 @@
                                 <td>
                                     <span class="settings-user-type settings-user-type-{{ $user->user_type }}">
                                         {{ __('settings::messages.'.$user->user_type) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="settings-user-role settings-user-role-{{ $user->role }}">
+                                        {{ __('settings::messages.role_'.$user->role) }}
                                     </span>
                                 </td>
                                 <td>
@@ -87,7 +93,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="settings-user-empty">{{ __('settings::messages.no_users') }}</td></tr>
+                            <tr><td colspan="8" class="settings-user-empty">{{ __('settings::messages.no_users') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

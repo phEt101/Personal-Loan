@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index(Request $request): View
     {
-        $this->ensureInternalUser($request);
+        $this->ensureAdmin($request);
 
         $perPageOptions = [5, 10, 25, 50, 100];
         $perPage = (int) $request->query('per_page', 10);
@@ -30,8 +30,15 @@ class UserController extends Controller
                         ->where('employee_code', 'like', "%{$search}%")
                         ->orWhere('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+                        ->orWhere('email', 'like', "%{$search}%");
+
+                    $nameParts = preg_split('/\s+/', $search, 2);
+                    if (count($nameParts) === 2) {
+                        $query->orWhere(function ($query) use ($nameParts) {
+                            $query->where('first_name', 'like', "%{$nameParts[0]}%")
+                                ->where('last_name', 'like', "%{$nameParts[1]}%");
+                        });
+                    }
                 });
             })
             ->orderBy('id')
@@ -49,17 +56,18 @@ class UserController extends Controller
 
     public function create(Request $request): View
     {
-        $this->ensureInternalUser($request);
+        $this->ensureAdmin($request);
 
         return view('settings::users.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $this->ensureInternalUser($request);
+        $this->ensureAdmin($request);
 
         $validated = $request->validate([
             'user_type' => ['required', Rule::in(['internal', 'external'])],
+            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_USER])],
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:191', Rule::unique('users', 'email')],
@@ -79,14 +87,14 @@ class UserController extends Controller
 
     public function edit(Request $request, User $user): View
     {
-        $this->ensureInternalUser($request);
+        $this->ensureAdmin($request);
 
         return view('settings::users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        $this->ensureInternalUser($request);
+        $this->ensureAdmin($request);
 
         $validated = $request->validate([
             'email' => [
@@ -95,8 +103,13 @@ class UserController extends Controller
                 'max:191',
                 Rule::unique('users', 'email')->ignore($user->getKey()),
             ],
+            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_USER])],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
+
+        if ($user->employee_code === 'EMP0001') {
+            $validated['role'] = User::ROLE_ADMIN;
+        }
 
         if (blank($validated['password'] ?? null)) {
             unset($validated['password']);
@@ -111,7 +124,7 @@ class UserController extends Controller
 
     public function toggleActive(Request $request, User $user): RedirectResponse
     {
-        $this->ensureInternalUser($request);
+        $this->ensureAdmin($request);
         abort_if($user->employee_code === 'EMP0001', 422, __('settings::messages.cannot_disable_admin'));
 
         $user->update(['is_active' => !$user->is_active]);
@@ -127,9 +140,9 @@ class UserController extends Controller
                 : __('settings::messages.user_disabled'));
     }
 
-    private function ensureInternalUser(Request $request): void
+    private function ensureAdmin(Request $request): void
     {
-        abort_unless($request->user()?->employee_code === 'EMP0001', 403);
+        abort_unless($request->user()?->role === User::ROLE_ADMIN, 403);
     }
 
     private function nextEmployeeCode(string $userType): string

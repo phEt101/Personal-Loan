@@ -18,6 +18,7 @@ return new class extends Migration
             $table->id();
             $table->string('employee_code', 50)->unique();
             $table->enum('user_type', ['internal', 'external']);
+            $table->enum('role', ['admin', 'user'])->default('user');
             $table->string('first_name', 100);
             $table->string('last_name', 100);
             $table->string('email', 191)->unique();
