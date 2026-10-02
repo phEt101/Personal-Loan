@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/choices/choices.min.css') }}?v={{ filemtime(public_path('vendor/choices/choices.min.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/customer-history.css') }}?v={{ filemtime(public_path('css/customer-history.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/toast.css') }}?v={{ filemtime(public_path('css/toast.css')) }}">
 </head>
 <body>
     <div class="layout">
@@ -26,6 +27,8 @@
             </section>
         </main>
     </div>
+
+    @include('partials.toast')
 
     <!-- Global attachment preview modal -->
     <div id="attachmentPreviewModal" class="modal">

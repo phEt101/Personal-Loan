@@ -41,5 +41,10 @@ class LoginTest extends TestCase
             ->assertRedirect(self::LOGIN_PATH);
 
         $this->assertGuest();
+
+        $this->get(self::LOGIN_PATH)
+            ->assertOk()
+            ->assertSee('id="appToast"', false)
+            ->assertSee(__('auth::messages.logged_out'));
     }
 }

@@ -133,7 +133,9 @@ class CustomerHistoryTest extends TestCase
         $attachments = DB::table('customer_attachments')->where('CustomerNo', $customerNo)->get();
         $this->assertCount(2, $attachments);
         $this->assertSame('สำเนาบัตรประชาชน', $attachments->firstWhere('DocumentTypeId', $nationalIdType)->DocumentName);
-        Storage::disk('local')->assertExists($attachments->pluck('FilePath')->all());
+        foreach ($attachments->pluck('FilePath') as $path) {
+            $this->assertTrue(Storage::disk('local')->exists($path));
+        }
 
         $detail = $this->getJson("/customer-history/{$customerNo}")
             ->assertOk()
@@ -156,7 +158,7 @@ class CustomerHistoryTest extends TestCase
             ->assertOk();
 
         $this->assertDatabaseMissing('customer_attachments', ['id' => $attachmentId]);
-        Storage::disk('local')->assertMissing($filePath);
+        $this->assertFalse(Storage::disk('local')->exists($filePath));
     }
 
     public function test_customer_creation_rejects_invalid_or_incomplete_data(): void

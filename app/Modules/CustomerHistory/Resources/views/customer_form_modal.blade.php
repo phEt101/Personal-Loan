@@ -1407,8 +1407,6 @@
             existingAttachments = [];
             newAttachments = [];
             removedAttachmentIds = new Set();
-            resetAttachmentEditor();
-            setAttachmentEditorOpen(false);
             currentStep = 1;
             maxReachedStep = 1;
             editingAddressId = null;
@@ -1416,6 +1414,8 @@
             form.querySelectorAll('input, select, textarea').forEach((field) => {
                 field.disabled = false;
             });
+            resetAttachmentEditor();
+            setAttachmentEditorOpen(false);
             resetAddressEditor();
             setAddressEditorOpen(false);
             renderAddresses();
@@ -1595,6 +1595,17 @@
                 window.alert(phoneRequiredMessage);
                 return;
             }
+            if (currentStep === 5) {
+                const hasAttachment = newAttachments.length > 0 || existingAttachments.some(
+                    (attachment) => !removedAttachmentIds.has(Number(attachment.id))
+                );
+
+                if (!hasAttachment) {
+                    openAttachmentEditor();
+                    attachmentNameInput?.focus();
+                    return;
+                }
+            }
             const activeStep = steps.find((step) => Number(step.dataset.customerStep) === currentStep);
             const requiredFields = activeStep?.querySelectorAll('[required]:not(:disabled)') || [];
             const invalidFields = [];
@@ -1710,7 +1721,7 @@
                     throw new Error(result.message || saveFailedMessage);
                 }
 
-                window.alert(`${result.message}\nCustomerNo: ${result.customer_no}`);
+                window.showToast?.(result.message);
                 await window.refreshCustomerHistoryList?.(window.location.href);
                 form.reset();
                 addresses = [];

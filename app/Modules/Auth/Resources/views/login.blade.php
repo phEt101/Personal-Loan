@@ -6,6 +6,7 @@
     <title>{{ __('auth::messages.heading') }}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('icon/S__.ico') }}?v={{ filemtime(public_path('icon/S__.ico')) }}">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v={{ filemtime(public_path('css/auth.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/toast.css') }}?v={{ filemtime(public_path('css/toast.css')) }}">
 </head>
 <body class="auth-page">
     <div class="auth-orb auth-orb-left"></div>
@@ -37,10 +38,6 @@
                     </select>
                 </div>
             </div>
-
-            @if (session('status'))
-                <div class="auth-alert auth-alert-success">{{ session('status') }}</div>
-            @endif
 
             @if ($errors->any())
                 <div class="auth-alert auth-alert-error">
@@ -85,5 +82,7 @@
             </form>
         </section>
     </main>
+
+    @include('partials.toast')
 </body>
 </html>
