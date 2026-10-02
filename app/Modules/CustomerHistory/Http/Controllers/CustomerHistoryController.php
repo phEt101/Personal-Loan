@@ -69,8 +69,15 @@ class CustomerHistoryController extends Controller
                     ->where('customer.CustomerNo', 'like', "%{$search}%")
                     ->orWhere('customer.Firstname', 'like', "%{$search}%")
                     ->orWhere('customer.Lastname', 'like', "%{$search}%")
-                    ->orWhere('customer.Mobile', 'like', "%{$search}%")
-                    ->orWhereRaw("CONCAT(customer.Firstname, ' ', customer.Lastname) LIKE ?", ["%{$search}%"]);
+                    ->orWhere('customer.Mobile', 'like', "%{$search}%");
+
+                $nameParts = preg_split('/\s+/', $search, 2);
+                if (count($nameParts) === 2) {
+                    $query->orWhere(function ($query) use ($nameParts) {
+                        $query->where('customer.Firstname', 'like', "%{$nameParts[0]}%")
+                            ->where('customer.Lastname', 'like', "%{$nameParts[1]}%");
+                    });
+                }
 
                 if ($user->user_type === 'internal') {
                     $query
@@ -436,10 +443,9 @@ class CustomerHistoryController extends Controller
         $systemUserId = $request->user()->getAuthIdentifier();
 
         $customerNo = DB::transaction(function () use ($validated, $occupation, $systemUserId): string {
-            $customerNo = $this->nextMockCustomerNo();
+            $customerNo = $this->nextCustomerNo();
             $now = now();
-            // Temporary H Meter user id until user mapping/API integration is available.
-            $hMeterUserId = 4;
+            $legacyAuditUserId = 4;
             $addressTypeCode = $validated['AddressTypeCode'] ?? 1;
             $title = DB::table('titles')->where('TitleCode', $validated['TitleCode'])->first(['TitleDesc']);
             $maritalStatus = DB::table('marital_statuses')->where('MaritalStatusCode', $validated['MaritalStatusCode'])->first(['MaritalStatusName', 'Score']);
@@ -541,7 +547,7 @@ class CustomerHistoryController extends Controller
                 'CreditorCreditAmount' => 0,
                 'IsDebtor' => true,
                 'Status' => null,
-                'InsertUserId' => $hMeterUserId,
+                'InsertUserId' => $legacyAuditUserId,
                 'InsertDate' => $now->toDateString(),
                 'sysInsertUserId' => $systemUserId,
                 'sysUpdateUserId' => null,
@@ -582,7 +588,7 @@ class CustomerHistoryController extends Controller
                 'EmailId' => 1,
                 'Email' => $validated['Email'],
                 'CreateDateTime' => $now,
-                'CreateUserId' => $hMeterUserId,
+                'CreateUserId' => $legacyAuditUserId,
                 'Remark' => $validated['EmailRemark'] ?? null,
             ]);
 
@@ -592,7 +598,7 @@ class CustomerHistoryController extends Controller
                     'RemarkId' => 1,
                     'Comment' => $validated['Comment'],
                     'InsertDateTime' => $now,
-                    'InsertUserId' => $hMeterUserId,
+                    'InsertUserId' => $legacyAuditUserId,
                 ]);
             }
 
@@ -668,7 +674,7 @@ class CustomerHistoryController extends Controller
 
         DB::transaction(function () use ($validated, $occupation, $request, $customerNo): void {
             $now = now();
-            $hMeterUserId = 4;
+            $legacyAuditUserId = 4;
             $addressTypeCode = $validated['AddressTypeCode'] ?? 1;
             $title = DB::table('titles')->where('TitleCode', $validated['TitleCode'])->first(['TitleDesc']);
             $maritalStatus = DB::table('marital_statuses')->where('MaritalStatusCode', $validated['MaritalStatusCode'])->first(['MaritalStatusName', 'Score']);
@@ -701,7 +707,7 @@ class CustomerHistoryController extends Controller
                 'BankCode' => $validated['BankCode'] ?? null, 'BankBookBranch' => $validated['BankBookBranch'] ?? null, 'BankBookCode' => $validated['BankBookCode'] ?? null,
                 'WorkPlace' => $validated['WorkPlace'] ?? null, 'MonthlyIncomeAmount' => $validated['MonthlyIncomeAmount'] ?? null,
                 'MonthlyExpenseAmount' => $validated['MonthlyExpenseAmount'] ?? null, 'YearlyBonusAmount' => $validated['YearlyBonusAmount'] ?? null,
-                'UpdateUserId' => $hMeterUserId, 'UpdateDate' => $now, 'sysUpdateUserId' => $request->user()->getAuthIdentifier(), 'sysUpdateDateTime' => $now,
+                'UpdateUserId' => $legacyAuditUserId, 'UpdateDate' => $now, 'sysUpdateUserId' => $request->user()->getAuthIdentifier(), 'sysUpdateDateTime' => $now,
             ]);
 
             DB::table('customer_addresses')->where('CustomerNo', $customerNo)->delete();
@@ -717,10 +723,10 @@ class CustomerHistoryController extends Controller
                 DB::table('customer_phones')->insert(['CustomerNo' => $customerNo, 'PhoneId' => $phone['PhoneId'], 'Remark' => $phone['Remark'] ?? null, 'Phone' => $phone['Phone'], 'PhoneType' => $phone['PhoneType']]);
             }
             DB::table('customer_emails')->where('CustomerNo', $customerNo)->delete();
-            DB::table('customer_emails')->insert(['CustomerNo' => $customerNo, 'EmailId' => 1, 'Email' => $validated['Email'], 'CreateDateTime' => $now, 'CreateUserId' => $hMeterUserId, 'Remark' => $validated['EmailRemark'] ?? null]);
+            DB::table('customer_emails')->insert(['CustomerNo' => $customerNo, 'EmailId' => 1, 'Email' => $validated['Email'], 'CreateDateTime' => $now, 'CreateUserId' => $legacyAuditUserId, 'Remark' => $validated['EmailRemark'] ?? null]);
             DB::table('customer_remarks')->where('CustomerNo', $customerNo)->delete();
             if (!empty($validated['Comment'])) {
-                DB::table('customer_remarks')->insert(['CustomerNo' => $customerNo, 'RemarkId' => 1, 'Comment' => $validated['Comment'], 'InsertDateTime' => $now, 'InsertUserId' => $hMeterUserId]);
+                DB::table('customer_remarks')->insert(['CustomerNo' => $customerNo, 'RemarkId' => 1, 'Comment' => $validated['Comment'], 'InsertDateTime' => $now, 'InsertUserId' => $legacyAuditUserId]);
             }
         }, 3);
 
@@ -750,20 +756,34 @@ class CustomerHistoryController extends Controller
         ];
     }
 
-    private function nextMockCustomerNo(): string
+    private function nextCustomerNo(): string
     {
-        $latest = DB::table('customers')
-            ->where('CustomerNo', 'like', 'MOCK%')
-            ->orderByDesc('CustomerNo')
-            ->lockForUpdate()
-            ->value('CustomerNo');
-        $nextNumber = $latest ? ((int) substr($latest, 4)) + 1 : 1;
+        $customerNumberDate = now();
+        $customerDate = $customerNumberDate->toDateString();
 
-        if ($nextNumber > 999999999999) {
-            throw new \RuntimeException('Mock customer number range is exhausted.');
-        }
+        DB::table('customer_number_sequences')->insertOrIgnore([
+            'sequence_date' => $customerDate,
+            'last_number' => 0,
+        ]);
 
-        return 'MOCK'.str_pad((string) $nextNumber, 12, '0', STR_PAD_LEFT);
+        do {
+            $sequence = (int) DB::table('customer_number_sequences')
+                ->where('sequence_date', $customerDate)
+                ->lockForUpdate()
+                ->value('last_number') + 1;
+
+            if ($sequence > 999999) {
+                throw new \RuntimeException('Daily customer number range is exhausted.');
+            }
+
+            DB::table('customer_number_sequences')
+                ->where('sequence_date', $customerDate)
+                ->update(['last_number' => $sequence]);
+
+            $customerNo = '00CU'.$customerNumberDate->format('ymd').str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
+        } while (DB::table('customers')->where('CustomerNo', $customerNo)->exists());
+
+        return $customerNo;
     }
 
     private function isValidThaiNationalId(string $identity): bool

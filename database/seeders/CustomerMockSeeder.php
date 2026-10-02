@@ -11,16 +11,16 @@ class CustomerMockSeeder extends Seeder
     public function run(): void
     {
         $names = [
-            ['กิตติพงษ์', 'สุขใจ'],
-            ['สุภาวดี', 'มีทรัพย์'],
-            ['ธนกร', 'เจริญผล'],
-            ['พิมพ์ชนก', 'แสงทอง'],
-            ['ณัฐวุฒิ', 'รุ่งเรือง'],
-            ['ชลธิชา', 'บุญมี'],
-            ['ปกรณ์', 'มั่นคง'],
-            ['วรัญญา', 'ศรีสุข'],
-            ['อนุชา', 'ใจดี'],
-            ['รัตนา', 'เพิ่มพูน'],
+            ['กิตติพงษ์', 'สุขใจ', 1, 1],
+            ['สุภาวดี', 'มีทรัพย์', 2, 2],
+            ['ธนกร', 'เจริญผล', 1, 1],
+            ['พิมพ์ชนก', 'แสงทอง', 2, 2],
+            ['ณัฐวุฒิ', 'รุ่งเรือง', 1, 1],
+            ['ชลธิชา', 'บุญมี', 2, 2],
+            ['ปกรณ์', 'มั่นคง', 1, 1],
+            ['วรัญญา', 'ศรีสุข', 2, 2],
+            ['อนุชา', 'ใจดี', 1, 1],
+            ['รัตนา', 'เพิ่มพูน', 2, 2],
         ];
 
         $locations = DB::table('sub_districts as sub')
@@ -47,9 +47,14 @@ class CustomerMockSeeder extends Seeder
             throw new \RuntimeException('Insufficient location master data for customer mocks.');
         }
 
-        $titleCode = DB::table('titles')->where('Active', true)->orderBy('TitleCode')->value('TitleCode');
-        $genderCode = DB::table('titles')->where('TitleCode', $titleCode)->value('GenderCode')
-            ?? DB::table('genders')->orderBy('GenderId')->value('GenderId');
+        $titles = DB::table('titles')
+            ->whereIn('TitleCode', [1, 2])
+            ->pluck('TitleDesc', 'TitleCode');
+
+        if ($titles->count() !== 2) {
+            throw new \RuntimeException('Required title master data is missing for customer mocks.');
+        }
+
         $maritalStatus = DB::table('marital_statuses')->orderBy('MaritalStatusCode')->first();
         $workingCondition = DB::table('working_conditions')->where('IsRequireOccupation', true)->orderBy('WorkingConditionId')->first()
             ?? DB::table('working_conditions')->orderBy('WorkingConditionId')->first();
@@ -68,13 +73,6 @@ class CustomerMockSeeder extends Seeder
         if ($systemUserIds->count() < count($names)) {
             throw new \RuntimeException('Insufficient users for assigning mock customer creators.');
         }
-        $titleDesc = DB::table('titles')->where('TitleCode', $titleCode)->value('TitleDesc');
-
-        $latestMockNumber = DB::table('customers')
-            ->where('CustomerNo', 'like', 'MOCK%')
-            ->orderByDesc('CustomerNo')
-            ->value('CustomerNo');
-        $nextMockNumber = $latestMockNumber ? ((int) substr($latestMockNumber, 4)) + 1 : 1;
         $mockInsertTimestamps = collect(range(1, count($names)))
             ->map(fn () => random_int(
                 now()->subMonthNoOverflow()->day(25)->startOfDay()->timestamp,
@@ -86,9 +84,7 @@ class CustomerMockSeeder extends Seeder
         DB::transaction(function () use (
             $names,
             $locations,
-            $titleCode,
-            $titleDesc,
-            $genderCode,
+            $titles,
             $maritalStatus,
             $workingCondition,
             $occupation,
@@ -98,15 +94,14 @@ class CustomerMockSeeder extends Seeder
             $mobilePhoneType,
             $officePhoneType,
             $systemUserIds,
-            $nextMockNumber,
             $mockInsertTimestamps
         ): void {
-            foreach ($names as $index => [$firstName, $lastName]) {
+            foreach ($names as $index => [$firstName, $lastName, $titleCode, $genderCode]) {
                 $insertedAt = Carbon::createFromTimestamp(
                     $mockInsertTimestamps[$index],
                     config('app.timezone')
                 );
-                $customerNo = 'MOCK'.str_pad((string) ($nextMockNumber + $index), 12, '0', STR_PAD_LEFT);
+                $customerNo = $this->nextCustomerNo($insertedAt);
                 $registeredLocation = $locations[$index * 2];
                 $currentLocation = $locations[($index * 2) + 1];
                 $mobile = '089'.str_pad((string) ($index + 1), 7, '0', STR_PAD_LEFT);
@@ -146,11 +141,11 @@ class CustomerMockSeeder extends Seeder
                     'Lastname' => $lastName,
                     'Nickname' => mb_substr($firstName, 0, 8),
                     'TitleCode' => $titleCode,
-                    'TitleDesc' => $titleDesc,
+                    'TitleDesc' => $titles[$titleCode],
                     'BirthDate' => $birthDate,
                     'GenderCode' => $genderCode,
                     'IdentityCardTypeCode' => 1,
-                    'IdentityCardId' => $this->thaiIdentityCardNumber($nextMockNumber + $index),
+                    'IdentityCardId' => $this->thaiIdentityCardNumber($index + 1),
                     'IdentityCardIssuer' => 'สำนักงานเขตตัวอย่าง',
                     'IdentityCardEffectiveDate' => now()->subYears(8)->addDays($index)->toDateString(),
                     'IdentityCardExpireDate' => now()->addYears(2)->addDays($index)->toDateString(),
@@ -255,6 +250,35 @@ class CustomerMockSeeder extends Seeder
                 ]);
             }
         });
+    }
+
+    private function nextCustomerNo(Carbon $customerNumberDate): string
+    {
+        $customerDate = $customerNumberDate->toDateString();
+
+        DB::table('customer_number_sequences')->insertOrIgnore([
+            'sequence_date' => $customerDate,
+            'last_number' => 0,
+        ]);
+
+        do {
+            $sequence = (int) DB::table('customer_number_sequences')
+                ->where('sequence_date', $customerDate)
+                ->lockForUpdate()
+                ->value('last_number') + 1;
+
+            if ($sequence > 999999) {
+                throw new \RuntimeException('Daily customer number range is exhausted.');
+            }
+
+            DB::table('customer_number_sequences')
+                ->where('sequence_date', $customerDate)
+                ->update(['last_number' => $sequence]);
+
+            $customerNo = '00CU'.$customerNumberDate->format('ymd').str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
+        } while (DB::table('customers')->where('CustomerNo', $customerNo)->exists());
+
+        return $customerNo;
     }
 
     private function thaiIdentityCardNumber(int $sequence): string
