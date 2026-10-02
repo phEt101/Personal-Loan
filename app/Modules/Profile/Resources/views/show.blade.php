@@ -55,9 +55,11 @@
                         @error('email') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field">
-                        <label for="profile_password">{{ __('profile::messages.password') }}</label>
+                        <div class="profile-field-label-row">
+                            <label for="profile_password">{{ __('profile::messages.password') }}</label>
+                            <small>{{ __('profile::messages.password_hint') }}</small>
+                        </div>
                         <input id="profile_password" name="password" type="password" minlength="8" autocomplete="new-password">
-                        <small>{{ __('profile::messages.password_hint') }}</small>
                         @error('password') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field">

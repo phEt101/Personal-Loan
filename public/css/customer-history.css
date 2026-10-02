@@ -620,7 +620,7 @@ body .profile-form-actions {
 }
 
 body .settings-user-table {
-  min-width: 980px;
+  min-width: 1080px;
   table-layout: auto;
 }
 
@@ -641,6 +641,8 @@ body .settings-user-table th:nth-child(5),
 body .settings-user-table td:nth-child(5),
 body .settings-user-table th:nth-child(6),
 body .settings-user-table td:nth-child(6),
+body .settings-user-table th:nth-child(7),
+body .settings-user-table td:nth-child(7),
 body .settings-user-table th:last-child,
 body .settings-user-table td:last-child {
   white-space: nowrap;
@@ -652,6 +654,7 @@ body .settings-user-table td:nth-child(2) {
 }
 
 body .settings-user-type,
+body .settings-user-role,
 body .settings-user-status {
   padding: 0.28rem 0.55rem;
   font-size: 0.75rem;
@@ -1091,6 +1094,25 @@ body .consent-table td {
   color: #3763a5;
 }
 
+.settings-user-role {
+  display: inline-flex;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.settings-user-role-admin {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.settings-user-role-user {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
 .settings-user-status {
   display: inline-flex;
   padding: 0.35rem 0.65rem;
@@ -1277,6 +1299,18 @@ body .consent-table td {
 
 .profile-field small {
   color: var(--consent-muted);
+}
+
+.profile-field-label-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.profile-field-label-row small {
+  font-weight: 400;
+  white-space: nowrap;
 }
 
 .profile-field-error {
