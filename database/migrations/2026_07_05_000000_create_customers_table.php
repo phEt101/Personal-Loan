@@ -16,7 +16,7 @@ return new class extends Migration
 
             // ระบบสร้างคำค้นจากชื่อเล่น ชื่อ นามสกุล เลขบัตร และเบอร์โทรศัพท์
             $table->string('QuickSearchKey', 150)->nullable();
-            // สร้างเลขลูกค้าจาก H Meter ตาราง dbo.Branch, dbo.Organization และ dbo.Customer
+            // เลขลูกค้าที่สร้างและจัดการภายในระบบ
             $table->string('CustomerNo', 16)->unique();
 
             // ลูกค้าบุคคลกำหนด CustomerTypeCode เป็น 1
@@ -31,9 +31,9 @@ return new class extends Migration
             $table->unsignedTinyInteger('IdentityCardTypeCode')->nullable();
             $table->string('IdentityCardIssuer', 100)->nullable();
             $table->string('Nationality', 50)->nullable();
-            // ดึงสถานภาพสมรสจาก H Meter ตาราง dbo.MaritalStatus
+            // อ้างอิงสถานภาพสมรสจากตาราง marital_statuses
             $table->unsignedTinyInteger('MaritalStatusCode')->nullable();
-            // ดึงรายละเอียดอาชีพและคะแนนจาก H Meter ตาราง dbo.Occupation
+            // อ้างอิงรายละเอียดอาชีพและคะแนนจากตาราง occupations
             $table->unsignedInteger('OccupationCode')->nullable();
             $table->string('Mobile', 15)->nullable();
             // อ้างอิง AddressId จากตาราง customer_addresses
@@ -55,7 +55,7 @@ return new class extends Migration
             $table->string('Email', 50);
             $table->string('LineUserId', 100)->nullable();
             $table->string('ContactPerson', 255)->nullable();
-            // ตรวจสอบผู้บันทึกจาก H Meter ตาราง dbo.User
+            // Legacy audit user identifier
             $table->unsignedInteger('InsertUserId')->nullable();
             $table->date('InsertDate')->nullable();
             $table->unsignedInteger('UpdateUserId')->nullable();
@@ -67,12 +67,12 @@ return new class extends Migration
             $table->string('CustomerGradeCode', 20)->nullable();
             // ระบบประกอบข้อความที่อยู่จากข้อมูลใน customer_addresses
             $table->text('CurrentAddressAsText')->nullable();
-            // ดึงประเภทที่อยู่และคะแนนจาก H Meter ตาราง dbo.AddressType
+            // อ้างอิงประเภทที่อยู่และคะแนนจากตาราง address_types
             $table->unsignedTinyInteger('AddressTypeCode')->nullable();
-            // คำนวณคะแนนจาก H Meter ตาราง dbo.AgeRange และ dbo.NetIncomeRange
+            // คำนวณคะแนนจากตาราง age_ranges และ net_income_ranges
             $table->unsignedInteger('AgeRangeScore')->default(0);
             $table->unsignedInteger('NetIncomeRangeScore')->default(0);
-            // คะแนนจาก H Meter ตาราง dbo.AddressType, dbo.Occupation และ dbo.MaritalStatus
+            // คะแนนจากประเภทที่อยู่ อาชีพ และสถานภาพสมรส
             $table->unsignedInteger('AddressTypeScore')->nullable();
             $table->unsignedInteger('OccupationScore')->nullable();
             $table->unsignedInteger('MaritalStatusScore')->default(0);
@@ -91,7 +91,6 @@ return new class extends Migration
             $table->boolean('IsSalesRepresentative')->default(false);
             $table->string('TitleDesc', 100)->nullable();
             $table->string('RegistrationNo', 50)->nullable();
-            // รอสถานะจากกระบวนการของ H Meter ภายหลัง
             $table->boolean('Status')->nullable()->default(null);
             $table->boolean('IsAuction')->default(false);
             $table->string('MaritalStatusDesc', 100)->nullable();
@@ -109,12 +108,12 @@ return new class extends Migration
             $table->unsignedInteger('CollectionTelephoneId')->default(0);
             $table->unsignedInteger('FaxId')->default(0);
             $table->string('Race', 50)->nullable();
-            // ดึงข้อมูลประเภทธุรกิจจาก H Meter ตาราง dbo.TypeOfBusiness
+            // อ้างอิงข้อมูลประเภทธุรกิจจากตาราง type_of_businesses
             $table->unsignedInteger('TypeOfBusinessId')->nullable();
             $table->string('TypeOfBusinessName', 255)->nullable();
             $table->string('TypeOfBusinessBotCode', 50)->nullable();
             $table->string('OtherOccupationDesc', 255)->nullable();
-            // ตรวจสอบสภาพการทำงานจาก H Meter ตาราง dbo.WorkingCondition
+            // อ้างอิงสภาพการทำงานจากตาราง working_conditions
             $table->unsignedInteger('WorkingConditionId')->nullable();
             $table->string('AccountApDeposit', 50)->nullable();
             $table->string('AccountAp', 50)->nullable();
@@ -138,7 +137,7 @@ return new class extends Migration
             // ใช้เลขเดียวกับ CustomerNo สำหรับอ้างอิงลูกค้า
             $table->string('CustomerRefNo', 16)->nullable();
 
-            // ผู้สร้างและผู้แก้ไขข้อมูลจากระบบ Personal Loan (ไม่ใช่รหัสผู้ใช้ H Meter)
+            // ผู้สร้างและผู้แก้ไขข้อมูลจากระบบ Personal Loan
             $table->foreignId('sysInsertUserId')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('sysUpdateUserId')->nullable()->constrained('users')->nullOnDelete();
             $table->dateTime('sysInsertDateTime')->nullable();

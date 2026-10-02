@@ -3,7 +3,7 @@
 return [
     'index' => [
         'page_title' => 'Customer History',
-        'subtitle' => 'Customer records for review and H Meter integration',
+        'subtitle' => 'Customer records for review and internal management',
         'create_button' => '+ Add Customer History',
         'all_customers' => 'All customers in the system',
         'my_customers' => 'Customers added by you',
@@ -129,7 +129,7 @@ return [
             'mailing' => 'Mailing address',
             'address_required' => 'Please add at least one address.',
             'title' => 'Customer Address',
-            'description' => 'Primary address and location data used by H Meter',
+            'description' => 'Primary address and customer location data',
             'line1' => 'Address (No., building, floor, room)',
             'line2' => 'Address (village no., village, soi, road)',
             'province' => 'Province',

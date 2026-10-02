@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(HMeterMasterSeeder::class);
+        $this->call(MasterLookupSeeder::class);
 
         $internalEmployeeCodes = collect(range(1, 2))
             ->map(fn (int $number) => 'EMP'.str_pad((string) $number, 4, '0', STR_PAD_LEFT));

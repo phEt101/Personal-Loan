@@ -18,13 +18,13 @@ return new class extends Migration
             $table->unsignedInteger('AddressId');
             $table->string('AddressLine1', 100);
             $table->string('AddressLine2', 100)->nullable();
-            // ดึงข้อมูลจาก H Meter ตาราง dbo.Province
+            // อ้างอิงข้อมูลจังหวัดจากตาราง provinces
             $table->string('ProvinceCode', 2)->nullable();
             $table->string('ProvinceDesc', 150)->nullable();
-            // ดึงข้อมูลจาก H Meter ตาราง dbo.District
+            // อ้างอิงข้อมูลอำเภอ/เขตจากตาราง districts
             $table->string('DistrictCode', 5)->nullable();
             $table->string('DistrictDesc', 150)->nullable();
-            // ดึงข้อมูลจาก H Meter ตาราง dbo.SubDistrict
+            // อ้างอิงข้อมูลตำบล/แขวงจากตาราง sub_districts
             $table->string('SubDistrictCode', 5)->nullable();
             $table->string('SubDistrictDesc', 150)->nullable();
             $table->string('ZipCode', 10);

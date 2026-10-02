@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedInteger('EmailId');
             $table->string('Email', 100);
 
-            // H Meter audit fields; CreateUserId and UpdateUserId come from dbo.User.
+            // Legacy audit fields retained for customer email records.
             $table->dateTime('CreateDateTime')->nullable();
             $table->unsignedInteger('CreateUserId')->nullable();
             $table->unsignedInteger('UpdateUserId')->nullable();

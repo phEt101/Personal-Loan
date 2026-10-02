@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedInteger('RemarkId');
             $table->text('Comment');
 
-            // H Meter audit fields; InsertUserId and UpdateUserId come from dbo.User.
+            // Legacy audit fields retained for customer remark records.
             $table->dateTime('InsertDateTime')->nullable();
             $table->unsignedInteger('InsertUserId')->nullable();
             $table->unsignedInteger('UpdateUserId')->nullable();

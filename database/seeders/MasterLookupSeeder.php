@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class HMeterMasterSeeder extends Seeder
+class MasterLookupSeeder extends Seeder
 {
     private const SOURCES = [
         '[dbo].[AddressType].csv' => 'address_types',
@@ -52,7 +52,7 @@ class HMeterMasterSeeder extends Seeder
 
     private function seedTable(string $fileName, string $table): void
     {
-        $path = database_path("seeders/data/hmeter/{$fileName}");
+        $path = database_path("seeders/data/master/{$fileName}");
         $handle = fopen($path, 'r');
         $headers = fgetcsv($handle);
         $headers[0] = preg_replace('/^\xEF\xBB\xBF/', '', $headers[0]);

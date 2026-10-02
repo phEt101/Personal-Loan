@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedInteger('PhoneId');
             $table->string('Remark', 100)->nullable();
             $table->string('Phone', 15);
-            // ดึงประเภทโทรศัพท์จาก H Meter ตาราง dbo.PhoneType
+            // อ้างอิงประเภทโทรศัพท์จากตาราง phone_types
             $table->string('PhoneType', 2);
             // กำหนดค่า PhoneSequense เป็น 0 เสมอ
             $table->unsignedInteger('PhoneSequense')->default(0);
