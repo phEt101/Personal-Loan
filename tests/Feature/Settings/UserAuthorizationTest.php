@@ -14,11 +14,18 @@ class UserAuthorizationTest extends TestCase
 
     public function test_admin_can_access_user_management(): void
     {
-        $admin = User::factory()->create(['employee_code' => 'ADMIN0001', 'role_id' => $this->roleId(Role::ADMIN_SLUG)]);
+        $admin = User::factory()->create([
+            'employee_code' => 'ADMIN0001',
+            'role_id' => $this->roleId(Role::ADMIN_SLUG),
+            'first_name' => 'ธิดารัตน์',
+            'last_name' => 'มูลเทพ',
+        ]);
 
         $this->actingAs($admin)
             ->get('/settings/users')
-            ->assertOk();
+            ->assertOk()
+            ->assertSee('user-avatar-compact">ธ', false)
+            ->assertSee('user-avatar-large">ธ', false);
     }
 
     public function test_standard_user_is_redirected_from_user_management(): void

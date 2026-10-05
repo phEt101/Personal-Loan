@@ -16,13 +16,13 @@
         </div>
         <div class="user-box">
             <button class="user-toggle" id="userToggle" type="button">
-                <div class="user-avatar-compact">{{ strtoupper(substr(auth()->user()->full_name ?? __('messages.layout.guest_name'), 0, 1)) }}</div>
+                <div class="user-avatar-compact">{{ mb_strtoupper(mb_substr(auth()->user()->full_name ?? __('messages.layout.guest_name'), 0, 1)) }}</div>
                 <span class="user-name-compact">{{ auth()->user()->full_name ?? __('messages.layout.guest_name') }}</span>
             </button>
             <div class="user-dropdown" id="userDropdown">
                 <div class="user-dropdown-card">
                     <div class="user-dropdown-header">
-                        <div class="user-avatar-large">{{ strtoupper(substr(auth()->user()->full_name ?? __('messages.layout.guest_name'), 0, 1)) }}</div>
+                        <div class="user-avatar-large">{{ mb_strtoupper(mb_substr(auth()->user()->full_name ?? __('messages.layout.guest_name'), 0, 1)) }}</div>
                         <div>
                             <div class="user-dropdown-name">{{ auth()->user()->full_name ?? __('messages.layout.guest_name') }}</div>
                             <div class="user-dropdown-email">{{ auth()->user()->email ?? __('messages.layout.guest_email') }}</div>
