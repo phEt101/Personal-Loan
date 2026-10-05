@@ -12,6 +12,11 @@ class Role extends Model
 
     public const USER_SLUG = 'user';
 
+    public const SYSTEM_SLUGS = [
+        self::ADMIN_SLUG,
+        self::USER_SLUG,
+    ];
+
     protected $fillable = [
         'name',
         'slug',

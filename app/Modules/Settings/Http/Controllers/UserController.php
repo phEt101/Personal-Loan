@@ -69,7 +69,9 @@ class UserController extends Controller
             'user_type' => ['required', Rule::in(['internal', 'external'])],
             'role_id' => [
                 'required',
-                Rule::exists('roles', 'id')->where(fn ($query) => $query->where('is_active', true)),
+                Rule::exists('roles', 'id')->where(fn ($query) => $query
+                    ->where('is_active', true)
+                    ->whereIn('slug', Role::SYSTEM_SLUGS)),
             ],
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
@@ -96,7 +98,7 @@ class UserController extends Controller
             'user' => $user,
             'roles' => Role::query()
                 ->where('is_active', true)
-                ->orWhere('id', $user->role_id)
+                ->whereIn('slug', Role::SYSTEM_SLUGS)
                 ->orderBy('name')
                 ->get(),
         ]);
@@ -115,7 +117,7 @@ class UserController extends Controller
                 'required',
                 Rule::exists('roles', 'id')->where(fn ($query) => $query
                     ->where('is_active', true)
-                    ->orWhere('id', $user->role_id)),
+                    ->whereIn('slug', Role::SYSTEM_SLUGS)),
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
@@ -156,7 +158,11 @@ class UserController extends Controller
 
     private function activeRoles(): Collection
     {
-        return Role::query()->where('is_active', true)->orderBy('name')->get();
+        return Role::query()
+            ->where('is_active', true)
+            ->whereIn('slug', Role::SYSTEM_SLUGS)
+            ->orderBy('name')
+            ->get();
     }
 
     private function nextEmployeeCode(string $userType): string

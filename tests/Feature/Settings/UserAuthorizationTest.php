@@ -115,19 +115,21 @@ class UserAuthorizationTest extends TestCase
         $this->assertTrue(Hash::check('new-password', $user->password));
     }
 
-    public function test_admin_can_assign_an_additional_active_role(): void
+    public function test_only_admin_and_user_roles_can_be_assigned(): void
     {
         $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG)]);
         $managerRole = Role::query()->create([
-            'name' => 'Loan Manager',
-            'slug' => 'loan-manager',
+            'name' => 'Manager',
+            'slug' => 'manager',
             'is_active' => true,
         ]);
 
         $this->actingAs($admin)
             ->get('/settings/users/create')
             ->assertOk()
-            ->assertSee('Loan Manager');
+            ->assertSee(__('settings::messages.role_admin'))
+            ->assertSee(__('settings::messages.role_user'))
+            ->assertDontSee('Manager');
 
         $this->actingAs($admin)->post('/settings/users', [
             'user_type' => 'internal',
@@ -137,12 +139,9 @@ class UserAuthorizationTest extends TestCase
             'email' => 'loan-manager@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ])->assertRedirect('/settings/users');
+        ])->assertSessionHasErrors('role_id');
 
-        $this->assertDatabaseHas('users', [
-            'email' => 'loan-manager@example.com',
-            'role_id' => $managerRole->id,
-        ]);
+        $this->assertDatabaseMissing('users', ['email' => 'loan-manager@example.com']);
     }
 
     public function test_primary_admin_role_cannot_be_demoted_or_account_disabled(): void
