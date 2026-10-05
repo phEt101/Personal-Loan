@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,6 +19,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(MasterLookupSeeder::class);
 
+        $adminRoleId = Role::query()->where('slug', Role::ADMIN_SLUG)->valueOrFail('id');
+        $userRoleId = Role::query()->where('slug', Role::USER_SLUG)->valueOrFail('id');
+
         $internalEmployeeCodes = collect(range(1, 2))
             ->map(fn (int $number) => 'EMP'.str_pad((string) $number, 4, '0', STR_PAD_LEFT));
 
@@ -33,7 +37,7 @@ class DatabaseSeeder extends Seeder
                 ['employee_code' => 'EMP'.str_pad((string) $number, 4, '0', STR_PAD_LEFT)],
                 [
                     'user_type' => 'internal',
-                    'role' => $number === 1 ? User::ROLE_ADMIN : User::ROLE_USER,
+                    'role_id' => $number === 1 ? $adminRoleId : $userRoleId,
                     'first_name' => 'User',
                     'last_name' => $number === 1 ? 'One' : 'Two',
                     'email' => 'user'.$number.'@bigmoneyplus.co.th',
@@ -58,7 +62,7 @@ class DatabaseSeeder extends Seeder
                 ['employee_code' => 'EXT'.str_pad((string) $number, 4, '0', STR_PAD_LEFT)],
                 [
                     'user_type' => 'external',
-                    'role' => User::ROLE_USER,
+                    'role_id' => $userRoleId,
                     'first_name' => 'Wipay',
                     'last_name' => 'User '.$number,
                     'email' => 'user'.$number.'@wipay.co.th',

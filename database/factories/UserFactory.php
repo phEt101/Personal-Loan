@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -29,7 +30,7 @@ class UserFactory extends Factory
         return [
             'employee_code' => 'TEST'.Str::upper(Str::random(12)),
             'user_type' => 'internal',
-            'role' => User::ROLE_USER,
+            'role_id' => fn () => Role::query()->where('slug', Role::USER_SLUG)->valueOrFail('id'),
             'first_name' => 'User',
             'last_name' => Str::upper(Str::substr($token, 0, 6)),
             'email' => $token . '@example.com',

@@ -52,4 +52,5 @@ return [
     'user_disabled' => 'The user account has been disabled.',
     'cannot_disable_admin' => 'The EMP0001 administrator account cannot be disabled.',
     'toggle_confirmation' => 'Are you sure you want to change this user status?',
+    'unauthorized' => 'You do not have permission to access user management.',
 ];

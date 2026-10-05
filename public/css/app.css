@@ -2118,6 +2118,129 @@ body {
     cursor: pointer;
 }
 
+/* Application shell responsive overrides */
+@media (max-width: 1024px) {
+    body.sidebar-is-open {
+        overflow: hidden;
+    }
+
+    .sidebar {
+        width: min(19rem, 86vw);
+        max-width: 100%;
+        opacity: 1;
+        visibility: hidden;
+    }
+
+    .sidebar.open {
+        visibility: visible;
+    }
+
+    .sidebar-overlay {
+        z-index: 35;
+    }
+
+    .sidebar {
+        z-index: 40;
+    }
+}
+
+@media (max-width: 768px) {
+    .content {
+        width: 100%;
+        min-width: 0;
+        padding: 5.25rem 0.75rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .topbar {
+        min-height: 4.5rem;
+        padding: 0.75rem;
+    }
+
+    .topbar-actions {
+        width: auto;
+        min-width: 0;
+        margin-left: auto;
+        flex-wrap: nowrap;
+    }
+
+    .locale-switcher {
+        max-width: 8.5rem;
+    }
+
+    .locale-select {
+        min-width: 0;
+        max-width: 5.8rem;
+    }
+
+    .user-box {
+        min-width: 0;
+        padding-left: 0.5rem;
+    }
+
+    .user-toggle {
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        padding: 0.25rem;
+    }
+
+    .user-dropdown {
+        position: fixed;
+        top: 4.25rem;
+        right: 0.75rem;
+        left: 0.75rem;
+        width: auto;
+        min-width: 0;
+        max-width: 24rem;
+        margin-left: auto;
+    }
+
+    .hero.compact-hero,
+    .hero.compact-hero.hero-with-actions {
+        padding: 1rem;
+        border-radius: 0.85rem;
+    }
+
+    .hero.compact-hero.hero-with-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        align-items: stretch;
+    }
+
+    .hero-actions,
+    .hero-actions .action-btn {
+        width: 100%;
+    }
+
+    .hero-actions .action-btn {
+        justify-content: center;
+        min-height: 44px;
+    }
+
+    .footer {
+        padding-bottom: env(safe-area-inset-bottom);
+        text-align: center;
+    }
+}
+
+@media (max-width: 420px) {
+    .locale-icon {
+        display: none;
+    }
+
+    .locale-switcher {
+        padding-left: 0.4rem;
+    }
+
+    .hero.compact-hero h2 {
+        font-size: 1.1rem;
+    }
+
+    .hero.compact-hero p {
+        font-size: 0.84rem;
+    }
+}
+
 .address-search-option:hover,
 .address-search-option.is-active {
     background: #eff6ff;

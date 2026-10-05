@@ -45,12 +45,13 @@
                     </div>
                     <div class="profile-field">
                         <label for="setting_role">{{ __('settings::messages.role') }} <span class="required-asterisk">*</span></label>
-                        <select id="setting_role" name="role" required>
+                        <select id="setting_role" name="role_id" required>
                             <option value="">{{ __('settings::messages.select_role') }}</option>
-                            <option value="user" @selected(old('role', 'user') === 'user')>{{ __('settings::messages.role_user') }}</option>
-                            <option value="admin" @selected(old('role') === 'admin')>{{ __('settings::messages.role_admin') }}</option>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->id }}" @selected((string) old('role_id', $defaultRoleId) === (string) $role->id)>{{ $role->display_name }}</option>
+                            @endforeach
                         </select>
-                        @error('role') <span class="profile-field-error">{{ $message }}</span> @enderror
+                        @error('role_id') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field">
                         <label for="setting_first_name">{{ __('settings::messages.first_name') }} <span class="required-asterisk">*</span></label>

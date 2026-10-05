@@ -64,19 +64,19 @@
             <tbody>
                 @forelse ($customers as $customer)
                     <tr>
-                        <td>{{ $customer->CustomerNo }}</td>
-                        <td>{{ trim($customer->Firstname.' '.$customer->Lastname) }}</td>
-                        <td>{{ $customer->Mobile ?: '-' }}</td>
+                        <td data-label="{{ __('customerhistory::messages.index.customer_no') }}">{{ $customer->CustomerNo }}</td>
+                        <td data-label="{{ __('customerhistory::messages.index.customer_name') }}">{{ trim($customer->Firstname.' '.$customer->Lastname) }}</td>
+                        <td data-label="{{ __('customerhistory::messages.index.mobile') }}">{{ $customer->Mobile ?: '-' }}</td>
                         @if ($isInternalUser)
-                            <td>
+                            <td data-label="{{ __('customerhistory::messages.index.created_by') }}">
                                 {{ trim(($customer->CreatorFirstname ?? '').' '.($customer->CreatorLastname ?? '')) ?: '-' }}
                                 @if ($customer->CreatorEmployeeCode)
                                     <small class="customer-history-employee-code">{{ $customer->CreatorEmployeeCode }}</small>
                                 @endif
                             </td>
                         @endif
-                        <td>{{ $customer->sysInsertDateTime ? \Carbon\Carbon::parse($customer->sysInsertDateTime)->format('d/m/Y H:i') : '-' }}</td>
-                        <td>
+                        <td data-label="{{ __('customerhistory::messages.index.created_at') }}">{{ $customer->sysInsertDateTime ? \Carbon\Carbon::parse($customer->sysInsertDateTime)->format('d/m/Y H:i') : '-' }}</td>
+                        <td data-label="{{ __('customerhistory::messages.index.actions') }}">
                             <div class="customer-history-row-actions">
                             <button
                                 type="button"

@@ -56,26 +56,26 @@
                     <tbody>
                         @forelse ($users as $user)
                             <tr>
-                                <td>{{ $user->employee_code }}</td>
-                                <td>{{ $user->full_name }}</td>
-                                <td>{{ $user->email }}</td>
-                                <td>
+                                <td data-label="{{ __('settings::messages.employee_code') }}">{{ $user->employee_code }}</td>
+                                <td data-label="{{ __('settings::messages.full_name') }}">{{ $user->full_name }}</td>
+                                <td data-label="{{ __('settings::messages.email') }}">{{ $user->email }}</td>
+                                <td data-label="{{ __('settings::messages.user_type') }}">
                                     <span class="settings-user-type settings-user-type-{{ $user->user_type }}">
                                         {{ __('settings::messages.'.$user->user_type) }}
                                     </span>
                                 </td>
-                                <td>
-                                    <span class="settings-user-role settings-user-role-{{ $user->role }}">
-                                        {{ __('settings::messages.role_'.$user->role) }}
+                                <td data-label="{{ __('settings::messages.role') }}">
+                                    <span class="settings-user-role settings-user-role-{{ $user->role->slug }}">
+                                        {{ $user->role->display_name }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="{{ __('settings::messages.status') }}">
                                     <span class="settings-user-status {{ $user->is_active ? 'is-active' : 'is-inactive' }}">
                                         {{ $user->is_active ? __('settings::messages.active') : __('settings::messages.inactive') }}
                                     </span>
                                 </td>
-                                <td>{{ $user->created_at?->format('d/m/Y H:i') ?? '—' }}</td>
-                                <td>
+                                <td data-label="{{ __('settings::messages.created_at') }}">{{ $user->created_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                                <td data-label="{{ __('settings::messages.actions') }}">
                                     <div class="settings-user-actions">
                                         <a href="{{ route('settings.users.edit', $user) }}" class="settings-user-action-button">
                                             {{ __('settings::messages.edit') }}

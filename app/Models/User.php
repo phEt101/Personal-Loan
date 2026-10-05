@@ -2,18 +2,14 @@
 
 namespace App\Models;
 
-
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    public const ROLE_ADMIN = 'admin';
-
-    public const ROLE_USER = 'user';
-
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -25,7 +21,7 @@ class User extends Authenticatable
     protected $fillable = [
         'employee_code',
         'user_type',
-        'role',
+        'role_id',
         'first_name',
         'last_name',
         'email',
@@ -61,5 +57,15 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name.' '.$this->last_name);
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role?->slug === Role::ADMIN_SLUG;
     }
 }

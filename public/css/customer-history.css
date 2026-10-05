@@ -2473,3 +2473,302 @@ body .customer-history-row-actions .action-btn.outline.table-action-btn-small.cu
   background: #f59e0b;
   color: #ffffff;
 }
+
+/* Page-level responsive layouts */
+@media (max-width: 768px) {
+  body .customer-history-page,
+  body .settings-user-page {
+    width: 100%;
+    min-width: 0;
+    gap: 0.75rem;
+  }
+
+  body .customer-history-filter-card,
+  body .customer-history-list,
+  body .settings-user-card {
+    min-width: 0;
+    padding: 1rem;
+    border-radius: 0.85rem;
+  }
+
+  body .customer-history-filter-form,
+  body .settings-user-search,
+  body .profile-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body .customer-history-filter-field,
+  body .settings-user-search .profile-field,
+  body .profile-field {
+    min-width: 0;
+  }
+
+  body .customer-history-filter-field input,
+  body .customer-history-filter-field select,
+  body .profile-field input,
+  body .profile-field select,
+  body .profile-field textarea {
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  body .customer-history-filter-actions,
+  body .settings-user-search,
+  body .profile-form-actions {
+    width: 100%;
+  }
+
+  body .customer-history-filter-actions,
+  body .profile-form-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body .customer-history-filter-actions .action-btn,
+  body .settings-user-search > .action-btn,
+  body .profile-form-actions .action-btn,
+  body .settings-create-back .action-btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  body .customer-history-list-header,
+  body .settings-user-list-heading {
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Customer table becomes readable cards instead of a wide scrolling table. */
+  body .customer-history-list .consent-table {
+    overflow: visible;
+  }
+
+  body .customer-history-list .consent-table table,
+  body .customer-history-list .consent-table tbody,
+  body .customer-history-list .consent-table tr,
+  body .customer-history-list .consent-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body .customer-history-list .consent-table thead {
+    display: none;
+  }
+
+  body .customer-history-list .consent-table tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  body .customer-history-list .consent-table tr {
+    overflow: hidden;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--consent-line);
+    border-radius: 0.75rem;
+    background: #fff;
+  }
+
+  body .customer-history-list .consent-table td {
+    display: grid;
+    grid-template-columns: minmax(7rem, 40%) minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #edf2f0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  body .customer-history-list .consent-table td::before {
+    content: attr(data-label);
+    color: var(--consent-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  body .customer-history-list .consent-table td:last-child {
+    grid-template-columns: 1fr;
+    border-bottom: 0;
+  }
+
+  body .customer-history-list .consent-table td:last-child::before {
+    display: none;
+  }
+
+  body .customer-history-list .consent-table .empty-cell {
+    display: block;
+    padding: 1.5rem 0.5rem !important;
+    text-align: center !important;
+  }
+
+  body .customer-history-list .consent-table .empty-cell::before {
+    display: none;
+  }
+
+  body .customer-history-row-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  body .customer-history-row-actions .action-btn {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
+  }
+
+  /* User table uses the same mobile card pattern. */
+  body .settings-user-table-wrap {
+    overflow: visible;
+  }
+
+  body .settings-user-table,
+  body .settings-user-table tbody,
+  body .settings-user-table tr,
+  body .settings-user-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body .settings-user-table thead {
+    display: none;
+  }
+
+  body .settings-user-table tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  body .settings-user-table tr {
+    overflow: hidden;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--consent-line);
+    border-radius: 0.75rem;
+    background: #fff;
+  }
+
+  body .settings-user-table td,
+  body .settings-user-table td:first-child,
+  body .settings-user-table td:nth-child(2),
+  body .settings-user-table td:nth-child(3),
+  body .settings-user-table td:nth-child(4),
+  body .settings-user-table td:nth-child(5),
+  body .settings-user-table td:nth-child(6),
+  body .settings-user-table td:nth-child(7),
+  body .settings-user-table td:last-child {
+    display: grid;
+    grid-template-columns: minmax(7rem, 40%) minmax(0, 1fr);
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #edf2f0;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  body .settings-user-table td::before {
+    content: attr(data-label);
+    color: var(--consent-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  body .settings-user-table td:last-child {
+    grid-template-columns: 1fr;
+    border-bottom: 0;
+  }
+
+  body .settings-user-table td:last-child::before {
+    display: none;
+  }
+
+  body .settings-user-table .settings-user-empty {
+    display: block;
+    padding: 1.5rem 0.5rem !important;
+    text-align: center !important;
+  }
+
+  body .settings-user-table .settings-user-empty::before {
+    display: none;
+  }
+
+  body .settings-user-type,
+  body .settings-user-role,
+  body .settings-user-status {
+    justify-self: end;
+  }
+
+  body .settings-user-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  body .settings-user-actions form,
+  body .settings-user-action-button {
+    width: 100%;
+  }
+
+  body .settings-user-action-button {
+    min-height: 42px;
+  }
+
+  body .pagination-nav,
+  body .customer-history-pagination-info {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+
+  body .pagination-summary {
+    width: 100%;
+    text-align: center;
+  }
+
+  body .customer-history-per-page-form {
+    justify-content: center;
+  }
+
+  body .pagination-list {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 420px) {
+  body .customer-history-filter-card,
+  body .customer-history-list,
+  body .settings-user-card {
+    padding: 0.75rem;
+  }
+
+  body .customer-history-list .consent-table td,
+  body .settings-user-table td,
+  body .settings-user-table td:first-child,
+  body .settings-user-table td:nth-child(2),
+  body .settings-user-table td:nth-child(3),
+  body .settings-user-table td:nth-child(4),
+  body .settings-user-table td:nth-child(5),
+  body .settings-user-table td:nth-child(6),
+  body .settings-user-table td:nth-child(7),
+  body .settings-user-table td:last-child {
+    grid-template-columns: minmax(6.25rem, 38%) minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  body .customer-history-row-actions,
+  body .settings-user-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body .pagination-list {
+    gap: 0.25rem;
+  }
+}

@@ -2,7 +2,9 @@
 
 namespace App\Modules\Settings\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -14,8 +16,6 @@ class UserController extends Controller
 {
     public function index(Request $request): View
     {
-        $this->ensureAdmin($request);
-
         $perPageOptions = [5, 10, 25, 50, 100];
         $perPage = (int) $request->query('per_page', 10);
         if (!in_array($perPage, $perPageOptions, true)) {
@@ -24,6 +24,7 @@ class UserController extends Controller
 
         $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
         $users = User::query()
+            ->with('role')
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query
@@ -56,18 +57,20 @@ class UserController extends Controller
 
     public function create(Request $request): View
     {
-        $this->ensureAdmin($request);
-
-        return view('settings::users.create');
+        return view('settings::users.create', [
+            'roles' => $this->activeRoles(),
+            'defaultRoleId' => Role::query()->where('slug', Role::USER_SLUG)->value('id'),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $this->ensureAdmin($request);
-
         $validated = $request->validate([
             'user_type' => ['required', Rule::in(['internal', 'external'])],
-            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_USER])],
+            'role_id' => [
+                'required',
+                Rule::exists('roles', 'id')->where(fn ($query) => $query->where('is_active', true)),
+            ],
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:191', Rule::unique('users', 'email')],
@@ -87,15 +90,20 @@ class UserController extends Controller
 
     public function edit(Request $request, User $user): View
     {
-        $this->ensureAdmin($request);
+        $user->load('role');
 
-        return view('settings::users.edit', compact('user'));
+        return view('settings::users.edit', [
+            'user' => $user,
+            'roles' => Role::query()
+                ->where('is_active', true)
+                ->orWhere('id', $user->role_id)
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        $this->ensureAdmin($request);
-
         $validated = $request->validate([
             'email' => [
                 'required',
@@ -103,12 +111,19 @@ class UserController extends Controller
                 'max:191',
                 Rule::unique('users', 'email')->ignore($user->getKey()),
             ],
-            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_USER])],
+            'role_id' => [
+                'required',
+                Rule::exists('roles', 'id')->where(fn ($query) => $query
+                    ->where('is_active', true)
+                    ->orWhere('id', $user->role_id)),
+            ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
         if ($user->employee_code === 'EMP0001') {
-            $validated['role'] = User::ROLE_ADMIN;
+            $validated['role_id'] = Role::query()
+                ->where('slug', Role::ADMIN_SLUG)
+                ->valueOrFail('id');
         }
 
         if (blank($validated['password'] ?? null)) {
@@ -124,7 +139,6 @@ class UserController extends Controller
 
     public function toggleActive(Request $request, User $user): RedirectResponse
     {
-        $this->ensureAdmin($request);
         abort_if($user->employee_code === 'EMP0001', 422, __('settings::messages.cannot_disable_admin'));
 
         $user->update(['is_active' => !$user->is_active]);
@@ -140,9 +154,9 @@ class UserController extends Controller
                 : __('settings::messages.user_disabled'));
     }
 
-    private function ensureAdmin(Request $request): void
+    private function activeRoles(): Collection
     {
-        abort_unless($request->user()?->role === User::ROLE_ADMIN, 403);
+        return Role::query()->where('is_active', true)->orderBy('name')->get();
     }
 
     private function nextEmployeeCode(string $userType): string

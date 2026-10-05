@@ -33,15 +33,16 @@
                 <div class="profile-form-grid">
                     <div class="profile-field profile-field-full">
                         <label for="setting_edit_role">{{ __('settings::messages.role') }} <span class="required-asterisk">*</span></label>
-                        <select id="setting_edit_role" name="role" required @disabled($user->employee_code === 'EMP0001')>
-                            <option value="user" @selected(old('role', $user->role) === 'user')>{{ __('settings::messages.role_user') }}</option>
-                            <option value="admin" @selected(old('role', $user->role) === 'admin')>{{ __('settings::messages.role_admin') }}</option>
+                        <select id="setting_edit_role" name="role_id" required @disabled($user->employee_code === 'EMP0001')>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->id }}" @selected((string) old('role_id', $user->role_id) === (string) $role->id)>{{ $role->display_name }}</option>
+                            @endforeach
                         </select>
                         @if ($user->employee_code === 'EMP0001')
-                            <input type="hidden" name="role" value="admin">
+                            <input type="hidden" name="role_id" value="{{ $user->role_id }}">
                             <small>{{ __('settings::messages.primary_admin_role_locked') }}</small>
                         @endif
-                        @error('role') <span class="profile-field-error">{{ $message }}</span> @enderror
+                        @error('role_id') <span class="profile-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="profile-field profile-field-full">
                         <label for="setting_edit_email">{{ __('settings::messages.email') }} <span class="required-asterisk">*</span></label>

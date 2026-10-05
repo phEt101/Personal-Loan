@@ -15,7 +15,7 @@
                 </span>
                 <span>{{ __('messages.nav.customer_history') }}</span>
             </a>
-            @if (auth()->user()?->role === \App\Models\User::ROLE_ADMIN)
+            @if (auth()->user()?->isAdmin())
                 <details class="nav-section" @if(Request::routeIs('settings.*')) open @endif>
                     <summary class="nav-item {{ Request::routeIs('settings.*') ? 'active' : '' }}">
                         <span class="nav-icon nav-icon-settings" aria-hidden="true">

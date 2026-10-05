@@ -57,6 +57,14 @@
 
         function toggleSidebar() {
             sidebar.classList.toggle('open');
+            document.body.classList.toggle('sidebar-is-open', sidebar.classList.contains('open'));
+            menuToggle.setAttribute('aria-expanded', sidebar.classList.contains('open') ? 'true' : 'false');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            document.body.classList.remove('sidebar-is-open');
+            menuToggle.setAttribute('aria-expanded', 'false');
         }
 
         function toggleUserDropdown(event) {
@@ -65,7 +73,13 @@
         }
 
         menuToggle.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', toggleSidebar);
+        menuToggle.setAttribute('aria-controls', 'sidebar');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        sidebarOverlay.addEventListener('click', closeSidebar);
+        sidebar.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeSidebar));
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeSidebar();
+        });
         userToggle?.addEventListener('click', toggleUserDropdown);
         document.addEventListener('click', (event) => {
             if (!userDropdown.contains(event.target) && !userToggle.contains(event.target)) {
