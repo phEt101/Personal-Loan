@@ -143,6 +143,13 @@ return new class extends Migration
             $table->dateTime('sysInsertDateTime')->nullable();
             $table->dateTime('sysUpdateDateTime')->nullable();
 
+            // สถานะการนำข้อมูลเข้า H Meter และกำหนดอายุไฟล์แนบหลังการนำเข้า
+            $table->string('HmeterTransferStatus', 20)->default('pending')->index();
+            $table->dateTime('HmeterTransferredAt')->nullable();
+            $table->foreignId('HmeterTransferredBy')->nullable()->constrained('users')->nullOnDelete();
+            $table->dateTime('AttachmentPurgeAfter')->nullable()->index();
+            $table->dateTime('AttachmentsPurgedAt')->nullable();
+
             $table->index('IdentityCardId');
         });
     }
