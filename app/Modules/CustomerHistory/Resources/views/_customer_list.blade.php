@@ -65,7 +65,14 @@
                 @forelse ($customers as $customer)
                     <tr>
                         <td data-label="{{ __('customerhistory::messages.index.customer_no') }}">{{ $customer->CustomerNo }}</td>
-                        <td data-label="{{ __('customerhistory::messages.index.customer_name') }}">{{ trim($customer->Firstname.' '.$customer->Lastname) }}</td>
+                        <td data-label="{{ __('customerhistory::messages.index.customer_name') }}">
+                            {{ trim($customer->Firstname.' '.$customer->Lastname) }}
+                            <small class="customer-history-transfer-status is-{{ $customer->HmeterTransferStatus === 'transferred' ? 'transferred' : 'pending' }}">
+                                {{ $customer->HmeterTransferStatus === 'transferred'
+                                    ? __('customerhistory::messages.index.transfer_completed')
+                                    : __('customerhistory::messages.index.transfer_pending') }}
+                            </small>
+                        </td>
                         <td data-label="{{ __('customerhistory::messages.index.mobile') }}">{{ $customer->Mobile ?: '-' }}</td>
                         @if ($isInternalUser)
                             <td data-label="{{ __('customerhistory::messages.index.created_by') }}">
@@ -85,14 +92,16 @@
                             >
                                 {{ __('customerhistory::messages.index.view') }}
                             </button>
-                            <button
-                                type="button"
-                                class="action-btn outline table-action-btn-small customer-edit-button"
-                                data-detail-url="{{ route('customer-history.show', $customer->CustomerNo) }}"
-                                data-update-url="{{ route('customer-history.update', $customer->CustomerNo) }}"
-                            >
-                                {{ __('customerhistory::messages.index.edit') }}
-                            </button>
+                            @if ($customer->HmeterTransferStatus !== 'transferred')
+                                <button
+                                    type="button"
+                                    class="action-btn outline table-action-btn-small customer-edit-button"
+                                    data-detail-url="{{ route('customer-history.show', $customer->CustomerNo) }}"
+                                    data-update-url="{{ route('customer-history.update', $customer->CustomerNo) }}"
+                                >
+                                    {{ __('customerhistory::messages.index.edit') }}
+                                </button>
+                            @endif
                             </div>
                         </td>
                     </tr>

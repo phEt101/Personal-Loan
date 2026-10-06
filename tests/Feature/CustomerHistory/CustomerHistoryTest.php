@@ -3,6 +3,7 @@
 namespace Tests\Feature\CustomerHistory;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Database\Seeders\MasterLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -140,13 +141,25 @@ class CustomerHistoryTest extends TestCase
         $detail = $this->getJson("/customer-history/{$customerNo}")
             ->assertOk()
             ->assertJsonCount(2, 'attachments');
-        $downloadUrl = $detail->json('attachments.0.download_url');
+        $previewUrl = $detail->json('attachments.0.preview_url');
+        $downloadAllUrl = $detail->json('download_all_attachments_url');
         $attachmentId = $detail->json('attachments.0.id');
+        $this->assertSame('application/pdf', $detail->json('attachments.0.mime_type'));
 
-        $this->get($downloadUrl)
+        $this->get($previewUrl)
             ->assertOk()
             ->assertHeader('content-disposition', 'inline; filename=national-id.pdf');
-        $this->actingAs($otherUser)->get($downloadUrl)->assertNotFound();
+        $download = $this->get($downloadAllUrl)
+            ->assertOk()
+            ->assertHeader('content-disposition', "attachment; filename=customer-{$customerNo}-documents.zip");
+        $zip = new \ZipArchive;
+        $this->assertTrue($zip->open($download->baseResponse->getFile()->getPathname()));
+        $this->assertSame(2, $zip->numFiles);
+        $this->assertSame('01-สำเนาบัตรประชาชน.pdf', $zip->getNameIndex(0));
+        $this->assertSame('02-สลิปเดือนล่าสุด.jpg', $zip->getNameIndex(1));
+        $zip->close();
+        $this->actingAs($otherUser)->get($previewUrl)->assertNotFound();
+        $this->actingAs($otherUser)->get($downloadAllUrl)->assertNotFound();
 
         $filePath = DB::table('customer_attachments')->where('id', $attachmentId)->value('FilePath');
         $this->actingAs($owner)
@@ -223,6 +236,95 @@ class CustomerHistoryTest extends TestCase
 
         $this->getJson('/customer-history/MOCK000000000001')->assertOk();
         $this->getJson('/customer-history/MOCK000000000002')->assertNotFound();
+    }
+
+    public function test_internal_user_can_confirm_hmeter_transfer_and_customer_becomes_read_only(): void
+    {
+        Carbon::setTestNow('2026-10-06 10:30:00');
+        $internal = User::factory()->create([
+            'user_type' => 'internal',
+            'first_name' => 'ทัศนีย์',
+            'last_name' => 'จุฑารัตน์จรัส',
+        ]);
+        $customerNo = 'MOCK000000000101';
+        $this->insertCustomer($customerNo, 'Transfer', $internal, '2026-10-01 10:00:00');
+
+        $this->actingAs($internal)
+            ->patchJson("/customer-history/{$customerNo}/hmeter-transfer")
+            ->assertOk()
+            ->assertJsonPath('hmeter_transfer.status', 'transferred')
+            ->assertJsonPath('hmeter_transfer.transferred_by', 'ทัศนีย์ จุฑารัตน์จรัส')
+            ->assertJsonPath('hmeter_transfer.attachment_purge_after', '2026-11-05T10:30:00.000000Z');
+
+        $this->assertDatabaseHas('customers', [
+            'CustomerNo' => $customerNo,
+            'HmeterTransferStatus' => 'transferred',
+            'HmeterTransferredBy' => $internal->id,
+            'HmeterTransferredAt' => '2026-10-06 10:30:00',
+            'AttachmentPurgeAfter' => '2026-11-05 10:30:00',
+        ]);
+
+        $this->getJson("/customer-history/{$customerNo}")
+            ->assertOk()
+            ->assertJsonPath('hmeter_transfer.transferred_at', '2026-10-06T10:30:00.000000Z')
+            ->assertJsonPath('hmeter_transfer.attachment_purge_after', '2026-11-05T10:30:00.000000Z');
+
+        $this->patchJson("/customer-history/{$customerNo}/hmeter-transfer")->assertConflict();
+        $this->putJson("/customer-history/{$customerNo}", [])->assertConflict();
+        Carbon::setTestNow();
+    }
+
+    public function test_external_user_cannot_confirm_hmeter_transfer(): void
+    {
+        $external = User::factory()->create(['user_type' => 'external']);
+        $customerNo = 'MOCK000000000102';
+        $this->insertCustomer($customerNo, 'External', $external, '2026-10-01 10:00:00');
+
+        $this->actingAs($external)
+            ->patchJson("/customer-history/{$customerNo}/hmeter-transfer")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('customers', [
+            'CustomerNo' => $customerNo,
+            'HmeterTransferStatus' => 'pending',
+        ]);
+    }
+
+    public function test_due_transferred_customer_attachments_are_purged(): void
+    {
+        Storage::fake('local');
+        Carbon::setTestNow('2026-11-06 02:00:00');
+        $internal = User::factory()->create(['user_type' => 'internal']);
+        $customerNo = 'MOCK000000000103';
+        $this->insertCustomer($customerNo, 'Purge', $internal, '2026-10-01 10:00:00');
+        $documentTypeId = DB::table('document_types')->value('id');
+        $filePath = "customer-attachments/{$customerNo}/identity.pdf";
+        Storage::disk('local')->put($filePath, 'test document');
+        DB::table('customer_attachments')->insert([
+            'CustomerNo' => $customerNo,
+            'DocumentName' => 'สำเนาบัตรประชาชน',
+            'DocumentTypeId' => $documentTypeId,
+            'OriginalName' => 'identity.pdf',
+            'FilePath' => $filePath,
+            'MimeType' => 'application/pdf',
+            'FileSize' => 13,
+            'UploadedBy' => $internal->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('customers')->where('CustomerNo', $customerNo)->update([
+            'HmeterTransferStatus' => 'transferred',
+            'HmeterTransferredAt' => '2026-10-06 01:00:00',
+            'HmeterTransferredBy' => $internal->id,
+            'AttachmentPurgeAfter' => '2026-11-05 01:00:00',
+        ]);
+
+        $this->artisan('attachments:purge-transferred')->assertSuccessful();
+
+        Storage::disk('local')->assertMissing($filePath);
+        $this->assertDatabaseMissing('customer_attachments', ['CustomerNo' => $customerNo]);
+        $this->assertNotNull(DB::table('customers')->where('CustomerNo', $customerNo)->value('AttachmentsPurgedAt'));
+        Carbon::setTestNow();
     }
 
     private function customerPayload(array $overrides = []): array

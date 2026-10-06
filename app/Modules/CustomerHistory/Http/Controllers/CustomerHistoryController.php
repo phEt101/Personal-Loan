@@ -4,9 +4,9 @@ namespace App\Modules\CustomerHistory\Http\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Routing\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -14,13 +14,19 @@ use Illuminate\Validation\ValidationException;
 
 class CustomerHistoryController extends Controller
 {
+    private const TRANSFER_PENDING = 'pending';
+
+    private const TRANSFERRED = 'transferred';
+
+    private const ATTACHMENT_RETENTION_DAYS = 30;
+
     public function index(Request $request)
     {
         $user = $request->user();
         $perPageOptions = [5, 10, 25, 50, 100];
         $perPage = (int) $request->query('per_page', 10);
 
-        if (!in_array($perPage, $perPageOptions, true)) {
+        if (! in_array($perPage, $perPageOptions, true)) {
             $perPage = 10;
         }
 
@@ -31,6 +37,7 @@ class CustomerHistoryController extends Controller
                 'customer.Lastname',
                 'customer.Mobile',
                 'customer.sysInsertDateTime',
+                'customer.HmeterTransferStatus',
             ]);
 
         if ($user->user_type === 'external') {
@@ -209,6 +216,16 @@ class CustomerHistoryController extends Controller
                     'editAttachment' => __('customerhistory::messages.form.attachments.edit'),
                     'addAttachment' => __('customerhistory::messages.form.attachments.confirm_add'),
                     'saveAttachment' => __('customerhistory::messages.form.attachments.confirm_edit'),
+                    'previewAttachment' => __('customerhistory::messages.form.attachments.preview'),
+                    'downloadAllAttachments' => __('customerhistory::messages.form.attachments.download_all'),
+                    'confirmHmeterTransfer' => __('customerhistory::messages.transfer.confirm_button'),
+                    'confirmHmeterTransferPrompt' => __('customerhistory::messages.transfer.confirm_prompt'),
+                    'transferPending' => __('customerhistory::messages.transfer.pending'),
+                    'transferCompleted' => __('customerhistory::messages.transfer.completed'),
+                    'transferredBy' => __('customerhistory::messages.transfer.transferred_by'),
+                    'transferredAt' => __('customerhistory::messages.transfer.transferred_at'),
+                    'attachmentsPurgeAfter' => __('customerhistory::messages.transfer.attachments_purge_after'),
+                    'attachmentsPurged' => __('customerhistory::messages.transfer.attachments_purged'),
                 ],
             ],
         ]));
@@ -296,6 +313,7 @@ class CustomerHistoryController extends Controller
         $user = $request->user();
         $customerQuery = DB::table('customers as customer')
             ->leftJoin('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+            ->leftJoin('users as transfer_user', 'transfer_user.id', '=', 'customer.HmeterTransferredBy')
             ->leftJoin('identity_card_types as identity_type', 'identity_type.IdentityCardTypeCode', '=', 'customer.IdentityCardTypeCode')
             ->leftJoin('genders as gender', 'gender.GenderId', '=', 'customer.GenderCode')
             ->leftJoin('working_conditions as working_condition', 'working_condition.WorkingConditionId', '=', 'customer.WorkingConditionId')
@@ -310,6 +328,8 @@ class CustomerHistoryController extends Controller
                 'creator.employee_code as CreatorEmployeeCode',
                 'creator.first_name as CreatorFirstname',
                 'creator.last_name as CreatorLastname',
+                'transfer_user.first_name as HmeterTransferredByFirstname',
+                'transfer_user.last_name as HmeterTransferredByLastname',
             ]);
 
         if ($user->user_type === 'external') {
@@ -327,6 +347,17 @@ class CustomerHistoryController extends Controller
             'phones' => DB::table('customer_phones')->where('CustomerNo', $customerNo)->orderBy('PhoneId')->get(),
             'email_remark' => $email?->Remark,
             'comment' => $remark?->Comment,
+            'hmeter_transfer' => [
+                'status' => $customer->HmeterTransferStatus,
+                'transferred_at' => $this->utcDateTime($customer->HmeterTransferredAt),
+                'transferred_by' => trim(($customer->HmeterTransferredByFirstname ?? '').' '.($customer->HmeterTransferredByLastname ?? '')) ?: null,
+                'attachment_purge_after' => $this->utcDateTime($customer->AttachmentPurgeAfter),
+                'attachments_purged_at' => $this->utcDateTime($customer->AttachmentsPurgedAt),
+                'can_confirm' => $user->user_type === 'internal' && $customer->HmeterTransferStatus === self::TRANSFER_PENDING,
+                'confirm_url' => route('customer-history.hmeter-transfer', $customerNo),
+                'visible' => $user->user_type === 'internal',
+            ],
+            'download_all_attachments_url' => route('customer-history.attachments.download-all', $customerNo),
             'attachments' => DB::table('customer_attachments as attachment')
                 ->join('document_types as document_type', 'document_type.id', '=', 'attachment.DocumentTypeId')
                 ->where('attachment.CustomerNo', $customerNo)
@@ -339,8 +370,9 @@ class CustomerHistoryController extends Controller
                     'document_name' => $attachment->DocumentName ?: $attachment->OriginalName,
                     'document_type_id' => $attachment->DocumentTypeId,
                     'original_name' => $attachment->OriginalName,
+                    'mime_type' => $attachment->MimeType,
                     'file_size' => $attachment->FileSize,
-                    'download_url' => route('customer-history.attachments.download', $attachment->id),
+                    'preview_url' => route('customer-history.attachments.download', $attachment->id),
                 ]),
         ]);
     }
@@ -360,6 +392,107 @@ class CustomerHistoryController extends Controller
         abort_unless($disk->exists($record->FilePath), 404);
 
         return $disk->response($record->FilePath, $record->OriginalName, [], 'inline');
+    }
+
+    public function downloadAllAttachments(Request $request, string $customerNo)
+    {
+        $customerQuery = DB::table('customers')->where('CustomerNo', $customerNo);
+
+        if ($request->user()->user_type === 'external') {
+            $customerQuery->where('sysInsertUserId', $request->user()->getAuthIdentifier());
+        }
+
+        $customerQuery->firstOrFail();
+        $attachments = DB::table('customer_attachments')
+            ->where('CustomerNo', $customerNo)
+            ->orderBy('id')
+            ->get();
+        abort_if($attachments->isEmpty(), 404);
+
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+        $zipPath = tempnam(sys_get_temp_dir(), 'customer-attachments-');
+        abort_if($zipPath === false, 500);
+
+        $zip = new \ZipArchive;
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            @unlink($zipPath);
+            abort(500);
+        }
+
+        $fileCount = 0;
+        foreach ($attachments as $index => $attachment) {
+            if (! $disk->exists($attachment->FilePath)) {
+                continue;
+            }
+
+            $originalName = basename(str_replace('\\', '/', $attachment->OriginalName));
+            $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+            $documentName = trim((string) preg_replace(
+                '/[\\/:*?"<>|\x00-\x1F]+/u',
+                '-',
+                $attachment->DocumentName ?: pathinfo($originalName, PATHINFO_FILENAME)
+            ));
+            $documentName = trim((string) preg_replace('/\s+/u', ' ', $documentName), '. ');
+            $zipName = sprintf(
+                '%02d-%s%s',
+                $index + 1,
+                $documentName ?: 'attachment-'.$attachment->id,
+                $extension !== '' ? '.'.strtolower($extension) : ''
+            );
+            if ($zip->addFile($disk->path($attachment->FilePath), $zipName)) {
+                $fileCount++;
+            }
+        }
+
+        $zip->close();
+        if ($fileCount === 0) {
+            @unlink($zipPath);
+            abort(404);
+        }
+
+        return response()
+            ->download($zipPath, "customer-{$customerNo}-documents.zip")
+            ->deleteFileAfterSend(true);
+    }
+
+    public function confirmHmeterTransfer(Request $request, string $customerNo): JsonResponse
+    {
+        abort_unless($request->user()->user_type === 'internal', 403);
+
+        $now = now();
+        $updated = DB::table('customers')
+            ->where('CustomerNo', $customerNo)
+            ->where('HmeterTransferStatus', self::TRANSFER_PENDING)
+            ->update([
+                'HmeterTransferStatus' => self::TRANSFERRED,
+                'HmeterTransferredAt' => $now,
+                'HmeterTransferredBy' => $request->user()->getAuthIdentifier(),
+                'AttachmentPurgeAfter' => $now->copy()->addDays(self::ATTACHMENT_RETENTION_DAYS),
+                'AttachmentsPurgedAt' => null,
+            ]);
+
+        if ($updated === 0) {
+            abort_unless(DB::table('customers')->where('CustomerNo', $customerNo)->exists(), 404);
+
+            return response()->json([
+                'message' => __('customerhistory::messages.transfer.already_transferred'),
+            ], 409);
+        }
+
+        return response()->json([
+            'message' => __('customerhistory::messages.transfer.confirmed'),
+            'hmeter_transfer' => [
+                'status' => self::TRANSFERRED,
+                'transferred_at' => $now->toISOString(),
+                'transferred_by' => $request->user()->full_name,
+                'attachment_purge_after' => $now->copy()->addDays(self::ATTACHMENT_RETENTION_DAYS)->toISOString(),
+                'attachments_purged_at' => null,
+                'can_confirm' => false,
+                'confirm_url' => route('customer-history.hmeter-transfer', $customerNo),
+                'visible' => true,
+            ],
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -434,7 +567,7 @@ class CustomerHistoryController extends Controller
 
         $addressIds = collect($validated['AddressItems'])->pluck('AddressId')->map(fn ($id) => (int) $id);
         foreach (['IdentityCardAddressId', 'HouseRegistrationAddressId', 'CurrentAddressId', 'MailingAddressId'] as $field) {
-            if (!$addressIds->contains((int) $validated[$field])) {
+            if (! $addressIds->contains((int) $validated[$field])) {
                 throw ValidationException::withMessages([$field => __('customerhistory::messages.form.required')]);
             }
         }
@@ -445,7 +578,7 @@ class CustomerHistoryController extends Controller
                 ->where('DistrictCode', $address['DistrictCode'])
                 ->where('SubDistrictCode', $address['SubDistrictCode'])
                 ->exists();
-            if (!$locationExists) {
+            if (! $locationExists) {
                 throw ValidationException::withMessages([
                     "AddressItems.$index.SubDistrictCode" => __('customerhistory::messages.form.required'),
                 ]);
@@ -453,7 +586,7 @@ class CustomerHistoryController extends Controller
         }
 
         $phoneIds = collect($validated['PhoneItems'])->pluck('PhoneId')->map(fn ($id) => (int) $id);
-        if (!$phoneIds->contains((int) $validated['MobileTelephoneId'])) {
+        if (! $phoneIds->contains((int) $validated['MobileTelephoneId'])) {
             throw ValidationException::withMessages(['MobileTelephoneId' => __('customerhistory::messages.form.required')]);
         }
 
@@ -465,7 +598,7 @@ class CustomerHistoryController extends Controller
             throw ValidationException::withMessages(['OccupationCode' => __('customerhistory::messages.form.required')]);
         }
 
-        if (!empty($validated['OccupationCode'])) {
+        if (! empty($validated['OccupationCode'])) {
             $occupation = DB::table('occupations')
                 ->where('OccupationCode', $validated['OccupationCode'])
                 ->first(['OccupationDesc', 'IsOtherOccupation', 'Score']);
@@ -477,7 +610,7 @@ class CustomerHistoryController extends Controller
             $occupation = null;
         }
 
-        if ((string) $validated['IdentityCardTypeCode'] === '1' && !$this->isValidThaiNationalId($validated['IdentityCardId'])) {
+        if ((string) $validated['IdentityCardTypeCode'] === '1' && ! $this->isValidThaiNationalId($validated['IdentityCardId'])) {
             throw ValidationException::withMessages([
                 'IdentityCardId' => __('customerhistory::messages.form.personal.invalid_national_id'),
             ]);
@@ -502,7 +635,7 @@ class CustomerHistoryController extends Controller
             $addressTypeCode = $validated['AddressTypeCode'] ?? 1;
             $title = DB::table('titles')->where('TitleCode', $validated['TitleCode'])->first(['TitleDesc']);
             $maritalStatus = DB::table('marital_statuses')->where('MaritalStatusCode', $validated['MaritalStatusCode'])->first(['MaritalStatusName', 'Score']);
-            $businessType = !empty($validated['TypeOfBusinessId'])
+            $businessType = ! empty($validated['TypeOfBusinessId'])
                 ? DB::table('type_of_businesses')->where('TypeOfBusinessId', $validated['TypeOfBusinessId'])->first(['TypeOfBusinessName', 'BOTCode'])
                 : null;
             $addressType = DB::table('address_types')->where('AddressTypeCode', $addressTypeCode)->first(['AddressTypeDesc', 'Score']);
@@ -645,7 +778,7 @@ class CustomerHistoryController extends Controller
                 'Remark' => $validated['EmailRemark'] ?? null,
             ]);
 
-            if (!empty($validated['Comment'])) {
+            if (! empty($validated['Comment'])) {
                 DB::table('customer_remarks')->insert([
                     'CustomerNo' => $customerNo,
                     'RemarkId' => 1,
@@ -672,7 +805,12 @@ class CustomerHistoryController extends Controller
         if ($request->user()->user_type === 'external') {
             $customerQuery->where('sysInsertUserId', $request->user()->getAuthIdentifier());
         }
-        $customerQuery->firstOrFail();
+        $customer = $customerQuery->firstOrFail();
+        if ($customer->HmeterTransferStatus === self::TRANSFERRED) {
+            return response()->json([
+                'message' => __('customerhistory::messages.transfer.update_locked'),
+            ], 409);
+        }
 
         foreach (['MonthlyIncomeAmount', 'MonthlyExpenseAmount', 'YearlyBonusAmount'] as $field) {
             if ($request->filled($field)) {
@@ -687,7 +825,7 @@ class CustomerHistoryController extends Controller
 
         $addressIds = collect($validated['AddressItems'])->pluck('AddressId')->map(fn ($id) => (int) $id);
         foreach (['IdentityCardAddressId', 'HouseRegistrationAddressId', 'CurrentAddressId', 'MailingAddressId'] as $field) {
-            if (!$addressIds->contains((int) $validated[$field])) {
+            if (! $addressIds->contains((int) $validated[$field])) {
                 throw ValidationException::withMessages([$field => __('customerhistory::messages.form.required')]);
             }
         }
@@ -697,14 +835,14 @@ class CustomerHistoryController extends Controller
                 ->where('DistrictCode', $address['DistrictCode'])
                 ->where('SubDistrictCode', $address['SubDistrictCode'])
                 ->exists();
-            if (!$locationExists) {
+            if (! $locationExists) {
                 throw ValidationException::withMessages([
                     "AddressItems.$index.SubDistrictCode" => __('customerhistory::messages.form.required'),
                 ]);
             }
         }
         $phoneIds = collect($validated['PhoneItems'])->pluck('PhoneId')->map(fn ($id) => (int) $id);
-        if (!$phoneIds->contains((int) $validated['MobileTelephoneId'])) {
+        if (! $phoneIds->contains((int) $validated['MobileTelephoneId'])) {
             throw ValidationException::withMessages(['MobileTelephoneId' => __('customerhistory::messages.form.required')]);
         }
 
@@ -712,13 +850,13 @@ class CustomerHistoryController extends Controller
         if ($workingCondition?->IsRequireOccupation && empty($validated['OccupationCode'])) {
             throw ValidationException::withMessages(['OccupationCode' => __('customerhistory::messages.form.required')]);
         }
-        $occupation = !empty($validated['OccupationCode'])
+        $occupation = ! empty($validated['OccupationCode'])
             ? DB::table('occupations')->where('OccupationCode', $validated['OccupationCode'])->first(['OccupationDesc', 'IsOtherOccupation', 'Score'])
             : null;
         if ($occupation?->IsOtherOccupation && empty($validated['OtherOccupationDesc'])) {
             throw ValidationException::withMessages(['OtherOccupationDesc' => __('customerhistory::messages.form.required')]);
         }
-        if ((string) $validated['IdentityCardTypeCode'] === '1' && !$this->isValidThaiNationalId($validated['IdentityCardId'])) {
+        if ((string) $validated['IdentityCardTypeCode'] === '1' && ! $this->isValidThaiNationalId($validated['IdentityCardId'])) {
             throw ValidationException::withMessages(['IdentityCardId' => __('customerhistory::messages.form.personal.invalid_national_id')]);
         }
         if ((string) $validated['IdentityCardTypeCode'] === '1' && DB::table('customers')
@@ -733,7 +871,7 @@ class CustomerHistoryController extends Controller
             $addressTypeCode = $validated['AddressTypeCode'] ?? 1;
             $title = DB::table('titles')->where('TitleCode', $validated['TitleCode'])->first(['TitleDesc']);
             $maritalStatus = DB::table('marital_statuses')->where('MaritalStatusCode', $validated['MaritalStatusCode'])->first(['MaritalStatusName', 'Score']);
-            $businessType = !empty($validated['TypeOfBusinessId']) ? DB::table('type_of_businesses')->where('TypeOfBusinessId', $validated['TypeOfBusinessId'])->first(['TypeOfBusinessName', 'BOTCode']) : null;
+            $businessType = ! empty($validated['TypeOfBusinessId']) ? DB::table('type_of_businesses')->where('TypeOfBusinessId', $validated['TypeOfBusinessId'])->first(['TypeOfBusinessName', 'BOTCode']) : null;
             $addressType = DB::table('address_types')->where('AddressTypeCode', $addressTypeCode)->first(['AddressTypeDesc', 'Score']);
             $age = Carbon::parse($validated['BirthDate'])->age;
             $ageRangeScore = DB::table('age_ranges')->where('FromAge', '<=', $age)->where('ToAge', '>=', $age)->value('Score') ?? 0;
@@ -780,7 +918,7 @@ class CustomerHistoryController extends Controller
             DB::table('customer_emails')->where('CustomerNo', $customerNo)->delete();
             DB::table('customer_emails')->insert(['CustomerNo' => $customerNo, 'EmailId' => 1, 'Email' => $validated['Email'], 'CreateDateTime' => $now, 'CreateUserId' => $legacyAuditUserId, 'Remark' => $validated['EmailRemark'] ?? null]);
             DB::table('customer_remarks')->where('CustomerNo', $customerNo)->delete();
-            if (!empty($validated['Comment'])) {
+            if (! empty($validated['Comment'])) {
                 DB::table('customer_remarks')->insert(['CustomerNo' => $customerNo, 'RemarkId' => 1, 'Comment' => $validated['Comment'], 'InsertDateTime' => $now, 'InsertUserId' => $legacyAuditUserId]);
             }
         }, 3);
@@ -838,7 +976,7 @@ class CustomerHistoryController extends Controller
             $file = $request->file("NewAttachments.$index.File");
             $path = $file->store("customer-attachments/$customerNo", 'local');
 
-            if (!$path) {
+            if (! $path) {
                 throw new \RuntimeException('Unable to store customer attachment.');
             }
 
@@ -896,9 +1034,14 @@ class CustomerHistoryController extends Controller
         return $prefix.str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
     }
 
+    private function utcDateTime(mixed $value): ?string
+    {
+        return $value ? Carbon::parse((string) $value, 'UTC')->toISOString() : null;
+    }
+
     private function isValidThaiNationalId(string $identity): bool
     {
-        if (!preg_match('/^\d{13}$/', $identity) || count(array_unique(str_split($identity))) === 1) {
+        if (! preg_match('/^\d{13}$/', $identity) || count(array_unique(str_split($identity))) === 1) {
             return false;
         }
 

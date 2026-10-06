@@ -90,23 +90,40 @@
 
     <script>
         // Global openAttachmentPreview used by multiple modules
-        window.openAttachmentPreview = window.openAttachmentPreview || function(ev, url, mime, name) {
+        window.openAttachmentPreview = window.openAttachmentPreview || function(ev, url, mime, name, onClose) {
             try { ev && ev.preventDefault(); } catch (e) {}
             const modal = document.getElementById('attachmentPreviewModal');
             const body = document.getElementById('attachmentPreviewContent');
             if (!modal || !body) { window.open(url, '_blank', 'noopener'); return; }
-            body.innerHTML = '';
-            const titleHtml = `<h4 style="margin-top:0;margin-bottom:8px">${(name||'')}</h4>`;
+
+            if (typeof modal._attachmentPreviewCleanup === 'function') {
+                modal._attachmentPreviewCleanup();
+            }
+            modal._attachmentPreviewCleanup = typeof onClose === 'function' ? onClose : null;
+            body.replaceChildren();
+
+            const title = document.createElement('h4');
+            title.style.margin = '0 0 8px';
+            title.textContent = name || '';
+            body.appendChild(title);
+
             if ((mime||'').startsWith('image/') || url.match(/\.(png|jpe?g|gif)(\?|$)/i)) {
-                const img = document.createElement('img'); img.src = url; img.style.maxWidth='100%'; img.style.height='auto'; body.innerHTML = titleHtml; body.appendChild(img);
+                const img = document.createElement('img'); img.src = url; img.style.maxWidth='100%'; img.style.height='auto'; img.alt = name || ''; body.appendChild(img);
             } else if ((mime||'').includes('pdf') || url.toLowerCase().endsWith('.pdf')) {
-                const iframe = document.createElement('iframe'); iframe.src = url; iframe.style.width='100%'; iframe.style.height='75vh'; iframe.setAttribute('title', name||'Preview'); body.innerHTML = titleHtml; body.appendChild(iframe);
+                const iframe = document.createElement('iframe'); iframe.src = url; iframe.style.width='100%'; iframe.style.height='75vh'; iframe.setAttribute('title', name||'Preview'); body.appendChild(iframe);
             } else {
-                body.innerHTML = titleHtml + `<a href="${url}" download="${name||'file'}">ดาวน์โหลดไฟล์</a>`;
+                const download = document.createElement('a'); download.href = url; download.download = name || 'file'; download.textContent = name || 'ดาวน์โหลดไฟล์'; body.appendChild(download);
             }
             modal.style.display = 'flex'; modal.offsetHeight; modal.classList.add('show');
-            document.getElementById('closeAttachmentPreviewModal')?.addEventListener('click', () => { modal.classList.remove('show'); modal.style.display='none'; body.innerHTML=''; });
-            document.getElementById('attachmentPreviewCloseFooter')?.addEventListener('click', () => { modal.classList.remove('show'); modal.style.display='none'; body.innerHTML=''; });
+            const closePreview = () => {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                body.replaceChildren();
+                if (typeof modal._attachmentPreviewCleanup === 'function') modal._attachmentPreviewCleanup();
+                modal._attachmentPreviewCleanup = null;
+            };
+            document.getElementById('closeAttachmentPreviewModal').onclick = closePreview;
+            document.getElementById('attachmentPreviewCloseFooter').onclick = closePreview;
         };
     </script>
 </body>

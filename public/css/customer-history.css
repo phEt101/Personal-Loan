@@ -115,8 +115,15 @@
 
 .customer-attachment-list th:first-child { width: 5rem; }
 .customer-attachment-list th:last-child { width: 10rem; }
-.customer-attachment-add { margin-bottom: 1rem; }
-.customer-attachment-row-actions { display: flex; gap: 0.5rem; }
+.customer-attachment-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.customer-attachment-toolbar .action-btn { margin: 0; }
+.customer-attachment-row-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .customer-attachment-row-actions button { padding: 0.45rem 0.7rem; }
 
 #customerHistoryFormModal.is-view-mode .customer-attachment-editor,
@@ -149,6 +156,71 @@
 
 .customer-form-step.is-active {
   display: block;
+}
+
+.customer-hmeter-transfer {
+  margin-top: 1rem;
+  padding: 1.1rem;
+  border: 1px solid #f2c879;
+  border-radius: 0.85rem;
+  background: #fffaf0;
+}
+
+.customer-hmeter-transfer[hidden],
+.customer-hmeter-transfer-details[hidden],
+.customer-hmeter-transfer-purged[hidden],
+#customerConfirmHmeterTransfer[hidden] {
+  display: none !important;
+}
+
+.customer-hmeter-transfer.is-transferred {
+  border-color: #b8e1d2;
+  background: #f1fbf7;
+}
+
+.customer-hmeter-transfer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.customer-hmeter-transfer-status {
+  color: #a16207;
+  font-weight: 800;
+}
+
+.customer-hmeter-transfer.is-transferred .customer-hmeter-transfer-status {
+  color: #078b61;
+}
+
+.customer-hmeter-transfer-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 0;
+}
+
+.customer-hmeter-transfer-details div {
+  min-width: 0;
+}
+
+.customer-hmeter-transfer-details dt {
+  color: var(--consent-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.customer-hmeter-transfer-details dd {
+  margin: 0.2rem 0 0;
+  overflow-wrap: anywhere;
+  color: var(--consent-ink);
+}
+
+.customer-hmeter-transfer-purged {
+  margin: 0.9rem 0 0;
+  color: #a16207;
+  font-weight: 700;
 }
 
 .customer-form-navigation.is-hidden,
@@ -2374,6 +2446,17 @@ input[type="date"].filter-input::-webkit-inner-spin-button {
     grid-template-columns: 1fr;
   }
 
+  .customer-hmeter-transfer-header,
+  .customer-hmeter-transfer-details {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .customer-hmeter-transfer-header .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .customer-history-filter-actions {
     justify-content: stretch;
   }
@@ -2388,6 +2471,26 @@ input[type="date"].filter-input::-webkit-inner-spin-button {
   margin-top: 0.2rem;
   color: var(--consent-muted);
   font-size: 0.75rem;
+}
+
+.customer-history-transfer-status {
+  display: block;
+  width: fit-content;
+  margin-top: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.customer-history-transfer-status.is-pending {
+  background: #fff4d6;
+  color: #9a6700;
+}
+
+.customer-history-transfer-status.is-transferred {
+  background: #e5f7ef;
+  color: #087a58;
 }
 
 .customer-history-row-actions {
@@ -2472,6 +2575,21 @@ body .customer-history-row-actions .action-btn.outline.table-action-btn-small.cu
   border-color: #d97706;
   background: #f59e0b;
   color: #ffffff;
+}
+
+.customer-attachment-preview-link {
+  color: var(--consent-teal-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.customer-attachment-preview-link:hover,
+.customer-attachment-preview-link:focus-visible {
+  color: var(--consent-teal);
 }
 
 /* Page-level responsive layouts */

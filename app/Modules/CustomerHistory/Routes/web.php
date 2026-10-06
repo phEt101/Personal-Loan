@@ -15,6 +15,10 @@ Route::middleware(['web', 'auth'])->group(function () {
         ->name('customer-history.identity-card.check');
     Route::get('/customer-history/attachments/{attachment}/download', [CustomerHistoryController::class, 'downloadAttachment'])
         ->name('customer-history.attachments.download');
+    Route::get('/customer-history/{customerNo}/attachments/download-all', [CustomerHistoryController::class, 'downloadAllAttachments'])
+        ->name('customer-history.attachments.download-all');
+    Route::patch('/customer-history/{customerNo}/hmeter-transfer', [CustomerHistoryController::class, 'confirmHmeterTransfer'])
+        ->name('customer-history.hmeter-transfer');
     Route::get('/customer-history/{customerNo}', [CustomerHistoryController::class, 'show'])
         ->name('customer-history.show');
 });

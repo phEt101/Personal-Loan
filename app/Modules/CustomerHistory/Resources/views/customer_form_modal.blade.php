@@ -428,15 +428,16 @@
                             </thead>
                             <tbody id="customerAttachmentRows"></tbody>
                         </table>
-                        <button type="button" class="action-btn customer-attachment-add" id="customerAttachmentAdd">+ {{ __('customerhistory::messages.form.attachments.add') }}</button>
+                        <div class="customer-attachment-toolbar">
+                            <button type="button" class="action-btn customer-attachment-add" id="customerAttachmentAdd">+ {{ __('customerhistory::messages.form.attachments.add') }}</button>
+                            <a class="action-btn customer-attachment-download-all" id="customerAttachmentDownloadAll" href="#" hidden>
+                                {{ __('customerhistory::messages.form.attachments.download_all') }}
+                            </a>
+                        </div>
                     </div>
                     <div id="customerAttachmentPayload" hidden></div>
                     <div class="customer-attachment-editor" id="customerAttachmentEditor" hidden>
                         <div class="form-grid customer-form-grid">
-                            <div class="form-group col-4">
-                                <label for="customer_attachment_name">{{ __('customerhistory::messages.form.attachments.document_name') }} <span class="required-asterisk">*</span></label>
-                                <input id="customer_attachment_name" type="text" maxlength="255" required disabled>
-                            </div>
                             <div class="form-group col-4">
                                 <label for="customer_attachment_type">{{ __('customerhistory::messages.form.attachments.document_type') }} <span class="required-asterisk">*</span></label>
                                 <select id="customer_attachment_type" required disabled>
@@ -448,6 +449,10 @@
                                     </option>
                                     @endforeach
                                 </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="customer_attachment_name">{{ __('customerhistory::messages.form.attachments.document_name') }} <span class="required-asterisk">*</span></label>
+                                <input id="customer_attachment_name" type="text" maxlength="255" required disabled>
                             </div>
                             <div class="form-group col-4" id="customer_attachment_file_group">
                                 <label for="customer_attachment_file">{{ __('customerhistory::messages.form.attachments.file') }} <span class="required-asterisk">*</span></label>
@@ -466,6 +471,31 @@
                         <div class="form-group col-12">
                             <label for="customer_comment">{{ __('customerhistory::messages.form.profile.comment') }}</label>
                             <textarea id="customer_comment" name="Comment" rows="3"></textarea>
+                        </div>
+                        <div class="customer-hmeter-transfer col-12" id="customerHmeterTransferPanel" hidden>
+                            <div class="customer-hmeter-transfer-header">
+                                <span class="customer-hmeter-transfer-status" id="customerHmeterTransferStatus"></span>
+                                <button type="button" class="action-btn" id="customerConfirmHmeterTransfer" hidden>
+                                    {{ __('customerhistory::messages.transfer.confirm_button') }}
+                                </button>
+                            </div>
+                            <dl class="customer-hmeter-transfer-details" id="customerHmeterTransferDetails" hidden>
+                                <div>
+                                    <dt>{{ __('customerhistory::messages.transfer.transferred_by') }}</dt>
+                                    <dd id="customerHmeterTransferredBy">-</dd>
+                                </div>
+                                <div>
+                                    <dt>{{ __('customerhistory::messages.transfer.transferred_at') }}</dt>
+                                    <dd id="customerHmeterTransferredAt">-</dd>
+                                </div>
+                                <div>
+                                    <dt>{{ __('customerhistory::messages.transfer.attachments_purge_after') }}</dt>
+                                    <dd id="customerAttachmentPurgeAfter">-</dd>
+                                </div>
+                            </dl>
+                            <p class="customer-hmeter-transfer-purged" id="customerAttachmentsPurged" hidden>
+                                {{ __('customerhistory::messages.transfer.attachments_purged') }}
+                            </p>
                         </div>
                     </div>
                 </section>
@@ -562,8 +592,17 @@
         const attachmentFileGroup = document.getElementById('customer_attachment_file_group');
         let attachmentFileInput = document.getElementById('customer_attachment_file');
         const attachmentAddButton = document.getElementById('customerAttachmentAdd');
+        const attachmentDownloadAllButton = document.getElementById('customerAttachmentDownloadAll');
         const attachmentCancelButton = document.getElementById('customerAttachmentCancel');
         const attachmentCommitButton = document.getElementById('customerAttachmentCommit');
+        const hmeterTransferPanel = document.getElementById('customerHmeterTransferPanel');
+        const hmeterTransferStatus = document.getElementById('customerHmeterTransferStatus');
+        const hmeterTransferDetails = document.getElementById('customerHmeterTransferDetails');
+        const hmeterTransferredBy = document.getElementById('customerHmeterTransferredBy');
+        const hmeterTransferredAt = document.getElementById('customerHmeterTransferredAt');
+        const attachmentPurgeAfter = document.getElementById('customerAttachmentPurgeAfter');
+        const attachmentsPurged = document.getElementById('customerAttachmentsPurged');
+        const confirmHmeterTransferButton = document.getElementById('customerConfirmHmeterTransfer');
         const districtsUrl = config.urls.districts;
         const subDistrictsUrl = config.urls.subDistricts;
         const identityCardCheckUrl = config.urls.identityCardCheck;
@@ -621,6 +660,38 @@
         let newAttachments = [];
         let removedAttachmentIds = new Set();
         let editingAttachmentIndex = null;
+        let attachmentDownloadAllUrl = '';
+        let hmeterTransfer = null;
+
+        const formatTransferDateTime = (value) => {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return String(value);
+
+            return new Intl.DateTimeFormat(document.documentElement.lang || 'th', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+                timeZone: 'Asia/Bangkok',
+            }).format(date);
+        };
+
+        const renderHmeterTransfer = () => {
+            const isVisible = isViewMode && Boolean(hmeterTransfer?.visible);
+            if (!hmeterTransferPanel) return;
+
+            hmeterTransferPanel.hidden = !isVisible;
+            if (!isVisible) return;
+
+            const isTransferred = hmeterTransfer.status === 'transferred';
+            hmeterTransferPanel.classList.toggle('is-transferred', isTransferred);
+            hmeterTransferStatus.textContent = isTransferred ? config.messages.transferCompleted : config.messages.transferPending;
+            confirmHmeterTransferButton.hidden = !hmeterTransfer.can_confirm;
+            hmeterTransferDetails.hidden = !isTransferred;
+            hmeterTransferredBy.textContent = hmeterTransfer.transferred_by || '-';
+            hmeterTransferredAt.textContent = formatTransferDateTime(hmeterTransfer.transferred_at);
+            attachmentPurgeAfter.textContent = formatTransferDateTime(hmeterTransfer.attachment_purge_after);
+            attachmentsPurged.hidden = !hmeterTransfer.attachments_purged_at;
+        };
 
         const renderAttachments = () => {
             if (!attachmentRows || !attachmentPayload) return;
@@ -629,6 +700,10 @@
             const visibleExistingAttachments = existingAttachments.filter(
                 (attachment) => !removedAttachmentIds.has(Number(attachment.id))
             );
+            if (attachmentDownloadAllButton) {
+                attachmentDownloadAllButton.hidden = !isViewMode || visibleExistingAttachments.length === 0 || !attachmentDownloadAllUrl;
+                attachmentDownloadAllButton.href = attachmentDownloadAllUrl || '#';
+            }
 
             if (visibleExistingAttachments.length === 0 && newAttachments.length === 0) {
                 const row = document.createElement('tr');
@@ -651,10 +726,18 @@
                 typeCell.textContent = config.attachmentTypes[attachment.document_type_id] || '';
                 const fileCell = document.createElement('td');
                 const link = document.createElement('a');
-                link.href = attachment.download_url;
+                link.href = attachment.preview_url;
                 link.textContent = attachment.original_name;
-                link.target = '_blank';
-                link.rel = 'noopener';
+                link.className = 'customer-attachment-preview-link';
+                link.title = config.messages.previewAttachment;
+                link.addEventListener('click', (event) => {
+                    window.openAttachmentPreview?.(
+                        event,
+                        attachment.preview_url,
+                        attachment.mime_type || '',
+                        attachment.original_name
+                    );
+                });
                 fileCell.appendChild(link);
                 const actionCell = document.createElement('td');
                 const actions = document.createElement('div');
@@ -682,7 +765,26 @@
                 const typeCell = document.createElement('td');
                 typeCell.textContent = config.attachmentTypes[attachment.documentType] || attachment.documentType;
                 const fileCell = document.createElement('td');
-                fileCell.textContent = attachment.fileInput.files[0]?.name || '';
+                const selectedFile = attachment.fileInput.files[0];
+                const link = document.createElement('a');
+                link.href = '#';
+                link.textContent = selectedFile?.name || '';
+                link.className = 'customer-attachment-preview-link';
+                link.title = config.messages.previewAttachment;
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    if (!selectedFile) return;
+
+                    const objectUrl = URL.createObjectURL(selectedFile);
+                    window.openAttachmentPreview?.(
+                        event,
+                        objectUrl,
+                        selectedFile.type,
+                        selectedFile.name,
+                        () => URL.revokeObjectURL(objectUrl)
+                    );
+                });
+                fileCell.appendChild(link);
                 const actionCell = document.createElement('td');
                 const actions = document.createElement('div');
                 actions.className = 'customer-attachment-row-actions';
@@ -1405,6 +1507,8 @@
             addresses = [];
             phones = [];
             existingAttachments = [];
+            attachmentDownloadAllUrl = '';
+            hmeterTransfer = null;
             newAttachments = [];
             removedAttachmentIds = new Set();
             currentStep = 1;
@@ -1423,6 +1527,7 @@
             setPhoneEditorOpen(false);
             renderPhones();
             renderAttachments();
+            renderHmeterTransfer();
             updateIdentityField();
             updateOccupationFields();
             calculateIncome();
@@ -1475,6 +1580,8 @@
                 addresses = result.addresses || [];
                 phones = result.phones || [];
                 existingAttachments = result.attachments || [];
+                attachmentDownloadAllUrl = result.download_all_attachments_url || '';
+                hmeterTransfer = result.hmeter_transfer || null;
                 renderAddresses();
                 renderPhones();
                 renderAttachments();
@@ -1537,6 +1644,8 @@
                 addresses = result.addresses || [];
                 phones = result.phones || [];
                 existingAttachments = result.attachments || [];
+                attachmentDownloadAllUrl = result.download_all_attachments_url || '';
+                hmeterTransfer = result.hmeter_transfer || null;
                 renderAddresses();
                 renderPhones();
                 renderAttachments();
@@ -1551,6 +1660,7 @@
                 form.querySelectorAll('input, select, textarea').forEach((field) => {
                     field.disabled = true;
                 });
+                renderHmeterTransfer();
                 currentStep = 1;
                 maxReachedStep = steps.length;
                 updateStep();
@@ -1580,6 +1690,7 @@
             previousButton.classList.toggle('is-hidden', currentStep === 1);
             nextButton.classList.toggle('is-hidden', currentStep === steps.length);
             saveButton.classList.toggle('is-hidden', currentStep !== steps.length || isViewMode);
+            renderHmeterTransfer();
             document.querySelector('#customerHistoryFormModal .modal-body')?.scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -1666,6 +1777,33 @@
             }
         });
 
+        confirmHmeterTransferButton?.addEventListener('click', async () => {
+            if (!hmeterTransfer?.confirm_url || !window.confirm(config.messages.confirmHmeterTransferPrompt)) return;
+
+            confirmHmeterTransferButton.disabled = true;
+            try {
+                const response = await fetch(hmeterTransfer.confirm_url, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': form.elements.namedItem('_token')?.value || '',
+                    },
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || config.messages.saveFailed);
+
+                hmeterTransfer = result.hmeter_transfer;
+                renderHmeterTransfer();
+                window.showToast?.(result.message);
+                await window.refreshCustomerHistoryList?.(window.location.href);
+            } catch (error) {
+                window.alert(error.message || config.messages.saveFailed);
+            } finally {
+                confirmHmeterTransferButton.disabled = false;
+            }
+        });
+
         identityType?.addEventListener('change', updateIdentityField);
         identityInput?.addEventListener('input', () => {
             if (identityType?.value === '1') {
@@ -1727,6 +1865,7 @@
                 addresses = [];
                 phones = [];
                 existingAttachments = [];
+                attachmentDownloadAllUrl = '';
                 newAttachments = [];
                 removedAttachmentIds = new Set();
                 currentStep = 1;
