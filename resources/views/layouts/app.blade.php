@@ -30,6 +30,35 @@
 
     @include('partials.toast')
 
+    <script>
+        (() => {
+            const nativeFetch = window.fetch.bind(window);
+            let sessionRedirecting = false;
+
+            window.fetch = async (...args) => {
+                const response = await nativeFetch(...args);
+                if (![401, 419].includes(response.status)) return response;
+
+                if (!sessionRedirecting) {
+                    sessionRedirecting = true;
+                    let payload = {};
+                    try {
+                        payload = await response.clone().json();
+                    } catch (error) {
+                        payload = {};
+                    }
+
+                    window.alert(payload.message || @js(__('auth::messages.session_expired')));
+                    const loginUrl = new URL(payload.login_url || @js(route('login')), window.location.origin);
+                    loginUrl.searchParams.set('redirect', `${window.location.pathname}${window.location.search}${window.location.hash}`);
+                    window.location.assign(loginUrl);
+                }
+
+                return new Promise(() => {});
+            };
+        })();
+    </script>
+
     <!-- Global attachment preview modal -->
     <div id="attachmentPreviewModal" class="modal">
         <div class="modal-content modal-lg">

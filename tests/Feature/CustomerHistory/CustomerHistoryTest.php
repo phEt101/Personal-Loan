@@ -153,11 +153,14 @@ class CustomerHistoryTest extends TestCase
             ->assertOk()
             ->assertHeader('content-disposition', "attachment; filename=customer-{$customerNo}-documents.zip");
         $zip = new \ZipArchive;
-        $this->assertTrue($zip->open($download->baseResponse->getFile()->getPathname()));
+        $zipPath = tempnam(sys_get_temp_dir(), 'customer-documents-');
+        file_put_contents($zipPath, $download->streamedContent());
+        $this->assertTrue($zip->open($zipPath));
         $this->assertSame(2, $zip->numFiles);
         $this->assertSame('01-สำเนาบัตรประชาชน.pdf', $zip->getNameIndex(0));
         $this->assertSame('02-สลิปเดือนล่าสุด.jpg', $zip->getNameIndex(1));
         $zip->close();
+        unlink($zipPath);
         $this->actingAs($otherUser)->get($previewUrl)->assertNotFound();
         $this->actingAs($otherUser)->get($downloadAllUrl)->assertNotFound();
 
@@ -172,6 +175,32 @@ class CustomerHistoryTest extends TestCase
 
         $this->assertDatabaseMissing('customer_attachments', ['id' => $attachmentId]);
         $this->assertFalse(Storage::disk('local')->exists($filePath));
+    }
+
+    public function test_download_all_cannot_be_bypassed_when_customer_has_no_available_files(): void
+    {
+        Storage::fake('local');
+        $owner = User::factory()->create(['user_type' => 'external']);
+        $customerNo = 'MOCK000000000104';
+        $this->insertCustomer($customerNo, 'NoFiles', $owner, '2026-10-06 10:00:00');
+        $downloadUrl = route('customer-history.attachments.download-all', $customerNo);
+
+        $this->actingAs($owner)->get($downloadUrl)->assertNotFound();
+
+        DB::table('customer_attachments')->insert([
+            'CustomerNo' => $customerNo,
+            'DocumentName' => 'ไฟล์ที่ไม่มีอยู่จริง',
+            'DocumentTypeId' => DB::table('document_types')->value('id'),
+            'OriginalName' => 'missing.pdf',
+            'FilePath' => "customer-attachments/{$customerNo}/missing.pdf",
+            'MimeType' => 'application/pdf',
+            'FileSize' => 100,
+            'UploadedBy' => $owner->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->get($downloadUrl)->assertNotFound();
     }
 
     public function test_customer_creation_rejects_invalid_or_incomplete_data(): void
@@ -321,7 +350,7 @@ class CustomerHistoryTest extends TestCase
 
         $this->artisan('attachments:purge-transferred')->assertSuccessful();
 
-        Storage::disk('local')->assertMissing($filePath);
+        $this->assertFalse(Storage::disk('local')->exists($filePath));
         $this->assertDatabaseMissing('customer_attachments', ['CustomerNo' => $customerNo]);
         $this->assertNotNull(DB::table('customers')->where('CustomerNo', $customerNo)->value('AttachmentsPurgedAt'));
         Carbon::setTestNow();

@@ -19,13 +19,15 @@ class UserAuthorizationTest extends TestCase
             'role_id' => $this->roleId(Role::ADMIN_SLUG),
             'first_name' => 'ธิดารัตน์',
             'last_name' => 'มูลเทพ',
+            'created_at' => '2026-10-06 04:39:00',
         ]);
 
         $this->actingAs($admin)
             ->get('/settings/users')
             ->assertOk()
             ->assertSee('user-avatar-compact">ธ', false)
-            ->assertSee('user-avatar-large">ธ', false);
+            ->assertSee('user-avatar-large">ธ', false)
+            ->assertSee('06/10/2026 11:39');
     }
 
     public function test_standard_user_is_redirected_from_user_management(): void
@@ -207,5 +209,4 @@ class UserAuthorizationTest extends TestCase
     {
         return Role::query()->where('slug', $slug)->valueOrFail('id');
     }
-
 }

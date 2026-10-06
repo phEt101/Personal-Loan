@@ -15,4 +15,5 @@ return [
     'invalid_credentials' => 'The provided credentials do not match our records.',
     'throttle' => 'Too many login attempts. Please try again later.',
     'logged_out' => 'You have been signed out.',
+    'session_expired' => 'Your session has expired. Please sign in again.',
 ];

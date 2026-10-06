@@ -11,8 +11,13 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function showLogin()
+    public function showLogin(Request $request)
     {
+        $redirectPath = (string) $request->query('redirect', '');
+        if (str_starts_with($redirectPath, '/') && ! str_starts_with($redirectPath, '//')) {
+            $request->session()->put('url.intended', url($redirectPath));
+        }
+
         return view('auth::login');
     }
 
@@ -37,7 +42,7 @@ class AuthController extends Controller
         RateLimiter::clear($this->throttleKey($request));
         $request->session()->regenerate();
 
-        return redirect()->route('customer-history.index');
+        return redirect()->intended(route('customer-history.index'));
     }
 
     public function logout(Request $request)

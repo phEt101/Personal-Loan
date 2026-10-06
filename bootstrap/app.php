@@ -1,8 +1,15 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\SetLocale;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,20 +20,53 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'admin' => EnsureUserIsAdmin::class,
         ]);
         $middleware->prependToPriorityList(
-            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
-            \App\Http\Middleware\SetLocale::class,
+            AuthenticatesRequests::class,
+            SetLocale::class,
         );
         $middleware->prependToPriorityList(
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\EnsureUserIsAdmin::class,
+            SubstituteBindings::class,
+            EnsureUserIsAdmin::class,
         );
         $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
+            SetLocale::class,
         ]);
     })
-    ->withExceptions(function (): void {
-        //
+    ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (AuthenticationException $exception, Request $request) {
+            if (! $request->ajax() && ! $request->expectsJson()) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => __('auth::messages.session_expired'),
+                'login_url' => route('login'),
+            ], 401);
+        });
+
+        $exceptions->render(function (HttpExceptionInterface $exception, Request $request) {
+            if ($exception->getStatusCode() !== 419) {
+                return null;
+            }
+
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => __('auth::messages.session_expired'),
+                    'login_url' => route('login'),
+                ], 419);
+            }
+
+            $loginParameters = [];
+            $referer = $request->headers->get('referer');
+            if ($referer && parse_url($referer, PHP_URL_HOST) === $request->getHost()) {
+                $path = parse_url($referer, PHP_URL_PATH) ?: '/';
+                $query = parse_url($referer, PHP_URL_QUERY);
+                $loginParameters['redirect'] = $path.($query ? '?'.$query : '');
+            }
+
+            return redirect()->route('login', $loginParameters)
+                ->with('status', __('auth::messages.session_expired'));
+        });
     })->create();

@@ -701,8 +701,11 @@
                 (attachment) => !removedAttachmentIds.has(Number(attachment.id))
             );
             if (attachmentDownloadAllButton) {
-                attachmentDownloadAllButton.hidden = !isViewMode || visibleExistingAttachments.length === 0 || !attachmentDownloadAllUrl;
-                attachmentDownloadAllButton.href = attachmentDownloadAllUrl || '#';
+                const canDownloadAll = visibleExistingAttachments.length > 0 && Boolean(attachmentDownloadAllUrl);
+                attachmentDownloadAllButton.hidden = !isViewMode;
+                attachmentDownloadAllButton.href = canDownloadAll ? attachmentDownloadAllUrl : '#';
+                attachmentDownloadAllButton.classList.toggle('is-disabled', !canDownloadAll);
+                attachmentDownloadAllButton.setAttribute('aria-disabled', String(!canDownloadAll));
             }
 
             if (visibleExistingAttachments.length === 0 && newAttachments.length === 0) {
@@ -857,6 +860,11 @@
         };
 
         attachmentAddButton?.addEventListener('click', () => openAttachmentEditor());
+        attachmentDownloadAllButton?.addEventListener('click', (event) => {
+            if (attachmentDownloadAllButton.getAttribute('aria-disabled') === 'true') {
+                event.preventDefault();
+            }
+        });
         attachmentTypeInput?.addEventListener('change', () => {
             const selectedOption = attachmentTypeInput.selectedOptions[0];
             attachmentNameInput.value = selectedOption?.value ?

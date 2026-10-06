@@ -74,7 +74,9 @@
                                         {{ $user->is_active ? __('settings::messages.active') : __('settings::messages.inactive') }}
                                     </span>
                                 </td>
-                                <td data-label="{{ __('settings::messages.created_at') }}">{{ $user->created_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                                <td data-label="{{ __('settings::messages.created_at') }}">
+                                    {{ $user->created_at?->timezone('Asia/Bangkok')->format('d/m/Y H:i') ?? '—' }}
+                                </td>
                                 <td data-label="{{ __('settings::messages.actions') }}">
                                     <div class="settings-user-actions">
                                         <a href="{{ route('settings.users.edit', $user) }}" class="settings-user-action-button">

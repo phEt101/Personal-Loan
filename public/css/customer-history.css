@@ -123,6 +123,12 @@
   margin-bottom: 1rem;
 }
 .customer-attachment-toolbar .action-btn { margin: 0; }
+.customer-attachment-download-all[hidden] { display: none !important; }
+.customer-attachment-download-all.is-disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.45;
+}
 .customer-attachment-row-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .customer-attachment-row-actions button { padding: 0.45rem 0.7rem; }
 
@@ -131,6 +137,10 @@
 #customerHistoryFormModal.is-view-mode .customer-attachment-list th:last-child,
 #customerHistoryFormModal.is-view-mode .customer-attachment-list td:last-child {
   display: none;
+}
+
+#customerHistoryFormModal.is-view-mode .customer-attachment-list td.customer-attachment-empty {
+  display: table-cell !important;
 }
 
 .customer-attachment-row {
