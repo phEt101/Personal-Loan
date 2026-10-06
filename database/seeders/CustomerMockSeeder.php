@@ -68,10 +68,19 @@ class CustomerMockSeeder extends Seeder
         $officePhoneType = DB::table('phone_types')->where('PhoneTypeCode', '02')->value('PhoneTypeCode')
             ?? DB::table('phone_types')->where('PhoneTypeCode', '<>', $mobilePhoneType)->orderBy('PhoneTypeCode')->value('PhoneTypeCode')
             ?? $mobilePhoneType;
-        $systemUserIds = DB::table('users')->orderBy('id')->pluck('id')->shuffle()->values();
+        $systemUserIds = DB::table('users as user')
+            ->join('roles as role', 'role.id', '=', 'user.role_id')
+            ->where('user.employee_code', '<>', 'EMP0001')
+            ->where(function ($query) {
+                $query->where('user.user_type', 'internal')
+                    ->orWhere('role.slug', '<>', 'manager');
+            })
+            ->orderBy('user.employee_code')
+            ->pluck('user.id')
+            ->values();
 
-        if ($systemUserIds->count() < count($names)) {
-            throw new \RuntimeException('Insufficient users for assigning mock customer creators.');
+        if ($systemUserIds->isEmpty()) {
+            throw new \RuntimeException('No eligible users are available for assigning mock customer creators.');
         }
         $mockInsertTimestamps = collect(range(1, count($names)))
             ->map(fn () => random_int(
@@ -200,7 +209,7 @@ class CustomerMockSeeder extends Seeder
                     'Status' => null,
                     'InsertUserId' => 4,
                     'InsertDate' => $insertedAt->toDateString(),
-                    'sysInsertUserId' => $systemUserIds[$index],
+                    'sysInsertUserId' => $systemUserIds[$index % $systemUserIds->count()],
                     'sysInsertDateTime' => $insertedAt,
                 ]);
 

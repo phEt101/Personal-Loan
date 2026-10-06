@@ -22,13 +22,15 @@
             <h3>{{ __('settings::messages.search') }}</h3>
             <form method="GET" action="{{ route('settings.users.index') }}" class="settings-user-search">
                 <input type="hidden" name="per_page" value="{{ $perPage }}">
+                <input type="hidden" name="sort" value="{{ $sort }}">
+                <input type="hidden" name="direction" value="{{ $direction }}">
                 <div class="profile-field">
                     <label for="settings_user_search">{{ __('settings::messages.search') }}</label>
                     <input id="settings_user_search" name="q" type="search" value="{{ $search }}" placeholder="{{ __('settings::messages.search_placeholder') }}">
                 </div>
                 <button type="submit" class="action-btn">{{ __('settings::messages.search') }}</button>
                 @if ($search !== '')
-                    <a href="{{ route('settings.users.index', ['per_page' => $perPage]) }}" class="action-btn outline">{{ __('settings::messages.clear_search') }}</a>
+                    <a href="{{ route('settings.users.index', ['per_page' => $perPage, 'sort' => $sort, 'direction' => $direction]) }}" class="action-btn outline">{{ __('settings::messages.clear_search') }}</a>
                 @endif
             </form>
         </div>
@@ -40,16 +42,38 @@
             </div>
 
             <div class="settings-user-table-wrap">
+                @php
+                    $sortableHeaders = [
+                        'employee_code' => __('settings::messages.employee_code'),
+                        'full_name' => __('settings::messages.full_name'),
+                        'email' => __('settings::messages.email'),
+                        'user_type' => __('settings::messages.user_type'),
+                        'role' => __('settings::messages.role'),
+                        'status' => __('settings::messages.status'),
+                        'created_at' => __('settings::messages.created_at'),
+                    ];
+                    $sortUrl = function (string $column) use ($sort, $direction): string {
+                        $parameters = request()->query();
+                        $parameters['sort'] = $column;
+                        $parameters['direction'] = $sort === $column && $direction === 'asc' ? 'desc' : 'asc';
+                        unset($parameters['page']);
+
+                        return route('settings.users.index', $parameters);
+                    };
+                @endphp
                 <table class="settings-user-table">
                     <thead>
                         <tr>
-                            <th>{{ __('settings::messages.employee_code') }}</th>
-                            <th>{{ __('settings::messages.full_name') }}</th>
-                            <th>{{ __('settings::messages.email') }}</th>
-                            <th>{{ __('settings::messages.user_type') }}</th>
-                            <th>{{ __('settings::messages.role') }}</th>
-                            <th>{{ __('settings::messages.status') }}</th>
-                            <th>{{ __('settings::messages.created_at') }}</th>
+                            @foreach ($sortableHeaders as $column => $label)
+                                <th @if ($sort === $column) aria-sort="{{ $direction === 'asc' ? 'ascending' : 'descending' }}" @endif>
+                                    <a href="{{ $sortUrl($column) }}" class="settings-user-sort-link {{ $sort === $column ? 'is-active' : '' }}">
+                                        <span>{{ $label }}</span>
+                                        <span class="settings-user-sort-icon" aria-hidden="true">
+                                            {{ $sort === $column ? ($direction === 'asc' ? '▲' : '▼') : '↕' }}
+                                        </span>
+                                    </a>
+                                </th>
+                            @endforeach
                             <th>{{ __('settings::messages.actions') }}</th>
                         </tr>
                     </thead>
@@ -112,6 +136,8 @@
                                 @if ($search !== '')
                                     <input type="hidden" name="q" value="{{ $search }}">
                                 @endif
+                                <input type="hidden" name="sort" value="{{ $sort }}">
+                                <input type="hidden" name="direction" value="{{ $direction }}">
                                 <label for="settingsUserPerPage">{{ __('settings::messages.rows_per_page') }}</label>
                                 <select id="settingsUserPerPage" name="per_page" onchange="this.form.submit()">
                                     @foreach ($perPageOptions as $option)

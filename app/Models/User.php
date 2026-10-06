@@ -68,4 +68,9 @@ class User extends Authenticatable
     {
         return $this->role?->slug === Role::ADMIN_SLUG;
     }
+
+    public function isManager(): bool
+    {
+        return $this->role?->slug === Role::MANAGER_SLUG;
+    }
 }

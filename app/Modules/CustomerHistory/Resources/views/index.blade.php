@@ -8,9 +8,11 @@
                 <p>{{ __('customerhistory::messages.index.subtitle') }}</p>
             </div>
             <div class="hero-actions">
-                <button type="button" class="action-btn" id="openCustomerHistoryForm">
-                    {{ __('customerhistory::messages.index.create_button') }}
-                </button>
+                @if ($canCreateCustomer)
+                    <button type="button" class="action-btn" id="openCustomerHistoryForm">
+                        {{ __('customerhistory::messages.index.create_button') }}
+                    </button>
+                @endif
             </div>
         </div>
 
@@ -140,7 +142,7 @@
                     return;
                 }
 
-                const link = event.target.closest('.pagination-link, .customer-history-filter-clear');
+                const link = event.target.closest('.pagination-link, .customer-history-filter-clear, .customer-history-sort-link');
                 if (!link || link.classList.contains('is-disabled')) return;
                 event.preventDefault();
                 window.refreshCustomerHistoryList(link.href, true);

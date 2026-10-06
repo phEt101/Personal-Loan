@@ -12,6 +12,7 @@ return [
     'role' => 'สิทธิ์ผู้ใช้งาน',
     'select_role' => '-- กรุณาเลือก --',
     'role_admin' => 'ผู้ดูแลระบบ',
+    'role_manager' => 'ผู้จัดการ',
     'role_user' => 'ผู้ใช้งานทั่วไป',
     'primary_admin_role_locked' => 'บัญชี EMP0001 ต้องเป็นผู้ดูแลระบบเสมอ',
     'first_name' => 'ชื่อ',

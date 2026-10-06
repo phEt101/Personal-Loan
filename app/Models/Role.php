@@ -12,8 +12,11 @@ class Role extends Model
 
     public const USER_SLUG = 'user';
 
+    public const MANAGER_SLUG = 'manager';
+
     public const SYSTEM_SLUGS = [
         self::ADMIN_SLUG,
+        self::MANAGER_SLUG,
         self::USER_SLUG,
     ];
 

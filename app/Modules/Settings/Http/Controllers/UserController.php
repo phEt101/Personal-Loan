@@ -18,12 +18,17 @@ class UserController extends Controller
     {
         $perPageOptions = [5, 10, 25, 50, 100];
         $perPage = (int) $request->query('per_page', 10);
-        if (!in_array($perPage, $perPageOptions, true)) {
+        if (! in_array($perPage, $perPageOptions, true)) {
             $perPage = 10;
         }
 
         $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
-        $users = User::query()
+        $sortableColumns = ['employee_code', 'full_name', 'email', 'user_type', 'role', 'status', 'created_at'];
+        $sort = in_array($request->query('sort'), $sortableColumns, true)
+            ? (string) $request->query('sort')
+            : 'employee_code';
+        $direction = $request->query('direction') === 'desc' ? 'desc' : 'asc';
+        $usersQuery = User::query()
             ->with('role')
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
@@ -41,7 +46,19 @@ class UserController extends Controller
                         });
                     }
                 });
-            })
+            });
+
+        match ($sort) {
+            'full_name' => $usersQuery->orderBy('first_name', $direction)->orderBy('last_name', $direction),
+            'role' => $usersQuery->orderBy(
+                Role::query()->select('name')->whereColumn('roles.id', 'users.role_id'),
+                $direction
+            ),
+            'status' => $usersQuery->orderBy('is_active', $direction),
+            default => $usersQuery->orderBy($sort, $direction),
+        };
+
+        $users = $usersQuery
             ->orderBy('id')
             ->paginate($perPage)
             ->withQueryString();
@@ -51,6 +68,8 @@ class UserController extends Controller
             'search' => $search,
             'perPage' => $perPage,
             'perPageOptions' => $perPageOptions,
+            'sort' => $sort,
+            'direction' => $direction,
             'paginationPages' => $this->paginationPages($users->currentPage(), $users->lastPage()),
         ]);
     }
@@ -143,9 +162,9 @@ class UserController extends Controller
     {
         abort_if($user->employee_code === 'EMP0001', 422, __('settings::messages.cannot_disable_admin'));
 
-        $user->update(['is_active' => !$user->is_active]);
+        $user->update(['is_active' => ! $user->is_active]);
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             DB::table('sessions')->where('user_id', $user->getKey())->delete();
         }
 

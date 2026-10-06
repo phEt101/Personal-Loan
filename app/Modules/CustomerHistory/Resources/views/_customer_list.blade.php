@@ -2,6 +2,8 @@
     <h3>{{ __('customerhistory::messages.index.filters') }}</h3>
     <form method="GET" action="{{ route('customer-history.index') }}" class="customer-history-filter-form">
         <input type="hidden" name="per_page" value="{{ $perPage }}">
+        <input type="hidden" name="sort" value="{{ $sort }}">
+        <input type="hidden" name="direction" value="{{ $direction }}">
         <div class="customer-history-filter-field customer-history-filter-search">
             <label for="customerHistorySearch">{{ __('customerhistory::messages.index.search') }}</label>
             <input
@@ -33,7 +35,7 @@
         <div class="customer-history-filter-actions">
             <button type="submit" class="action-btn table-action-btn-small">{{ __('customerhistory::messages.index.search') }}</button>
             @if ($hasActiveFilters)
-                <a href="{{ route('customer-history.index', ['per_page' => $perPage]) }}" class="action-btn outline table-action-btn-small customer-history-filter-clear">
+                <a href="{{ route('customer-history.index', ['per_page' => $perPage, 'sort' => $sort, 'direction' => $direction]) }}" class="action-btn outline table-action-btn-small customer-history-filter-clear">
                     {{ __('customerhistory::messages.index.clear_filter') }}
                 </a>
             @endif
@@ -43,26 +45,57 @@
 
 <div class="card card--relative customer-history-list">
     <div class="customer-history-list-header">
-        <h3>{{ $isInternalUser ? __('customerhistory::messages.index.all_customers') : __('customerhistory::messages.index.my_customers') }}</h3>
+        <h3>
+            {{ $isInternalUser
+                ? __('customerhistory::messages.index.all_customers')
+                : ($isExternalManager
+                    ? __('customerhistory::messages.index.external_customers')
+                    : __('customerhistory::messages.index.my_customers')) }}
+        </h3>
         <span class="customer-history-count">{{ number_format($customers->total()) }}</span>
     </div>
 
     <div class="consent-table">
+        @php
+            $sortableHeaders = [
+                'customer_no' => __('customerhistory::messages.index.customer_no'),
+                'customer_name' => __('customerhistory::messages.index.customer_name'),
+                'mobile' => __('customerhistory::messages.index.mobile'),
+            ];
+
+            if ($canViewCreator) {
+                $sortableHeaders['created_by'] = __('customerhistory::messages.index.created_by');
+            }
+
+            $sortableHeaders['created_at'] = __('customerhistory::messages.index.created_at');
+            $sortUrl = function (string $column) use ($sort, $direction): string {
+                $parameters = request()->query();
+                $parameters['sort'] = $column;
+                $parameters['direction'] = $sort === $column && $direction === 'asc' ? 'desc' : 'asc';
+                unset($parameters['page'], $parameters['partial']);
+
+                return route('customer-history.index', $parameters);
+            };
+        @endphp
         <table>
             <thead>
                 <tr>
-                    <th>{{ __('customerhistory::messages.index.customer_no') }}</th>
-                    <th>{{ __('customerhistory::messages.index.customer_name') }}</th>
-                    <th>{{ __('customerhistory::messages.index.mobile') }}</th>
-                    @if ($isInternalUser)
-                        <th>{{ __('customerhistory::messages.index.created_by') }}</th>
-                    @endif
-                    <th>{{ __('customerhistory::messages.index.created_at') }}</th>
+                    @foreach ($sortableHeaders as $column => $label)
+                        <th @if ($sort === $column) aria-sort="{{ $direction === 'asc' ? 'ascending' : 'descending' }}" @endif>
+                            <a href="{{ $sortUrl($column) }}" class="customer-history-sort-link {{ $sort === $column ? 'is-active' : '' }}">
+                                <span>{{ $label }}</span>
+                                <span class="customer-history-sort-icon" aria-hidden="true">
+                                    {{ $sort === $column ? ($direction === 'asc' ? '▲' : '▼') : '↕' }}
+                                </span>
+                            </a>
+                        </th>
+                    @endforeach
                     <th>{{ __('customerhistory::messages.index.actions') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($customers as $customer)
+                    @php($canEditCustomer = $isInternalUser || (! $isExternalManager && (int) $customer->sysInsertUserId === $currentUserId))
                     <tr>
                         <td data-label="{{ __('customerhistory::messages.index.customer_no') }}">{{ $customer->CustomerNo }}</td>
                         <td data-label="{{ __('customerhistory::messages.index.customer_name') }}">
@@ -74,7 +107,7 @@
                             </small>
                         </td>
                         <td data-label="{{ __('customerhistory::messages.index.mobile') }}">{{ $customer->Mobile ?: '-' }}</td>
-                        @if ($isInternalUser)
+                        @if ($canViewCreator)
                             <td data-label="{{ __('customerhistory::messages.index.created_by') }}">
                                 {{ trim(($customer->CreatorFirstname ?? '').' '.($customer->CreatorLastname ?? '')) ?: '-' }}
                                 @if ($customer->CreatorEmployeeCode)
@@ -92,7 +125,7 @@
                             >
                                 {{ __('customerhistory::messages.index.view') }}
                             </button>
-                            @if ($customer->HmeterTransferStatus !== 'transferred')
+                            @if ($canEditCustomer && $customer->HmeterTransferStatus !== 'transferred')
                                 <button
                                     type="button"
                                     class="action-btn outline table-action-btn-small customer-edit-button"
@@ -107,7 +140,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ $isInternalUser ? 6 : 5 }}" class="empty-cell">{{ __('customerhistory::messages.index.no_customers') }}</td>
+                        <td colspan="{{ $canViewCreator ? 6 : 5 }}" class="empty-cell">{{ __('customerhistory::messages.index.no_customers') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -134,6 +167,8 @@
                         @if ($creatorType !== '')
                             <input type="hidden" name="creator_type" value="{{ $creatorType }}">
                         @endif
+                        <input type="hidden" name="sort" value="{{ $sort }}">
+                        <input type="hidden" name="direction" value="{{ $direction }}">
                         <label for="customerHistoryPerPage">{{ __('customerhistory::messages.index.rows_per_page') }}</label>
                         <select id="customerHistoryPerPage" name="per_page">
                             @foreach ($perPageOptions as $option)

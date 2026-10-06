@@ -250,6 +250,41 @@ class CustomerHistoryTest extends TestCase
                 && $customers->total() === 7);
     }
 
+    public function test_customer_list_can_sort_columns_in_both_directions(): void
+    {
+        $internal = User::factory()->create(['user_type' => 'internal']);
+        $this->insertCustomer('MOCK000000000003', 'Charlie', $internal, '2026-09-03 10:00:00');
+        $this->insertCustomer('MOCK000000000001', 'Alpha', $internal, '2026-09-01 10:00:00');
+        $this->insertCustomer('MOCK000000000002', 'Bravo', $internal, '2026-09-02 10:00:00');
+
+        $this->actingAs($internal)
+            ->get('/customer-history')
+            ->assertOk()
+            ->assertSee('aria-sort="descending"', false)
+            ->assertViewHas('customers', fn ($customers) => $customers->pluck('CustomerNo')->all() === [
+                'MOCK000000000003',
+                'MOCK000000000002',
+                'MOCK000000000001',
+            ]);
+
+        $this->get('/customer-history?sort=customer_no&direction=asc')
+            ->assertOk()
+            ->assertSee('aria-sort="ascending"', false)
+            ->assertViewHas('customers', fn ($customers) => $customers->pluck('CustomerNo')->all() === [
+                'MOCK000000000001',
+                'MOCK000000000002',
+                'MOCK000000000003',
+            ]);
+
+        $this->get('/customer-history?sort=customer_no&direction=desc')
+            ->assertOk()
+            ->assertViewHas('customers', fn ($customers) => $customers->pluck('CustomerNo')->all() === [
+                'MOCK000000000003',
+                'MOCK000000000002',
+                'MOCK000000000001',
+            ]);
+    }
+
     public function test_external_user_only_sees_and_can_open_own_customers(): void
     {
         $external = User::factory()->create(['user_type' => 'external']);
@@ -265,6 +300,45 @@ class CustomerHistoryTest extends TestCase
 
         $this->getJson('/customer-history/MOCK000000000001')->assertOk();
         $this->getJson('/customer-history/MOCK000000000002')->assertNotFound();
+    }
+
+    public function test_external_manager_sees_all_external_customers_and_creator_but_not_internal_customers(): void
+    {
+        $manager = User::factory()->create([
+            'user_type' => 'external',
+            'role_id' => DB::table('roles')->where('slug', 'manager')->value('id'),
+        ]);
+        $external = User::factory()->create(['user_type' => 'external']);
+        $internal = User::factory()->create(['user_type' => 'internal']);
+        $this->insertCustomer('MOCK000000000201', 'ManagerOwned', $manager, '2026-09-10 10:00:00');
+        $this->insertCustomer('MOCK000000000202', 'ExternalOwned', $external, '2026-09-11 10:00:00');
+        $this->insertCustomer('MOCK000000000203', 'InternalOwned', $internal, '2026-09-12 10:00:00');
+
+        $this->actingAs($manager)
+            ->get('/customer-history')
+            ->assertOk()
+            ->assertDontSee('id="openCustomerHistoryForm"', false)
+            ->assertViewHas('canViewCreator', true)
+            ->assertViewHas('customers', fn ($customers) => $customers->total() === 2
+                && $customers->pluck('Firstname')->sort()->values()->all() === ['ExternalOwned', 'ManagerOwned']
+                && $customers->every(fn ($customer) => filled($customer->CreatorEmployeeCode)));
+
+        $this->getJson('/customer-history/MOCK000000000202')->assertOk();
+        $this->getJson('/customer-history/MOCK000000000203')->assertNotFound();
+        $this->putJson('/customer-history/MOCK000000000202', $this->customerPayload([
+            'Firstname' => 'ManagerUpdated',
+            'IdentityCardId' => 'PMANAGER202',
+            'Email' => 'manager-updated@example.com',
+        ]))->assertForbidden();
+        $this->assertDatabaseHas('customers', [
+            'CustomerNo' => 'MOCK000000000202',
+            'Firstname' => 'ExternalOwned',
+        ]);
+        $this->postJson('/customer-history', $this->customerPayload([
+            'IdentityCardId' => 'PMANAGERNEW',
+            'Email' => 'manager-new@example.com',
+        ]))->assertForbidden();
+        $this->assertDatabaseMissing('customers', ['Email' => 'manager-new@example.com']);
     }
 
     public function test_internal_user_can_confirm_hmeter_transfer_and_customer_becomes_read_only(): void

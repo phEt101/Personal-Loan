@@ -4,7 +4,10 @@ namespace Tests\Feature\Settings;
 
 use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\CustomerMockSeeder;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -85,6 +88,69 @@ class UserAuthorizationTest extends TestCase
         $this->assertDatabaseHas('users', ['employee_code' => 'EXT0001', 'role_id' => $userRoleId]);
     }
 
+    public function test_database_seeder_creates_three_external_managers(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $managerRoleId = $this->roleId(Role::MANAGER_SLUG);
+
+        foreach ([
+            ['EXT0001', 'phubeth.jul@wipay.co.th', 'ภูเบศ', 'จุลบล'],
+            ['EXT0002', 'wanvisa.rue@wipay.co.th', 'วันวิสาข์', 'เรืองฉิม'],
+            ['EXT0003', 'Yanothai.hem@wipay.co.th', 'ญาโณทัย', 'เหมวัฒน์'],
+        ] as [$employeeCode, $email, $firstName, $lastName]) {
+            $this->assertDatabaseHas('users', [
+                'employee_code' => $employeeCode,
+                'email' => $email,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'user_type' => 'external',
+                'role_id' => $managerRoleId,
+            ]);
+            $this->assertTrue(Hash::check('P@ssw0rd', User::query()->where('employee_code', $employeeCode)->value('password')));
+        }
+
+        $this->assertSame(8, User::query()
+            ->where('user_type', 'external')
+            ->where('role_id', $this->roleId(Role::USER_SLUG))
+            ->whereBetween('employee_code', ['EXT0004', 'EXT0011'])
+            ->count());
+        $this->assertTrue(User::query()
+            ->where('user_type', 'external')
+            ->where('role_id', $this->roleId(Role::USER_SLUG))
+            ->whereBetween('employee_code', ['EXT0004', 'EXT0011'])
+            ->get()
+            ->every(fn (User $user) => Hash::check('P@ssw0rd', $user->password)));
+
+        foreach ([
+            ['EXT0004', 'ธีรศาสนติ์', 'เมธาปัฐวีร์', 'Theerasarn@wipay.co.th'],
+            ['EXT0005', 'ฐิติมา', 'แซ่ลิ้ม', 'Thitima@wipay.co.th'],
+            ['EXT0006', 'นาซือเร๊าะ', 'สาและ', 'Naserah@wipay.co.th'],
+            ['EXT0007', 'วทัญญู', 'กลับสังข์', 'Wathanyu@wipay.co.th'],
+        ] as [$employeeCode, $firstName, $lastName, $email]) {
+            $this->assertDatabaseHas('users', [
+                'employee_code' => $employeeCode,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $email,
+                'user_type' => 'external',
+                'role_id' => $this->roleId(Role::USER_SLUG),
+            ]);
+        }
+
+        $this->seed(CustomerMockSeeder::class);
+        $this->assertSame(10, DB::table('customers')->count());
+        $this->assertSame(0, DB::table('customers as customer')
+            ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+            ->join('roles as role', 'role.id', '=', 'creator.role_id')
+            ->where('creator.user_type', 'external')
+            ->where('role.slug', Role::MANAGER_SLUG)
+            ->count());
+        $this->assertSame(0, DB::table('customers as customer')
+            ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+            ->where('creator.employee_code', 'EMP0001')
+            ->count());
+    }
+
     public function test_user_creation_validates_required_fields_unique_email_and_password_confirmation(): void
     {
         $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG), 'email' => 'taken@example.com']);
@@ -124,33 +190,34 @@ class UserAuthorizationTest extends TestCase
         $this->assertTrue(Hash::check('new-password', $user->password));
     }
 
-    public function test_only_admin_and_user_roles_can_be_assigned(): void
+    public function test_admin_manager_and_user_roles_can_be_assigned(): void
     {
         $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG)]);
-        $managerRole = Role::query()->create([
-            'name' => 'Manager',
-            'slug' => 'manager',
-            'is_active' => true,
-        ]);
+        $managerRoleId = $this->roleId(Role::MANAGER_SLUG);
 
         $this->actingAs($admin)
             ->get('/settings/users/create')
             ->assertOk()
             ->assertSee(__('settings::messages.role_admin'))
+            ->assertSee(__('settings::messages.role_manager'))
             ->assertSee(__('settings::messages.role_user'))
-            ->assertDontSee('Manager');
+            ->assertDontSee('Viewer');
 
         $this->actingAs($admin)->post('/settings/users', [
-            'user_type' => 'internal',
-            'role_id' => $managerRole->id,
+            'user_type' => 'external',
+            'role_id' => $managerRoleId,
             'first_name' => 'Loan',
             'last_name' => 'Manager',
             'email' => 'loan-manager@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ])->assertSessionHasErrors('role_id');
+        ])->assertRedirect('/settings/users');
 
-        $this->assertDatabaseMissing('users', ['email' => 'loan-manager@example.com']);
+        $this->assertDatabaseHas('users', [
+            'email' => 'loan-manager@example.com',
+            'user_type' => 'external',
+            'role_id' => $managerRoleId,
+        ]);
     }
 
     public function test_primary_admin_role_cannot_be_demoted_or_account_disabled(): void
@@ -203,6 +270,31 @@ class UserAuthorizationTest extends TestCase
         $this->actingAs($admin)
             ->get('/settings/users?per_page=5&page=2')
             ->assertOk();
+    }
+
+    public function test_user_list_can_sort_columns_in_both_directions(): void
+    {
+        $admin = User::factory()->create([
+            'employee_code' => 'EMP0001',
+            'role_id' => $this->roleId(Role::ADMIN_SLUG),
+        ]);
+        User::factory()->create(['employee_code' => 'EXT0002']);
+        User::factory()->create(['employee_code' => 'EXT0001']);
+
+        $this->actingAs($admin)
+            ->get('/settings/users')
+            ->assertOk()
+            ->assertSee('aria-sort="ascending"', false)
+            ->assertViewHas('users', fn ($users) => $users->pluck('employee_code')->all() === [
+                'EMP0001', 'EXT0001', 'EXT0002',
+            ]);
+
+        $this->get('/settings/users?sort=employee_code&direction=desc')
+            ->assertOk()
+            ->assertSee('aria-sort="descending"', false)
+            ->assertViewHas('users', fn ($users) => $users->pluck('employee_code')->all() === [
+                'EXT0002', 'EXT0001', 'EMP0001',
+            ]);
     }
 
     private function roleId(string $slug): int

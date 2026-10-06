@@ -1,11 +1,13 @@
 <?php
 
 return [
+    'manager_read_only' => 'External managers have read-only access and cannot create or edit customer records.',
     'index' => [
         'page_title' => 'Customer History',
         'subtitle' => 'Customer records for review and internal management',
         'create_button' => '+ Add Customer History',
         'all_customers' => 'All customers in the system',
+        'external_customers' => 'Customers added by external users',
         'my_customers' => 'Customers added by you',
         'customer_no' => 'Customer No.',
         'customer_name' => 'Full name',

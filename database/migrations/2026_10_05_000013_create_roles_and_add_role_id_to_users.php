@@ -32,6 +32,14 @@ return new class extends Migration
                 'updated_at' => $now,
             ],
             [
+                'name' => 'Manager',
+                'slug' => 'manager',
+                'description' => 'Can view customer records created by external users.',
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
                 'name' => 'Standard user',
                 'slug' => 'user',
                 'description' => 'Standard access to the application.',

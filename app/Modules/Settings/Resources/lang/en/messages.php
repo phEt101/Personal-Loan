@@ -12,6 +12,7 @@ return [
     'role' => 'Role',
     'select_role' => '-- Please select --',
     'role_admin' => 'Administrator',
+    'role_manager' => 'Manager',
     'role_user' => 'Standard user',
     'primary_admin_role_locked' => 'The EMP0001 account must always remain an administrator.',
     'first_name' => 'First name',

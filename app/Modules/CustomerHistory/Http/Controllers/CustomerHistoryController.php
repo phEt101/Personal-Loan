@@ -2,7 +2,9 @@
 
 namespace App\Modules\CustomerHistory\Http\Controllers;
 
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,6 +25,9 @@ class CustomerHistoryController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        $isInternalUser = $user->user_type === 'internal';
+        $isExternalManager = $user->user_type === 'external' && $user->isManager();
+        $canViewCreator = $isInternalUser || $isExternalManager;
         $perPageOptions = [5, 10, 25, 50, 100];
         $perPage = (int) $request->query('per_page', 10);
 
@@ -36,11 +41,12 @@ class CustomerHistoryController extends Controller
                 'customer.Firstname',
                 'customer.Lastname',
                 'customer.Mobile',
+                'customer.sysInsertUserId',
                 'customer.sysInsertDateTime',
                 'customer.HmeterTransferStatus',
             ]);
 
-        if ($user->user_type === 'external') {
+        if (! $canViewCreator) {
             $customersQuery->where('customer.sysInsertUserId', $user->getAuthIdentifier());
         } else {
             $customersQuery
@@ -50,15 +56,29 @@ class CustomerHistoryController extends Controller
                     'creator.first_name as CreatorFirstname',
                     'creator.last_name as CreatorLastname',
                 ]);
+
+            if ($isExternalManager) {
+                $customersQuery->where('creator.user_type', 'external');
+            }
         }
 
         $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
         $dateFrom = $this->validDateFilter($request->query('date_from'));
         $dateTo = $this->validDateFilter($request->query('date_to'));
-        $creatorType = $user->user_type === 'internal'
+        $creatorType = $isInternalUser
             && in_array($request->query('creator_type'), ['internal', 'external'], true)
                 ? $request->query('creator_type')
                 : '';
+        $allowedSorts = ['customer_no', 'customer_name', 'mobile', 'created_at'];
+
+        if ($canViewCreator) {
+            $allowedSorts[] = 'created_by';
+        }
+
+        $sort = in_array($request->query('sort'), $allowedSorts, true)
+            ? $request->query('sort')
+            : 'created_at';
+        $direction = $request->query('direction') === 'asc' ? 'asc' : 'desc';
 
         if ($dateFrom !== '') {
             $customersQuery->whereDate('customer.sysInsertDateTime', '>=', $dateFrom);
@@ -73,7 +93,7 @@ class CustomerHistoryController extends Controller
         }
 
         if ($search !== '') {
-            $customersQuery->where(function ($query) use ($search, $user) {
+            $customersQuery->where(function ($query) use ($search, $canViewCreator) {
                 $query
                     ->where('customer.CustomerNo', 'like', "%{$search}%")
                     ->orWhere('customer.Firstname', 'like', "%{$search}%")
@@ -88,7 +108,7 @@ class CustomerHistoryController extends Controller
                     });
                 }
 
-                if ($user->user_type === 'internal') {
+                if ($canViewCreator) {
                     $query
                         ->orWhere('creator.employee_code', 'like', "%{$search}%")
                         ->orWhere('creator.first_name', 'like', "%{$search}%")
@@ -97,22 +117,40 @@ class CustomerHistoryController extends Controller
             });
         }
 
+        match ($sort) {
+            'customer_no' => $customersQuery->orderBy('customer.CustomerNo', $direction),
+            'customer_name' => $customersQuery
+                ->orderBy('customer.Firstname', $direction)
+                ->orderBy('customer.Lastname', $direction),
+            'mobile' => $customersQuery->orderBy('customer.Mobile', $direction),
+            'created_by' => $customersQuery
+                ->orderBy('creator.first_name', $direction)
+                ->orderBy('creator.last_name', $direction)
+                ->orderBy('creator.employee_code', $direction),
+            default => $customersQuery->orderBy('customer.sysInsertDateTime', $direction),
+        };
+
         $customers = $customersQuery
-            ->orderByDesc('customer.sysInsertDateTime')
-            ->orderByDesc('customer.id')
+            ->orderBy('customer.id', $direction)
             ->paginate($perPage)
             ->withQueryString();
 
         $customerListData = [
             'customers' => $customers,
             'paginationPages' => $this->paginationPages($customers->currentPage(), $customers->lastPage()),
-            'isInternalUser' => $user->user_type === 'internal',
+            'isInternalUser' => $isInternalUser,
+            'isExternalManager' => $isExternalManager,
+            'canViewCreator' => $canViewCreator,
+            'canCreateCustomer' => ! $isExternalManager,
+            'currentUserId' => (int) $user->getAuthIdentifier(),
             'perPage' => $perPage,
             'perPageOptions' => $perPageOptions,
             'search' => $search,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'creatorType' => $creatorType,
+            'sort' => $sort,
+            'direction' => $direction,
             'hasActiveFilters' => $search !== '' || $dateFrom !== '' || $dateTo !== '' || $creatorType !== '',
         ];
 
@@ -332,9 +370,7 @@ class CustomerHistoryController extends Controller
                 'transfer_user.last_name as HmeterTransferredByLastname',
             ]);
 
-        if ($user->user_type === 'external') {
-            $customerQuery->where('customer.sysInsertUserId', $user->getAuthIdentifier());
-        }
+        $this->restrictCustomerReadAccess($customerQuery, $user, 'customer');
 
         $customer = $customerQuery->firstOrFail();
 
@@ -382,9 +418,7 @@ class CustomerHistoryController extends Controller
         $record = DB::table('customer_attachments')->where('id', $attachment)->firstOrFail();
         $customerQuery = DB::table('customers')->where('CustomerNo', $record->CustomerNo);
 
-        if ($request->user()->user_type === 'external') {
-            $customerQuery->where('sysInsertUserId', $request->user()->getAuthIdentifier());
-        }
+        $this->restrictCustomerReadAccess($customerQuery, $request->user());
 
         $customerQuery->firstOrFail();
         /** @var FilesystemAdapter $disk */
@@ -398,9 +432,7 @@ class CustomerHistoryController extends Controller
     {
         $customerQuery = DB::table('customers')->where('CustomerNo', $customerNo);
 
-        if ($request->user()->user_type === 'external') {
-            $customerQuery->where('sysInsertUserId', $request->user()->getAuthIdentifier());
-        }
+        $this->restrictCustomerReadAccess($customerQuery, $request->user());
 
         $customerQuery->firstOrFail();
         $attachments = DB::table('customer_attachments')
@@ -497,6 +529,12 @@ class CustomerHistoryController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        if ($request->user()->user_type === 'external' && $request->user()->isManager()) {
+            return response()->json([
+                'message' => __('customerhistory::messages.manager_read_only'),
+            ], 403);
+        }
+
         foreach (['MonthlyIncomeAmount', 'MonthlyExpenseAmount', 'YearlyBonusAmount'] as $field) {
             if ($request->filled($field)) {
                 $request->merge([$field => str_replace(',', '', (string) $request->input($field))]);
@@ -801,6 +839,12 @@ class CustomerHistoryController extends Controller
 
     public function update(Request $request, string $customerNo): JsonResponse
     {
+        if ($request->user()->user_type === 'external' && $request->user()->isManager()) {
+            return response()->json([
+                'message' => __('customerhistory::messages.manager_read_only'),
+            ], 403);
+        }
+
         $customerQuery = DB::table('customers')->where('CustomerNo', $customerNo);
         if ($request->user()->user_type === 'external') {
             $customerQuery->where('sysInsertUserId', $request->user()->getAuthIdentifier());
@@ -1037,6 +1081,23 @@ class CustomerHistoryController extends Controller
     private function utcDateTime(mixed $value): ?string
     {
         return $value ? Carbon::parse((string) $value, 'UTC')->toISOString() : null;
+    }
+
+    private function restrictCustomerReadAccess(Builder $query, User $user, string $table = 'customers'): void
+    {
+        if ($user->user_type === 'internal') {
+            return;
+        }
+
+        if ($user->isManager()) {
+            $query->whereIn("{$table}.sysInsertUserId", DB::table('users')
+                ->where('user_type', 'external')
+                ->select('id'));
+
+            return;
+        }
+
+        $query->where("{$table}.sysInsertUserId", $user->getAuthIdentifier());
     }
 
     private function isValidThaiNationalId(string $identity): bool
