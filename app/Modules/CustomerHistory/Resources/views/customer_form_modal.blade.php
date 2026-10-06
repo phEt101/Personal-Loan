@@ -713,7 +713,18 @@
                 const empty = document.createElement('td');
                 empty.colSpan = 5;
                 empty.className = 'customer-attachment-empty';
-                empty.textContent = config.messages.noAttachments;
+                const purgedAt = hmeterTransfer?.attachments_purged_at;
+
+                if (purgedAt) {
+                    empty.classList.add('is-purged');
+                    const message = document.createElement('strong');
+                    message.textContent = config.messages.attachmentsPurgedEmpty;
+                    const removedAt = document.createElement('small');
+                    removedAt.textContent = `${config.messages.attachmentsPurgedAt} ${formatTransferDateTime(purgedAt)}`;
+                    empty.append(message, removedAt);
+                } else {
+                    empty.textContent = config.messages.noAttachments;
+                }
                 row.appendChild(empty);
                 attachmentRows.appendChild(row);
             }

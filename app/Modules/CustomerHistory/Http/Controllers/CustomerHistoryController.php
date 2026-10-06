@@ -264,6 +264,8 @@ class CustomerHistoryController extends Controller
                     'transferredAt' => __('customerhistory::messages.transfer.transferred_at'),
                     'attachmentsPurgeAfter' => __('customerhistory::messages.transfer.attachments_purge_after'),
                     'attachmentsPurged' => __('customerhistory::messages.transfer.attachments_purged'),
+                    'attachmentsPurgedEmpty' => __('customerhistory::messages.form.attachments.purged_empty'),
+                    'attachmentsPurgedAt' => __('customerhistory::messages.form.attachments.purged_at'),
                 ],
             ],
         ]));

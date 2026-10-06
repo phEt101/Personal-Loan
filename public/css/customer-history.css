@@ -160,6 +160,24 @@
   text-align: center !important;
 }
 
+.customer-attachment-list td.customer-attachment-empty.is-purged {
+  padding: 1.15rem;
+  border-radius: 0.75rem;
+  background: #fff7e8;
+  color: #a46000;
+}
+
+.customer-attachment-empty.is-purged strong,
+.customer-attachment-empty.is-purged small {
+  display: block;
+}
+
+.customer-attachment-empty.is-purged small {
+  margin-top: 0.35rem;
+  color: #7b6b54;
+  font-size: 0.82rem;
+}
+
 .customer-form-step {
   display: none;
 }

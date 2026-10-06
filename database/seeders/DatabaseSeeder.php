@@ -76,6 +76,46 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        $externalManagers = [
+            [
+                'employee_code' => 'EXT0001',
+                'first_name' => 'ภูเบศ',
+                'last_name' => 'จุลบล',
+                'email' => 'phubeth.jul@wipay.co.th',
+            ],
+            [
+                'employee_code' => 'EXT0002',
+                'first_name' => 'วันวิสาข์',
+                'last_name' => 'เรืองฉิม',
+                'email' => 'wanvisa.rue@wipay.co.th',
+            ],
+            [
+                'employee_code' => 'EXT0003',
+                'first_name' => 'ญาโณทัย',
+                'last_name' => 'เหมวัฒน์',
+                'email' => 'Yanothai.hem@wipay.co.th',
+            ],
+        ];
+
+        User::query()
+            ->whereIn('employee_code', collect($externalManagers)->pluck('employee_code'))
+            ->get()
+            ->each(fn (User $user) => $user->update([
+                'email' => strtolower($user->employee_code).'@seed-temp.invalid',
+            ]));
+
+        foreach ($externalManagers as $externalManager) {
+            User::query()->updateOrCreate(
+                ['employee_code' => $externalManager['employee_code']],
+                $externalManager + [
+                    'user_type' => 'external',
+                    'role_id' => $managerRoleId,
+                    'password' => Hash::make('P@ssw0rd'),
+                    'note' => 'ผู้จัดการภายนอก Wipay',
+                ]
+            );
+        }
+
         $externalUsers = [
             [
                 'employee_code' => 'EXT0004',
@@ -133,44 +173,5 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        $externalManagers = [
-            [
-                'employee_code' => 'EXT0001',
-                'first_name' => 'ภูเบศ',
-                'last_name' => 'จุลบล',
-                'email' => 'phubeth.jul@wipay.co.th',
-            ],
-            [
-                'employee_code' => 'EXT0002',
-                'first_name' => 'วันวิสาข์',
-                'last_name' => 'เรืองฉิม',
-                'email' => 'wanvisa.rue@wipay.co.th',
-            ],
-            [
-                'employee_code' => 'EXT0003',
-                'first_name' => 'ญาโณทัย',
-                'last_name' => 'เหมวัฒน์',
-                'email' => 'Yanothai.hem@wipay.co.th',
-            ],
-        ];
-
-        User::query()
-            ->whereIn('employee_code', collect($externalManagers)->pluck('employee_code'))
-            ->get()
-            ->each(fn (User $user) => $user->update([
-                'email' => strtolower($user->employee_code).'@seed-temp.invalid',
-            ]));
-
-        foreach ($externalManagers as $externalManager) {
-            User::query()->updateOrCreate(
-                ['employee_code' => $externalManager['employee_code']],
-                $externalManager + [
-                    'user_type' => 'external',
-                    'role_id' => $managerRoleId,
-                    'password' => Hash::make('P@ssw0rd'),
-                    'note' => 'ผู้จัดการภายนอก Wipay',
-                ]
-            );
-        }
     }
 }

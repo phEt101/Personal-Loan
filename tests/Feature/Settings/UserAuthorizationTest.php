@@ -114,6 +114,10 @@ class UserAuthorizationTest extends TestCase
             ->where('role_id', $this->roleId(Role::USER_SLUG))
             ->whereBetween('employee_code', ['EXT0004', 'EXT0011'])
             ->count());
+        $this->assertLessThan(
+            User::query()->where('employee_code', 'EXT0004')->valueOrFail('id'),
+            User::query()->where('employee_code', 'EXT0003')->valueOrFail('id')
+        );
         $this->assertTrue(User::query()
             ->where('user_type', 'external')
             ->where('role_id', $this->roleId(Role::USER_SLUG))

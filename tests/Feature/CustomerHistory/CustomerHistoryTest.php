@@ -79,6 +79,10 @@ class CustomerHistoryTest extends TestCase
 
         $config = json_decode($matches[1], true, 512, JSON_THROW_ON_ERROR);
         $this->assertArrayHasKey('attachmentTypes', $config);
+        $this->assertSame(
+            __('customerhistory::messages.form.attachments.purged_empty'),
+            $config['messages']['attachmentsPurgedEmpty']
+        );
     }
 
     public function test_customer_number_is_generated_uniquely_by_the_system(): void

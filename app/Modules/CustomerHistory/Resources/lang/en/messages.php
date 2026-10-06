@@ -211,6 +211,8 @@ return [
             'help' => 'PDF, JPG, and PNG files up to 10 MB each are supported. Multiple files may be selected.',
             'existing_files' => 'Uploaded files',
             'no_files' => 'No attachments yet',
+            'purged_empty' => 'Attachments were removed according to the file retention policy.',
+            'purged_at' => 'Removed at',
             'remove' => 'Remove file',
             'document_name' => 'Document name',
             'document_type' => 'Document type',
