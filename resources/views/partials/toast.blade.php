@@ -8,11 +8,12 @@
         const message = document.getElementById('appToastMessage');
         let dismissTimer;
 
-        window.showToast = (text) => {
+        window.showToast = (text, type = 'success') => {
             if (!toast || !message || !text) return;
 
             window.clearTimeout(dismissTimer);
             message.textContent = text;
+            toast.classList.toggle('is-error', type === 'error');
             toast.hidden = false;
             requestAnimationFrame(() => toast.classList.add('is-visible'));
             dismissTimer = window.setTimeout(() => {
@@ -21,6 +22,9 @@
             }, 4000);
         };
 
-        window.showToast(@json(session('status')));
+        window.showToast(
+            @json($toastMessage ?? session('status')),
+            @json($toastType ?? 'success')
+        );
     })();
 </script>

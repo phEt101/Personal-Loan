@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Settings\Http\Controllers\ResponsibilityGroupController;
 use App\Modules\Settings\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,4 +11,6 @@ Route::middleware(['web', 'auth', 'admin'])->prefix('settings')->name('settings.
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::patch('/users/{user}/active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::resource('responsibility-groups', ResponsibilityGroupController::class)
+        ->except(['show', 'destroy']);
 });

@@ -3,6 +3,7 @@
 namespace App\Modules\CustomerHistory\Http\Controllers;
 
 use App\Models\User;
+use App\Modules\CustomerHistory\Services\CustomerAccessService;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
@@ -16,6 +17,8 @@ class CustomerHistoryController extends Controller
     private const PER_PAGE_OPTIONS = [5, 10, 25, 50, 100];
 
     private const DEFAULT_PER_PAGE = 10;
+
+    public function __construct(private readonly CustomerAccessService $customerAccess) {}
 
     public function index(Request $request)
     {
@@ -96,21 +99,17 @@ class CustomerHistoryController extends Controller
                 'customer.HmeterTransferStatus',
             ]);
 
-        if (! $access['canViewCreator']) {
-            return $query->where('customer.sysInsertUserId', $user->getAuthIdentifier());
+        if ($access['canViewCreator']) {
+            $query
+                ->leftJoin('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+                ->addSelect([
+                    'creator.employee_code as CreatorEmployeeCode',
+                    'creator.first_name as CreatorFirstname',
+                    'creator.last_name as CreatorLastname',
+                ]);
         }
 
-        $query
-            ->leftJoin('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
-            ->addSelect([
-                'creator.employee_code as CreatorEmployeeCode',
-                'creator.first_name as CreatorFirstname',
-                'creator.last_name as CreatorLastname',
-            ]);
-
-        if ($access['isExternalManager']) {
-            $query->where('creator.user_type', 'external');
-        }
+        $this->customerAccess->applyReadScope($query, $user, 'customer');
 
         return $query;
     }

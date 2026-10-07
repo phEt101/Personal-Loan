@@ -98,6 +98,21 @@ class LoginTest extends TestCase
             ->assertSee(__('auth::messages.logged_out'));
     }
 
+    public function test_invalid_credentials_are_rendered_as_error_toast(): void
+    {
+        $this->from('/login')->post('/login', [
+            'email' => 'missing@example.com',
+            'password' => 'wrong-password',
+        ])->assertRedirect('/login');
+
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee(__('auth::messages.invalid_credentials'))
+            ->assertSee('window.showToast(', false)
+            ->assertSee('"error"', false)
+            ->assertDontSee('auth-alert-error', false);
+    }
+
     public function test_user_returns_to_requested_page_after_signing_in_again(): void
     {
         $user = User::factory()->create([

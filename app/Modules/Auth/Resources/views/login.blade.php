@@ -39,12 +39,6 @@
                 </div>
             </div>
 
-            @if ($errors->any())
-                <div class="auth-alert auth-alert-error">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
             <form method="POST" action="{{ route('login.attempt') }}" class="auth-form">
                 @csrf
 
@@ -83,6 +77,9 @@
         </section>
     </main>
 
-    @include('partials.toast')
+    @include('partials.toast', [
+        'toastMessage' => $errors->first() ?: session('status'),
+        'toastType' => $errors->any() ? 'error' : 'success',
+    ])
 </body>
 </html>

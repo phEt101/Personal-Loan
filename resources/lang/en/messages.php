@@ -17,10 +17,11 @@ return [
         'settings' => 'Settings',
         'add_user' => 'Add User',
         'users' => 'User Management',
+        'responsibility_groups' => 'Responsibility Groups',
         'consent_review' => 'Consent Review',
     ],
     'language' => [
         'th' => 'TH',
         'en' => 'EN',
-    ]
+    ],
 ];

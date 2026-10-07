@@ -22,6 +22,13 @@
     transform: translateY(0);
 }
 
+.app-toast.is-error {
+    border-color: #f3b4b4;
+    background: #fff0f0;
+    box-shadow: 0 12px 28px rgba(153, 27, 27, 0.14);
+    color: #c43d3d;
+}
+
 @media (max-width: 640px) {
     .app-toast {
         top: 0.75rem;

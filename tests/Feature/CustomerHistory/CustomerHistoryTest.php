@@ -230,6 +230,15 @@ class CustomerHistoryTest extends TestCase
     {
         $internal = User::factory()->create(['user_type' => 'internal']);
         $external = User::factory()->create(['user_type' => 'external']);
+        $groupId = DB::table('responsibility_groups')->insertGetId([
+            'name' => 'Search Team',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        User::query()->whereKey([$internal->id, $external->id])
+            ->update(['responsibility_group_id' => $groupId]);
+        $internal->refresh();
         $this->insertCustomer('MOCK000000000001', 'Needle', $external, '2026-09-10 10:00:00');
 
         foreach (range(2, 7) as $number) {
@@ -304,6 +313,40 @@ class CustomerHistoryTest extends TestCase
 
         $this->getJson('/customer-history/MOCK000000000001')->assertOk();
         $this->getJson('/customer-history/MOCK000000000002')->assertNotFound();
+    }
+
+    public function test_internal_user_only_accesses_external_customers_in_assigned_groups(): void
+    {
+        $internal = User::factory()->create(['user_type' => 'internal']);
+        $assignedExternal = User::factory()->create(['user_type' => 'external']);
+        $otherExternal = User::factory()->create(['user_type' => 'external']);
+        $otherInternal = User::factory()->create(['user_type' => 'internal']);
+        $groupId = DB::table('responsibility_groups')->insertGetId([
+            'name' => 'Team A',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        User::query()->whereKey([$internal->id, $assignedExternal->id])
+            ->update(['responsibility_group_id' => $groupId]);
+        $internal->refresh();
+
+        $this->insertCustomer('MOCK000000000301', 'Assigned', $assignedExternal, '2026-09-10 10:00:00');
+        $this->insertCustomer('MOCK000000000302', 'Hidden', $otherExternal, '2026-09-11 10:00:00');
+        $this->insertCustomer('MOCK000000000303', 'Internal', $otherInternal, '2026-09-12 10:00:00');
+
+        $this->actingAs($internal)
+            ->get('/customer-history')
+            ->assertOk()
+            ->assertViewHas('customers', fn ($customers) => $customers->pluck('CustomerNo')->sort()->values()->all() === [
+                'MOCK000000000301',
+                'MOCK000000000303',
+            ]);
+
+        $this->getJson('/customer-history/MOCK000000000301')->assertOk();
+        $this->getJson('/customer-history/MOCK000000000302')->assertNotFound();
+        $this->getJson('/customer-history/MOCK000000000303')->assertOk();
+        $this->patchJson('/customer-history/MOCK000000000302/hmeter-transfer')->assertNotFound();
     }
 
     public function test_external_manager_sees_all_external_customers_and_creator_but_not_internal_customers(): void

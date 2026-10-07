@@ -36,6 +36,10 @@
                             <span class="nav-subitem-dot" aria-hidden="true"></span>
                             <span>{{ __('messages.nav.users') }}</span>
                         </a>
+                        <a href="{{ route('settings.responsibility-groups.index') }}" class="nav-subitem {{ Request::routeIs('settings.responsibility-groups.*') ? 'active' : '' }}">
+                            <span class="nav-subitem-dot" aria-hidden="true"></span>
+                            <span>{{ __('messages.nav.responsibility_groups') }}</span>
+                        </a>
                     </div>
                 </details>
             @endif

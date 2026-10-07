@@ -173,5 +173,6 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        $this->call(ResponsibilityGroupSeeder::class);
     }
 }

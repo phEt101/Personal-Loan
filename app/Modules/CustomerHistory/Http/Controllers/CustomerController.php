@@ -3,6 +3,7 @@
 namespace App\Modules\CustomerHistory\Http\Controllers;
 
 use App\Models\User;
+use App\Modules\CustomerHistory\Services\CustomerAccessService;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -21,6 +22,8 @@ class CustomerController extends Controller
     private const TRANSFERRED = 'transferred';
 
     private const ATTACHMENT_RETENTION_DAYS = 30;
+
+    public function __construct(private readonly CustomerAccessService $customerAccess) {}
 
     public function districts(Request $request): JsonResponse
     {
@@ -145,19 +148,23 @@ class CustomerController extends Controller
         abort_unless($request->user()->user_type === 'internal', 403);
 
         $now = now();
-        $updated = DB::table('customers')
+        $customerQuery = DB::table('customers')
             ->where('CustomerNo', $customerNo)
-            ->where('HmeterTransferStatus', self::TRANSFER_PENDING)
-            ->update([
-                'HmeterTransferStatus' => self::TRANSFERRED,
-                'HmeterTransferredAt' => $now,
-                'HmeterTransferredBy' => $request->user()->getAuthIdentifier(),
-                'AttachmentPurgeAfter' => $now->copy()->addDays(self::ATTACHMENT_RETENTION_DAYS),
-                'AttachmentsPurgedAt' => null,
-            ]);
+            ->where('HmeterTransferStatus', self::TRANSFER_PENDING);
+        $this->customerAccess->applyReadScope($customerQuery, $request->user());
+
+        $updated = $customerQuery->update([
+            'HmeterTransferStatus' => self::TRANSFERRED,
+            'HmeterTransferredAt' => $now,
+            'HmeterTransferredBy' => $request->user()->getAuthIdentifier(),
+            'AttachmentPurgeAfter' => $now->copy()->addDays(self::ATTACHMENT_RETENTION_DAYS),
+            'AttachmentsPurgedAt' => null,
+        ]);
 
         if ($updated === 0) {
-            abort_unless(DB::table('customers')->where('CustomerNo', $customerNo)->exists(), 404);
+            $accessibleCustomer = DB::table('customers')->where('CustomerNo', $customerNo);
+            $this->customerAccess->applyReadScope($accessibleCustomer, $request->user());
+            abort_unless($accessibleCustomer->exists(), 404);
 
             return response()->json([
                 'message' => __('customerhistory::messages.transfer.already_transferred'),
@@ -276,9 +283,7 @@ class CustomerController extends Controller
         }
 
         $customerQuery = DB::table('customers')->where('CustomerNo', $customerNo);
-        if ($request->user()->user_type === 'external') {
-            $customerQuery->where('sysInsertUserId', $request->user()->getAuthIdentifier());
-        }
+        $this->customerAccess->applyReadScope($customerQuery, $request->user());
 
         $customer = $customerQuery->firstOrFail();
         if ($customer->HmeterTransferStatus === self::TRANSFERRED) {
@@ -769,19 +774,7 @@ class CustomerController extends Controller
 
     private function restrictCustomerReadAccess(Builder $query, User $user, string $table = 'customers'): void
     {
-        if ($user->user_type === 'internal') {
-            return;
-        }
-
-        if ($user->isManager()) {
-            $query->whereIn("{$table}.sysInsertUserId", DB::table('users')
-                ->where('user_type', 'external')
-                ->select('id'));
-
-            return;
-        }
-
-        $query->where("{$table}.sysInsertUserId", $user->getAuthIdentifier());
+        $this->customerAccess->applyReadScope($query, $user, $table);
     }
 
     private function isValidThaiNationalId(string $identity): bool
