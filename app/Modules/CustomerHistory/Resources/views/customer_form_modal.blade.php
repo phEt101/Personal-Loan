@@ -1725,7 +1725,7 @@
                 window.alert(phoneRequiredMessage);
                 return;
             }
-            if (currentStep === 5) {
+            if (!isViewMode && currentStep === 5) {
                 const hasAttachment = newAttachments.length > 0 || existingAttachments.some(
                     (attachment) => !removedAttachmentIds.has(Number(attachment.id))
                 );

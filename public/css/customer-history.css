@@ -1158,10 +1158,13 @@ body .consent-table td {
 
 .settings-user-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .settings-user-card {
+  min-width: 0;
   padding: 2rem;
   border: 1px solid var(--consent-line);
   border-radius: 1.25rem;
@@ -1215,6 +1218,9 @@ body .consent-table td {
 }
 
 .settings-user-table-wrap {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
 }
 
