@@ -32,6 +32,19 @@
                 </select>
             </div>
         @endif
+        @if ($canViewCreator)
+            <div class="customer-history-filter-field">
+                <label for="customerHistoryCreator">{{ __('customerhistory::messages.index.created_by') }}</label>
+                <select id="customerHistoryCreator" name="creator_id">
+                    <option value="">{{ __('customerhistory::messages.index.creator_all') }}</option>
+                    @foreach ($creatorOptions as $creator)
+                        <option value="{{ $creator->id }}" @selected((int) $creatorId === (int) $creator->id)>
+                            {{ $creator->employee_code }} — {{ trim($creator->first_name.' '.$creator->last_name) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
         <div class="customer-history-filter-actions">
             <button type="submit" class="action-btn table-action-btn-small">{{ __('customerhistory::messages.index.search') }}</button>
             @if ($hasActiveFilters)
@@ -89,6 +102,9 @@
                                 </span>
                             </a>
                         </th>
+                        @if ($column === 'created_by' && $isInternalUser)
+                            <th>{{ __('customerhistory::messages.index.work_source') }}</th>
+                        @endif
                     @endforeach
                     <th>{{ __('customerhistory::messages.index.actions') }}</th>
                 </tr>
@@ -115,7 +131,23 @@
                                 @endif
                             </td>
                         @endif
-                        <td data-label="{{ __('customerhistory::messages.index.created_at') }}">{{ $customer->sysInsertDateTime ? \Carbon\Carbon::parse($customer->sysInsertDateTime)->format('d/m/Y H:i') : '-' }}</td>
+                        @if ($isInternalUser)
+                            <td data-label="{{ __('customerhistory::messages.index.work_source') }}">
+                                @if ($customer->WorkSourceType === 'delegated')
+                                    <span class="delegation-status delegation-status--active">
+                                        {{ __('customerhistory::messages.index.delegated_group', ['group' => $customer->CreatorGroupName]) }}
+                                    </span>
+                                    <small class="customer-history-employee-code">
+                                        {{ __('customerhistory::messages.index.delegated_by', ['name' => $customer->DelegatedByName]) }}
+                                    </small>
+                                @elseif ($customer->WorkSourceType === 'group')
+                                    <span class="delegation-status">{{ __('customerhistory::messages.index.regular_group', ['group' => $customer->CreatorGroupName]) }}</span>
+                                @else
+                                    {{ __('customerhistory::messages.index.internal_work') }}
+                                @endif
+                            </td>
+                        @endif
+                        <td data-label="{{ __('customerhistory::messages.index.created_at') }}">{{ $customer->sysInsertDateTime ? \Carbon\Carbon::parse($customer->sysInsertDateTime, 'UTC')->timezone(config('app.local_timezone'))->format('d/m/Y H:i') : '-' }}</td>
                         <td data-label="{{ __('customerhistory::messages.index.actions') }}">
                             <div class="customer-history-row-actions">
                             <button
@@ -140,7 +172,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ $canViewCreator ? 6 : 5 }}" class="empty-cell">{{ __('customerhistory::messages.index.no_customers') }}</td>
+                        <td colspan="{{ ($canViewCreator ? 6 : 5) + ($isInternalUser ? 1 : 0) }}" class="empty-cell">{{ __('customerhistory::messages.index.no_customers') }}</td>
                     </tr>
                 @endforelse
             </tbody>

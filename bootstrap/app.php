@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsInternal;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
+            'internal' => EnsureUserIsInternal::class,
         ]);
         $middleware->prependToPriorityList(
             AuthenticatesRequests::class,
@@ -29,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(
             SubstituteBindings::class,
             EnsureUserIsAdmin::class,
+        );
+        $middleware->prependToPriorityList(
+            SubstituteBindings::class,
+            EnsureUserIsInternal::class,
         );
         $middleware->web(append: [
             SetLocale::class,

@@ -142,7 +142,7 @@ class UserAuthorizationTest extends TestCase
         }
 
         $this->seed(CustomerMockSeeder::class);
-        $this->assertSame(10, DB::table('customers')->count());
+        $this->assertSame(17, DB::table('customers')->count());
         $this->assertSame(0, DB::table('customers as customer')
             ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
             ->join('roles as role', 'role.id', '=', 'creator.role_id')
@@ -151,7 +151,15 @@ class UserAuthorizationTest extends TestCase
             ->count());
         $this->assertSame(0, DB::table('customers as customer')
             ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
-            ->where('creator.employee_code', 'EMP0001')
+            ->where('creator.user_type', 'internal')
+            ->count());
+        $this->assertSame(0, DB::table('customers as customer')
+            ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+            ->whereNotIn('creator.employee_code', ['EXT0004', 'EXT0005', 'EXT0006', 'EXT0007'])
+            ->count());
+        $this->assertSame(0, DB::table('customers as customer')
+            ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+            ->whereIn('creator.employee_code', ['EXT0008', 'EXT0009', 'EXT0010', 'EXT0011'])
             ->count());
     }
 

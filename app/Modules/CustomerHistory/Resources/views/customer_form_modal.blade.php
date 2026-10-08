@@ -671,7 +671,7 @@
             return new Intl.DateTimeFormat(document.documentElement.lang || 'th', {
                 dateStyle: 'medium',
                 timeStyle: 'short',
-                timeZone: 'Asia/Bangkok',
+                timeZone: @js(config('app.local_timezone')),
             }).format(date);
         };
 

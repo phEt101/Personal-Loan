@@ -69,6 +69,7 @@ class CustomerHistoryController extends Controller
         }
 
         $creatorType = $request->query('creator_type');
+        $creatorId = filter_var($request->query('creator_id'), FILTER_VALIDATE_INT);
         $requestedSort = $request->query('sort');
 
         return [
@@ -81,6 +82,7 @@ class CustomerHistoryController extends Controller
                 && in_array($creatorType, ['internal', 'external'], true)
                     ? $creatorType
                     : '',
+            'creatorId' => $access['canViewCreator'] && $creatorId !== false ? $creatorId : null,
             'sort' => in_array($requestedSort, $allowedSorts, true) ? $requestedSort : 'created_at',
             'direction' => $request->query('direction') === 'asc' ? 'asc' : 'desc',
         ];
@@ -109,6 +111,15 @@ class CustomerHistoryController extends Controller
                 ]);
         }
 
+        if ($access['isInternalUser']) {
+            $query
+                ->leftJoin('responsibility_groups as creator_group', 'creator_group.id', '=', 'creator.responsibility_group_id')
+                ->addSelect([
+                    'creator.responsibility_group_id as CreatorGroupId',
+                    'creator_group.name as CreatorGroupName',
+                ]);
+        }
+
         $this->customerAccess->applyReadScope($query, $user, 'customer');
 
         return $query;
@@ -117,13 +128,28 @@ class CustomerHistoryController extends Controller
     private function applyCustomerFilters(Builder $query, array $filters, bool $canViewCreator): void
     {
         if ($filters['dateFrom'] !== '') {
-            $query->whereDate('customer.sysInsertDateTime', '>=', $filters['dateFrom']);
+            $query->where(
+                'customer.sysInsertDateTime',
+                '>=',
+                Carbon::createFromFormat('!Y-m-d', $filters['dateFrom'], config('app.local_timezone'))
+                    ->startOfDay()
+                    ->utc()
+            );
         }
         if ($filters['dateTo'] !== '') {
-            $query->whereDate('customer.sysInsertDateTime', '<=', $filters['dateTo']);
+            $query->where(
+                'customer.sysInsertDateTime',
+                '<=',
+                Carbon::createFromFormat('!Y-m-d', $filters['dateTo'], config('app.local_timezone'))
+                    ->endOfDay()
+                    ->utc()
+            );
         }
         if ($filters['creatorType'] !== '') {
             $query->where('creator.user_type', $filters['creatorType']);
+        }
+        if ($filters['creatorId'] !== null) {
+            $query->where('creator.id', $filters['creatorId']);
         }
         if ($filters['search'] !== '') {
             $this->applyCustomerSearch($query, $filters['search'], $canViewCreator);
@@ -179,6 +205,8 @@ class CustomerHistoryController extends Controller
         array $access,
         array $filters
     ): array {
+        $this->addWorkSources($customers, $user, $access['isInternalUser']);
+
         return [
             'customers' => $customers,
             'paginationPages' => $this->paginationPages($customers->currentPage(), $customers->lastPage()),
@@ -187,12 +215,74 @@ class CustomerHistoryController extends Controller
             'canViewCreator' => $access['canViewCreator'],
             'canCreateCustomer' => $access['canCreateCustomer'],
             'currentUserId' => (int) $user->getAuthIdentifier(),
+            'creatorOptions' => $this->creatorOptions($user, $access['canViewCreator']),
             ...$filters,
             'hasActiveFilters' => $filters['search'] !== ''
                 || $filters['dateFrom'] !== ''
                 || $filters['dateTo'] !== ''
-                || $filters['creatorType'] !== '',
+                || $filters['creatorType'] !== ''
+                || $filters['creatorId'] !== null,
         ];
+    }
+
+    private function creatorOptions(User $user, bool $canViewCreator): Collection
+    {
+        if (! $canViewCreator) {
+            return collect();
+        }
+
+        $accessibleCreators = DB::table('customers as scoped_customer')
+            ->select('scoped_customer.sysInsertUserId')
+            ->whereNotNull('scoped_customer.sysInsertUserId')
+            ->distinct();
+        $this->customerAccess->applyReadScope($accessibleCreators, $user, 'scoped_customer');
+
+        return DB::table('users')
+            ->whereIn('id', $accessibleCreators)
+            ->orderBy('employee_code')
+            ->get(['id', 'employee_code', 'first_name', 'last_name']);
+    }
+
+    private function addWorkSources(LengthAwarePaginator $customers, User $user, bool $isInternalUser): void
+    {
+        if (! $isInternalUser) {
+            return;
+        }
+
+        $delegations = collect();
+        if (! $user->isAdmin()) {
+            $delegations = DB::table('work_delegations as delegation')
+                ->join('users as delegator', 'delegator.id', '=', 'delegation.delegator_user_id')
+                ->where('delegation.delegate_user_id', $user->id)
+                ->whereNull('delegation.cancelled_at')
+                ->where('delegation.starts_at', '<=', now())
+                ->where('delegation.ends_at', '>=', now())
+                ->get([
+                    'delegation.responsibility_group_id',
+                    'delegator.first_name',
+                    'delegator.last_name',
+                ])
+                ->keyBy('responsibility_group_id');
+        }
+
+        $customers->getCollection()->each(function ($customer) use ($delegations, $user): void {
+            $customer->WorkSourceType = 'internal';
+            $customer->DelegatedByName = null;
+
+            if ($customer->CreatorGroupId === null) {
+                return;
+            }
+
+            $customer->WorkSourceType = 'group';
+            $delegation = $delegations->get($customer->CreatorGroupId);
+
+            if (! $user->isAdmin()
+                && (int) $customer->CreatorGroupId !== (int) $user->responsibility_group_id
+                && $delegation !== null) {
+                $customer->WorkSourceType = 'delegated';
+                $customer->DelegatedByName = trim($delegation->first_name.' '.$delegation->last_name);
+            }
+        });
     }
 
     private function customerFormData(): array
@@ -311,7 +401,7 @@ class CustomerHistoryController extends Controller
         }
 
         try {
-            $parsedDate = Carbon::createFromFormat('Y-m-d', $date);
+            $parsedDate = Carbon::createFromFormat('!Y-m-d', $date, config('app.local_timezone'));
 
             return $parsedDate->format('Y-m-d') === $date ? $date : '';
         } catch (\Throwable) {

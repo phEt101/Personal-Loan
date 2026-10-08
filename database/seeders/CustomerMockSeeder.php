@@ -2,12 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class CustomerMockSeeder extends Seeder
 {
+    private const CUSTOMER_CREATOR_CODES = ['EXT0004', 'EXT0005', 'EXT0006', 'EXT0007'];
+
     public function run(): void
     {
         $names = [
@@ -21,6 +24,13 @@ class CustomerMockSeeder extends Seeder
             ['วรัญญา', 'ศรีสุข', 2, 2],
             ['อนุชา', 'ใจดี', 1, 1],
             ['รัตนา', 'เพิ่มพูน', 2, 2],
+            ['ศุภชัย', 'มั่งมี', 1, 1],
+            ['กัญญารัตน์', 'แสนสุข', 2, 2],
+            ['ธีรภัทร', 'วัฒนา', 1, 1],
+            ['ปวีณา', 'รุ่งกิจ', 2, 2],
+            ['จักรพันธ์', 'คงมั่น', 1, 1],
+            ['สิริพร', 'พรเจริญ', 2, 2],
+            ['นรินทร์', 'ทรัพย์สมบูรณ์', 1, 1],
         ];
 
         $locations = DB::table('sub_districts as sub')
@@ -32,7 +42,7 @@ class CustomerMockSeeder extends Seeder
             ->whereNotNull('sub.Zipcode')
             ->orderBy('sub.ProvinceCode')
             ->orderBy('sub.DistrictCode')
-            ->limit(20)
+            ->limit(count($names) * 2)
             ->get([
                 'sub.ProvinceCode',
                 'province.ProvinceDesc',
@@ -43,7 +53,7 @@ class CustomerMockSeeder extends Seeder
                 'sub.Zipcode',
             ]);
 
-        if ($locations->count() < 20) {
+        if ($locations->count() < count($names) * 2) {
             throw new \RuntimeException('Insufficient location master data for customer mocks.');
         }
 
@@ -68,24 +78,22 @@ class CustomerMockSeeder extends Seeder
         $officePhoneType = DB::table('phone_types')->where('PhoneTypeCode', '02')->value('PhoneTypeCode')
             ?? DB::table('phone_types')->where('PhoneTypeCode', '<>', $mobilePhoneType)->orderBy('PhoneTypeCode')->value('PhoneTypeCode')
             ?? $mobilePhoneType;
-        $systemUserIds = DB::table('users as user')
+        $externalUserIds = DB::table('users as user')
             ->join('roles as role', 'role.id', '=', 'user.role_id')
-            ->where('user.employee_code', '<>', 'EMP0001')
-            ->where(function ($query) {
-                $query->where('user.user_type', 'internal')
-                    ->orWhere('role.slug', '<>', 'manager');
-            })
+            ->where('user.user_type', 'external')
+            ->where('role.slug', Role::USER_SLUG)
+            ->whereIn('user.employee_code', self::CUSTOMER_CREATOR_CODES)
             ->orderBy('user.employee_code')
             ->pluck('user.id')
             ->values();
 
-        if ($systemUserIds->isEmpty()) {
-            throw new \RuntimeException('No eligible users are available for assigning mock customer creators.');
+        if ($externalUserIds->count() !== count(self::CUSTOMER_CREATOR_CODES)) {
+            throw new \RuntimeException('The four configured external users are required for assigning mock customer creators.');
         }
         $mockInsertTimestamps = collect(range(1, count($names)))
             ->map(fn () => random_int(
-                now()->subMonthNoOverflow()->day(25)->startOfDay()->timestamp,
-                now()->timestamp
+                now(config('app.local_timezone'))->subMonthNoOverflow()->day(25)->startOfDay()->timestamp,
+                now(config('app.local_timezone'))->timestamp
             ))
             ->sort()
             ->values();
@@ -102,7 +110,7 @@ class CustomerMockSeeder extends Seeder
             $bank,
             $mobilePhoneType,
             $officePhoneType,
-            $systemUserIds,
+            $externalUserIds,
             $mockInsertTimestamps
         ): void {
             foreach ($names as $index => [$firstName, $lastName, $titleCode, $genderCode]) {
@@ -127,7 +135,8 @@ class CustomerMockSeeder extends Seeder
                     $currentLocation->ProvinceDesc,
                     $currentLocation->Zipcode,
                 ]);
-                $birthDate = now()->subYears(25 + $index)->subDays($index * 30)->toDateString();
+                $localNow = now(config('app.local_timezone'));
+                $birthDate = $localNow->copy()->subYears(25 + $index)->subDays($index * 30)->toDateString();
                 $age = Carbon::parse($birthDate)->age;
                 $ageRangeScore = DB::table('age_ranges')
                     ->where('FromAge', '<=', $age)
@@ -156,8 +165,8 @@ class CustomerMockSeeder extends Seeder
                     'IdentityCardTypeCode' => 1,
                     'IdentityCardId' => $this->thaiIdentityCardNumber($index + 1),
                     'IdentityCardIssuer' => 'สำนักงานเขตตัวอย่าง',
-                    'IdentityCardEffectiveDate' => now()->subYears(8)->addDays($index)->toDateString(),
-                    'IdentityCardExpireDate' => now()->addYears(2)->addDays($index)->toDateString(),
+                    'IdentityCardEffectiveDate' => $localNow->copy()->subYears(8)->addDays($index)->toDateString(),
+                    'IdentityCardExpireDate' => $localNow->copy()->addYears(2)->addDays($index)->toDateString(),
                     'Nationality' => 'ไทย',
                     'Race' => 'ไทย',
                     'MaritalStatusCode' => $maritalStatus->MaritalStatusCode,
@@ -208,8 +217,8 @@ class CustomerMockSeeder extends Seeder
                     'IsDebtor' => true,
                     'Status' => null,
                     'InsertUserId' => 4,
-                    'InsertDate' => $insertedAt->toDateString(),
-                    'sysInsertUserId' => $systemUserIds[$index % $systemUserIds->count()],
+                    'InsertDate' => $insertedAt->copy()->timezone(config('app.local_timezone'))->toDateString(),
+                    'sysInsertUserId' => $externalUserIds->random(),
                     'sysInsertDateTime' => $insertedAt,
                 ]);
 
@@ -263,7 +272,7 @@ class CustomerMockSeeder extends Seeder
 
     private function nextCustomerNo(Carbon $customerNumberDate): string
     {
-        $prefix = '00CU'.$customerNumberDate->format('ymd');
+        $prefix = '00CU'.$customerNumberDate->copy()->timezone(config('app.local_timezone'))->format('ymd');
         $latestCustomerNo = DB::table('customers')
             ->where('CustomerNo', 'like', $prefix.'%')
             ->orderByDesc('CustomerNo')

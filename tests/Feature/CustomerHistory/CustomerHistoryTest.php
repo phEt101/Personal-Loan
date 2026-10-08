@@ -101,10 +101,27 @@ class CustomerHistoryTest extends TestCase
             ->assertCreated()
             ->json('customer_no');
 
-        $prefix = '00CU'.now()->format('ymd');
+        $prefix = '00CU'.now(config('app.local_timezone'))->format('ymd');
         $this->assertSame($prefix.'000001', $firstCustomerNo);
         $this->assertSame($prefix.'000002', $secondCustomerNo);
         $this->assertNotSame($firstCustomerNo, $secondCustomerNo);
+    }
+
+    public function test_customer_number_uses_the_local_business_date(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-07 18:30:00', 'UTC'));
+
+        try {
+            $user = User::factory()->create();
+            $customerNo = $this->actingAs($user)
+                ->postJson('/customer-history', $this->customerPayload())
+                ->assertCreated()
+                ->json('customer_no');
+
+            $this->assertSame('00CU261008000001', $customerNo);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_customer_attachments_can_be_uploaded_downloaded_and_removed(): void
@@ -251,10 +268,11 @@ class CustomerHistoryTest extends TestCase
         }
 
         $this->actingAs($internal)
-            ->get('/customer-history?q=Needle&creator_type=external&date_from=2026-09-01&date_to=2026-09-30')
+            ->get('/customer-history?q=Needle&creator_type=external&creator_id='.$external->id.'&date_from=2026-09-01&date_to=2026-09-30')
             ->assertOk()
             ->assertViewHas('customers', fn ($customers) => $customers->total() === 1
-                && $customers->first()->Firstname === 'Needle');
+                && $customers->first()->Firstname === 'Needle')
+            ->assertViewHas('creatorOptions', fn ($creators) => $creators->pluck('id')->contains($external->id));
 
         $this->get('/customer-history?per_page=5&page=2')
             ->assertOk()
@@ -295,6 +313,20 @@ class CustomerHistoryTest extends TestCase
                 'MOCK000000000003',
                 'MOCK000000000002',
                 'MOCK000000000001',
+            ]);
+    }
+
+    public function test_customer_date_filter_uses_local_day_boundaries(): void
+    {
+        $internal = User::factory()->create(['user_type' => 'internal']);
+        $this->insertCustomer('MOCK-LOCAL-DATE-1', 'ThaiMorning', $internal, '2026-10-07 18:30:00');
+        $this->insertCustomer('MOCK-LOCAL-DATE-2', 'PreviousDay', $internal, '2026-10-07 16:30:00');
+
+        $this->actingAs($internal)
+            ->get('/customer-history?date_from=2026-10-08&date_to=2026-10-08')
+            ->assertOk()
+            ->assertViewHas('customers', fn ($customers) => $customers->pluck('CustomerNo')->all() === [
+                'MOCK-LOCAL-DATE-1',
             ]);
     }
 
@@ -366,9 +398,15 @@ class CustomerHistoryTest extends TestCase
             ->assertOk()
             ->assertDontSee('id="openCustomerHistoryForm"', false)
             ->assertViewHas('canViewCreator', true)
+            ->assertViewHas('creatorOptions', fn ($creators) => $creators->pluck('id')->sort()->values()->all() === collect([$manager->id, $external->id])->sort()->values()->all())
             ->assertViewHas('customers', fn ($customers) => $customers->total() === 2
                 && $customers->pluck('Firstname')->sort()->values()->all() === ['ExternalOwned', 'ManagerOwned']
                 && $customers->every(fn ($customer) => filled($customer->CreatorEmployeeCode)));
+
+        $this->get('/customer-history?creator_id='.$external->id)
+            ->assertOk()
+            ->assertViewHas('customers', fn ($customers) => $customers->total() === 1
+                && $customers->first()->Firstname === 'ExternalOwned');
 
         $this->getJson('/customer-history/MOCK000000000202')->assertOk();
         $this->getJson('/customer-history/MOCK000000000203')->assertNotFound();

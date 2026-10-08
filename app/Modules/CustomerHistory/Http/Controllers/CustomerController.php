@@ -446,7 +446,7 @@ class CustomerController extends Controller
             'IsDebtor' => true,
             'Status' => null,
             'InsertUserId' => 4,
-            'InsertDate' => $now->toDateString(),
+            'InsertDate' => $now->copy()->timezone(config('app.local_timezone'))->toDateString(),
             'sysInsertUserId' => $systemUserId,
             'sysUpdateUserId' => null,
             'sysInsertDateTime' => $now,
@@ -753,7 +753,7 @@ class CustomerController extends Controller
 
     private function nextCustomerNo(): string
     {
-        $customerNumberDate = now();
+        $customerNumberDate = now(config('app.local_timezone'));
         $prefix = '00CU'.$customerNumberDate->format('ymd');
         $latestCustomerNo = DB::table('customers')
             ->where('CustomerNo', 'like', $prefix.'%')

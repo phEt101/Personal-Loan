@@ -99,7 +99,7 @@
                                     </span>
                                 </td>
                                 <td data-label="{{ __('settings::messages.created_at') }}">
-                                    {{ $user->created_at?->timezone('Asia/Bangkok')->format('d/m/Y H:i') ?? '—' }}
+                                    {{ $user->created_at?->timezone(config('app.local_timezone'))->format('d/m/Y H:i') ?? '—' }}
                                 </td>
                                 <td data-label="{{ __('settings::messages.actions') }}">
                                     <div class="settings-user-actions">

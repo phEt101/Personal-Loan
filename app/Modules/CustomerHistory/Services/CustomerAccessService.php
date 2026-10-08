@@ -42,6 +42,17 @@ class CustomerAccessService
                     ->where('responsibility_group_id', $user->responsibility_group_id)
                     ->select('id'));
             }
+
+            $query->orWhereIn("{$customerTable}.sysInsertUserId", DB::table('users as delegated_external')
+                ->join('work_delegations as delegation', 'delegation.responsibility_group_id', '=', 'delegated_external.responsibility_group_id')
+                ->join('responsibility_groups as delegated_group', 'delegated_group.id', '=', 'delegation.responsibility_group_id')
+                ->where('delegated_external.user_type', 'external')
+                ->where('delegated_group.is_active', true)
+                ->where('delegation.delegate_user_id', $user->id)
+                ->whereNull('delegation.cancelled_at')
+                ->where('delegation.starts_at', '<=', now())
+                ->where('delegation.ends_at', '>=', now())
+                ->select('delegated_external.id'));
         });
     }
 }
