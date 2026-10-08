@@ -16,6 +16,14 @@
                 <span>{{ __('messages.nav.customer_history') }}</span>
             </a>
             @if (auth()->user()?->user_type === 'internal')
+                <a href="{{ route('reports.index') }}" class="nav-item {{ Request::routeIs('reports.*') ? 'active' : '' }}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 19V9m7 10V5m7 14v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span>{{ __('messages.nav.reports') }}</span>
+                </a>
                 <a href="{{ route('work-delegations.index') }}" class="nav-item {{ Request::routeIs('work-delegations.*') ? 'active' : '' }}">
                     <span class="nav-icon" aria-hidden="true">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
