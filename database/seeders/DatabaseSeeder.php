@@ -12,6 +12,10 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
+    private const TEMP_EMAIL_DOMAIN = '@seed-temp.invalid';
+
+    private const DEFAULT_PASSWORD = 'P@ssw0rd';
+
     /**
      * Seed the application's database.
      */
@@ -62,7 +66,7 @@ class DatabaseSeeder extends Seeder
             ->whereIn('employee_code', $internalEmployeeCodes)
             ->get()
             ->each(fn (User $user) => $user->update([
-                'email' => strtolower($user->employee_code).'@seed-temp.invalid',
+                'email' => strtolower($user->employee_code).self::TEMP_EMAIL_DOMAIN,
             ]));
 
         foreach ($internalUsers as $internalUser) {
@@ -70,7 +74,7 @@ class DatabaseSeeder extends Seeder
                 ['employee_code' => $internalUser['employee_code']],
                 $internalUser + [
                     'user_type' => 'internal',
-                    'password' => Hash::make('P@ssw0rd'),
+                    'password' => Hash::make(self::DEFAULT_PASSWORD),
                     'note' => 'ผู้ใช้งานภายในสำหรับทดสอบระบบ',
                 ]
             );
@@ -101,7 +105,7 @@ class DatabaseSeeder extends Seeder
             ->whereIn('employee_code', collect($externalManagers)->pluck('employee_code'))
             ->get()
             ->each(fn (User $user) => $user->update([
-                'email' => strtolower($user->employee_code).'@seed-temp.invalid',
+                'email' => strtolower($user->employee_code).self::TEMP_EMAIL_DOMAIN,
             ]));
 
         foreach ($externalManagers as $externalManager) {
@@ -110,7 +114,7 @@ class DatabaseSeeder extends Seeder
                 $externalManager + [
                     'user_type' => 'external',
                     'role_id' => $managerRoleId,
-                    'password' => Hash::make('P@ssw0rd'),
+                    'password' => Hash::make(self::DEFAULT_PASSWORD),
                     'note' => 'ผู้จัดการภายนอก Wipay',
                 ]
             );
@@ -158,7 +162,7 @@ class DatabaseSeeder extends Seeder
             ->whereIn('employee_code', $externalEmployeeCodes)
             ->get()
             ->each(fn (User $user) => $user->update([
-                'email' => strtolower($user->employee_code).'@seed-temp.invalid',
+                'email' => strtolower($user->employee_code).self::TEMP_EMAIL_DOMAIN,
             ]));
 
         foreach ($externalUsers as $externalUser) {
@@ -167,7 +171,7 @@ class DatabaseSeeder extends Seeder
                 $externalUser + [
                     'user_type' => 'external',
                     'role_id' => $userRoleId,
-                    'password' => Hash::make('P@ssw0rd'),
+                    'password' => Hash::make(self::DEFAULT_PASSWORD),
                     'note' => 'ผู้ใช้งานภายนอก Wipay',
                 ]
             );

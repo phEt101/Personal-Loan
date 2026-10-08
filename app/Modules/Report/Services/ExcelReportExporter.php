@@ -5,8 +5,12 @@ namespace App\Modules\Report\Services;
 use RuntimeException;
 use ZipArchive;
 
+class ExcelReportExportException extends RuntimeException {}
+
 class ExcelReportExporter
 {
+    private const XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8"?>';
+
     /**
      * @param  list<string>  $headings
      * @param  iterable<list<string|int|float|null>>  $rows
@@ -15,15 +19,15 @@ class ExcelReportExporter
     {
         $path = tempnam(sys_get_temp_dir(), 'personal-loan-report-');
         if ($path === false) {
-            throw new RuntimeException('Unable to create the report file.');
+            throw new ExcelReportExportException('Unable to create the report file.');
         }
 
         $xlsxPath = $path.'.xlsx';
         rename($path, $xlsxPath);
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($xlsxPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            throw new RuntimeException('Unable to open the report file.');
+            throw new ExcelReportExportException('Unable to open the report file.');
         }
 
         $zip->addFromString('[Content_Types].xml', $this->contentTypes());
@@ -94,7 +98,7 @@ class ExcelReportExporter
 
     private function contentTypes(): string
     {
-        return '<?xml version="1.0" encoding="UTF-8"?>'
+        return self::XML_DECLARATION
             .'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
             .'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
             .'<Default Extension="xml" ContentType="application/xml"/>'
@@ -106,7 +110,7 @@ class ExcelReportExporter
 
     private function rootRelationships(): string
     {
-        return '<?xml version="1.0" encoding="UTF-8"?>'
+        return self::XML_DECLARATION
             .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
             .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
             .'</Relationships>';
@@ -116,14 +120,14 @@ class ExcelReportExporter
     {
         $sheetName = htmlspecialchars(mb_substr($filename, 0, 31), ENT_XML1 | ENT_QUOTES, 'UTF-8');
 
-        return '<?xml version="1.0" encoding="UTF-8"?>'
+        return self::XML_DECLARATION
             .'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
             .'<sheets><sheet name="'.$sheetName.'" sheetId="1" r:id="rId1"/></sheets></workbook>';
     }
 
     private function workbookRelationships(): string
     {
-        return '<?xml version="1.0" encoding="UTF-8"?>'
+        return self::XML_DECLARATION
             .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
             .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
             .'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
@@ -132,7 +136,7 @@ class ExcelReportExporter
 
     private function styles(): string
     {
-        return '<?xml version="1.0" encoding="UTF-8"?>'
+        return self::XML_DECLARATION
             .'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
             .'<fonts count="2"><font><sz val="11"/><name val="Arial"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Arial"/></font></fonts>'
             .'<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF059669"/><bgColor indexed="64"/></patternFill></fill></fills>'
