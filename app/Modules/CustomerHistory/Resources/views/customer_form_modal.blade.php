@@ -11,7 +11,7 @@
                 <div class="wizard-steps customer-history-steps" aria-label="{{ __('customerhistory::messages.form.steps.label') }}">
                     <button type="button" class="wizard-step active" data-step="1">
                         <span class="wizard-step-icon">1</span>
-                        <span class="wizard-step-label">{{ __('customerhistory::messages.form.steps.personal') }}</span>
+                        <span class="wizard-step-label">{{ __('customerhistory::messages.common.personal_information') }}</span>
                     </button>
                     <button type="button" class="wizard-step" data-step="2" disabled>
                         <span class="wizard-step-icon">2</span>
@@ -38,7 +38,7 @@
                 <section class="customer-form-section customer-form-step is-active" data-customer-step="1">
                     <div class="form-grid customer-form-grid">
                         <div class="customer-fieldset-title col-12">
-                            <span>{{ __('customerhistory::messages.form.sections.personal') }}</span>
+                            <span>{{ __('customerhistory::messages.common.personal_information') }}</span>
                         </div>
                         <div class="form-group col-2">
                             <label for="customer_title">{{ __('customerhistory::messages.form.personal.title_label') }} <span class="required-asterisk">*</span></label>
@@ -213,7 +213,7 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>{{ __('customerhistory::messages.form.address.number') }}</th>
+                                        <th>{{ __('customerhistory::messages.common.number') }}</th>
                                         <th>{{ __('customerhistory::messages.form.address.address') }}</th>
                                         <th>{{ __('customerhistory::messages.form.address.address_remark') }}</th>
                                         <th>{{ __('customerhistory::messages.form.address.actions') }}</th>
@@ -298,7 +298,7 @@
                                 </div>
                                 <div class="col-12 customer-address-editor-actions">
                                     <button type="button" class="action-btn outline" id="customerAddressCancel">{{ __('customerhistory::messages.form.address.close') }}</button>
-                                    <button type="button" class="action-btn" id="customerAddressCommit">{{ __('customerhistory::messages.form.address.confirm_add') }}</button>
+                                    <button type="button" class="action-btn" id="customerAddressCommit">{{ __('customerhistory::messages.common.add') }}</button>
                                 </div>
                             </div>
                         </div>
@@ -311,7 +311,7 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>{{ __('customerhistory::messages.form.contact.number') }}</th>
+                                        <th>{{ __('customerhistory::messages.common.number') }}</th>
                                         <th>{{ __('customerhistory::messages.form.contact.phone') }}</th>
                                         <th>{{ __('customerhistory::messages.form.contact.phone_type') }}</th>
                                         <th>{{ __('customerhistory::messages.form.contact.phone_note') }}</th>
@@ -348,7 +348,7 @@
                                 </div>
                                 <div class="col-12 customer-phone-editor-actions">
                                     <button type="button" class="action-btn outline" id="customerPhoneCancel">{{ __('customerhistory::messages.form.contact.close') }}</button>
-                                    <button type="button" class="action-btn" id="customerPhoneCommit">{{ __('customerhistory::messages.form.contact.confirm_add') }}</button>
+                                    <button type="button" class="action-btn" id="customerPhoneCommit">{{ __('customerhistory::messages.common.add') }}</button>
                                 </div>
                             </div>
                         </div>
@@ -419,7 +419,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>{{ __('customerhistory::messages.form.attachments.number') }}</th>
+                                    <th>{{ __('customerhistory::messages.common.number') }}</th>
                                     <th>{{ __('customerhistory::messages.form.attachments.document_name') }}</th>
                                     <th>{{ __('customerhistory::messages.form.attachments.document_type') }}</th>
                                     <th>{{ __('customerhistory::messages.form.attachments.file') }}</th>
@@ -460,7 +460,7 @@
                             </div>
                             <div class="col-12 customer-attachment-editor-actions">
                                 <button type="button" class="action-btn outline" id="customerAttachmentCancel">{{ __('customerhistory::messages.form.attachments.close') }}</button>
-                                <button type="button" class="action-btn" id="customerAttachmentCommit">{{ __('customerhistory::messages.form.attachments.confirm_add') }}</button>
+                                <button type="button" class="action-btn" id="customerAttachmentCommit">{{ __('customerhistory::messages.common.add') }}</button>
                             </div>
                         </div>
                     </div>
