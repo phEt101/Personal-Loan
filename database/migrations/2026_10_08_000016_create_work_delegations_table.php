@@ -9,6 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('work_delegations', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
             $table->foreignId('responsibility_group_id')->constrained()->cascadeOnDelete();
             $table->foreignId('delegator_user_id')->constrained('users')->cascadeOnDelete();
