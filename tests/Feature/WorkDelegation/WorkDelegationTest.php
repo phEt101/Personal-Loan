@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Feature\CustomerHistory;
+namespace Tests\Feature\WorkDelegation;
 
-use App\Models\ResponsibilityGroup;
-use App\Models\Role;
-use App\Models\User;
-use App\Models\WorkDelegation;
+use App\Modules\Settings\Models\ResponsibilityGroup;
+use App\Modules\Settings\Models\Role;
+use App\Modules\Settings\Models\User;
+use App\Modules\WorkDelegation\Models\WorkDelegation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -88,6 +88,32 @@ class WorkDelegationTest extends TestCase
             ->get('/customer-history')
             ->assertOk()
             ->assertViewHas('customers', fn ($customers) => $customers->total() === 0);
+    }
+
+    public function test_ended_delegation_is_history_only_and_cannot_be_changed(): void
+    {
+        $group = ResponsibilityGroup::query()->create(['name' => 'Ended team', 'is_active' => true]);
+        $delegator = $this->internalUser($group->id);
+        $delegate = $this->internalUser();
+        $delegation = WorkDelegation::query()->create([
+            'responsibility_group_id' => $group->id,
+            'delegator_user_id' => $delegator->id,
+            'delegate_user_id' => $delegate->id,
+            'starts_at' => now()->subDays(2),
+            'ends_at' => now()->subDay(),
+            'created_by' => $delegator->id,
+        ]);
+
+        $this->actingAs($delegator)
+            ->get('/work-delegations')
+            ->assertOk()
+            ->assertSee(__('workdelegation::messages.ended'))
+            ->assertDontSee(route('work-delegations.edit', $delegation), false)
+            ->assertDontSee(route('work-delegations.cancel', $delegation), false);
+
+        $this->get(route('work-delegations.edit', $delegation))->assertUnprocessable();
+        $this->put(route('work-delegations.update', $delegation), [])->assertUnprocessable();
+        $this->patch(route('work-delegations.cancel', $delegation))->assertUnprocessable();
     }
 
     public function test_external_user_cannot_access_work_delegations(): void

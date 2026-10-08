@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Modules\CustomerHistory\Http\Controllers;
+namespace App\Modules\WorkDelegation\Http\Controllers;
 
-use App\Models\ResponsibilityGroup;
-use App\Models\Role;
-use App\Models\User;
-use App\Models\WorkDelegation;
+use App\Modules\Settings\Models\ResponsibilityGroup;
+use App\Modules\Settings\Models\Role;
+use App\Modules\Settings\Models\User;
+use App\Modules\WorkDelegation\Models\WorkDelegation;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,8 +16,15 @@ use Illuminate\View\View;
 
 class WorkDelegationController extends Controller
 {
+    private const PER_PAGE_OPTIONS = [5, 10, 25, 50, 100];
+
     public function index(Request $request): View
     {
+        $perPage = (int) $request->query('per_page', 10);
+        if (! in_array($perPage, self::PER_PAGE_OPTIONS, true)) {
+            $perPage = 10;
+        }
+
         $query = WorkDelegation::query()
             ->with(['group', 'delegator', 'delegate'])
             ->orderByDesc('starts_at');
@@ -29,8 +36,10 @@ class WorkDelegationController extends Controller
             });
         }
 
-        return view('customerhistory::work-delegations.index', [
-            'delegations' => $query->paginate(10),
+        return view('workdelegation::index', [
+            'delegations' => $query->paginate($perPage)->withQueryString(),
+            'perPage' => $perPage,
+            'perPageOptions' => self::PER_PAGE_OPTIONS,
         ]);
     }
 
@@ -47,13 +56,13 @@ class WorkDelegationController extends Controller
         WorkDelegation::query()->create($validated + ['created_by' => $request->user()->id]);
 
         return redirect()->route('work-delegations.index')
-            ->with('status', __('messages.delegation.created'));
+            ->with('status', __('workdelegation::messages.created'));
     }
 
     public function edit(Request $request, WorkDelegation $workDelegation): View
     {
         $this->authorizeManagement($request, $workDelegation);
-        abort_if($workDelegation->cancelled_at !== null, 422, __('messages.delegation.cancelled_edit_error'));
+        $this->ensureDelegationIsManageable($workDelegation);
 
         return $this->formView($request, $workDelegation);
     }
@@ -61,29 +70,28 @@ class WorkDelegationController extends Controller
     public function update(Request $request, WorkDelegation $workDelegation): RedirectResponse
     {
         $this->authorizeManagement($request, $workDelegation);
-        abort_if($workDelegation->cancelled_at !== null, 422, __('messages.delegation.cancelled_edit_error'));
+        $this->ensureDelegationIsManageable($workDelegation);
 
         $validated = $this->validatedData($request, $workDelegation);
         $this->ensureNoOverlap($validated, $workDelegation);
         $workDelegation->update($validated);
 
         return redirect()->route('work-delegations.index')
-            ->with('status', __('messages.delegation.updated'));
+            ->with('status', __('workdelegation::messages.updated'));
     }
 
     public function cancel(Request $request, WorkDelegation $workDelegation): RedirectResponse
     {
         $this->authorizeManagement($request, $workDelegation);
+        $this->ensureDelegationIsManageable($workDelegation);
 
-        if ($workDelegation->cancelled_at === null) {
-            $workDelegation->update([
-                'cancelled_at' => now(),
-                'cancelled_by' => $request->user()->id,
-            ]);
-        }
+        $workDelegation->update([
+            'cancelled_at' => now(),
+            'cancelled_by' => $request->user()->id,
+        ]);
 
         return redirect()->route('work-delegations.index')
-            ->with('status', __('messages.delegation.cancelled'));
+            ->with('status', __('workdelegation::messages.cancelled'));
     }
 
     private function formView(Request $request, WorkDelegation $delegation): View
@@ -95,7 +103,7 @@ class WorkDelegationController extends Controller
             $groups->whereKey($user->responsibility_group_id);
         }
 
-        return view('customerhistory::work-delegations.form', [
+        return view('workdelegation::form', [
             'delegation' => $delegation,
             'groups' => $groups->orderBy('name')->get(),
             'delegators' => User::query()
@@ -142,7 +150,7 @@ class WorkDelegationController extends Controller
 
         if ($delegatorId === 0 || $delegatorId === (int) $validated['delegate_user_id']) {
             throw ValidationException::withMessages([
-                'delegate_user_id' => __('messages.delegation.delegate_must_differ'),
+                'delegate_user_id' => __('workdelegation::messages.delegate_must_differ'),
             ]);
         }
 
@@ -154,7 +162,7 @@ class WorkDelegationController extends Controller
 
         if (! $delegatorBelongsToGroup) {
             throw ValidationException::withMessages([
-                'responsibility_group_id' => __('messages.delegation.invalid_group'),
+                'responsibility_group_id' => __('workdelegation::messages.invalid_group'),
             ]);
         }
 
@@ -181,7 +189,7 @@ class WorkDelegationController extends Controller
 
         if ($overlaps) {
             throw ValidationException::withMessages([
-                'starts_at' => __('messages.delegation.overlap'),
+                'starts_at' => __('workdelegation::messages.overlap'),
             ]);
         }
     }
@@ -191,6 +199,15 @@ class WorkDelegationController extends Controller
         abort_unless(
             $request->user()->isAdmin() || $delegation->delegator_user_id === $request->user()->id,
             403
+        );
+    }
+
+    private function ensureDelegationIsManageable(WorkDelegation $delegation): void
+    {
+        abort_if(
+            in_array($delegation->status, ['ended', 'cancelled'], true),
+            422,
+            __('workdelegation::messages.closed_change_error')
         );
     }
 

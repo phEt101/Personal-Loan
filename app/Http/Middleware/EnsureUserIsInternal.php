@@ -13,7 +13,7 @@ class EnsureUserIsInternal
         if ($request->user()?->user_type !== 'internal') {
             return redirect()
                 ->route('customer-history.index')
-                ->with('status', __('messages.delegation.internal_only'));
+                ->with('status', __('messages.authorization.internal_only'));
         }
 
         return $next($request);

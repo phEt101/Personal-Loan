@@ -26,10 +26,21 @@ return new class extends Migration
 
             $table->index(['delegate_user_id', 'starts_at', 'ends_at'], 'work_delegations_active_lookup');
         });
+
+        Schema::table('customers', function (Blueprint $table) {
+            $table->foreign('HmeterWorkDelegationId')
+                ->references('id')
+                ->on('work_delegations')
+                ->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('customers', function (Blueprint $table) {
+            $table->dropForeign(['HmeterWorkDelegationId']);
+        });
+
         Schema::dropIfExists('work_delegations');
     }
 };

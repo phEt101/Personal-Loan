@@ -147,6 +147,8 @@ return new class extends Migration
             $table->string('HmeterTransferStatus', 20)->default('pending')->index();
             $table->dateTime('HmeterTransferredAt')->nullable();
             $table->foreignId('HmeterTransferredBy')->nullable()->constrained('users')->nullOnDelete();
+            // Foreign key is added after work_delegations is created.
+            $table->unsignedBigInteger('HmeterWorkDelegationId')->nullable()->index();
             $table->dateTime('AttachmentPurgeAfter')->nullable()->index();
             $table->dateTime('AttachmentsPurgedAt')->nullable();
 
