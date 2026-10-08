@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\WorkDelegation\Models;
 
+use App\Modules\Settings\Models\ResponsibilityGroup;
+use App\Modules\Settings\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

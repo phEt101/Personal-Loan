@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Settings;
 
-use App\Models\Role;
-use App\Models\User;
+use App\Modules\Settings\Models\Role;
+use App\Modules\Settings\Models\User;
 use Database\Seeders\CustomerMockSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

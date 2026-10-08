@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ResponsibilityGroup;
-use App\Models\User;
+use App\Modules\Settings\Models\ResponsibilityGroup;
+use App\Modules\Settings\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

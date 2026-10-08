@@ -2,10 +2,17 @@
 
 namespace App\Modules\CustomerHistory\Http\Controllers;
 
-use App\Models\User;
-use App\Modules\CustomerHistory\Services\CustomerAccessService;
+use App\Modules\CustomerHistory\Models\Customer;
+use App\Modules\CustomerHistory\Models\CustomerAddress;
+use App\Modules\CustomerHistory\Models\CustomerAttachment;
+use App\Modules\CustomerHistory\Models\CustomerEmail;
+use App\Modules\CustomerHistory\Models\CustomerPhone;
+use App\Modules\CustomerHistory\Models\CustomerRemark;
+use App\Modules\Settings\Models\User;
+use App\Modules\Settings\Services\CustomerAccessService;
+use App\Modules\WorkDelegation\Models\WorkDelegation;
 use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,7 +64,7 @@ class CustomerController extends Controller
             'identity_card_id' => ['required', 'digits:13'],
         ]);
 
-        $query = DB::table('customers')
+        $query = Customer::query()
             ->where('IdentityCardTypeCode', 1)
             ->where('IdentityCardId', $validated['identity_card_id']);
 
@@ -70,8 +77,8 @@ class CustomerController extends Controller
 
     public function previewAttachment(Request $request, int $attachment)
     {
-        $record = DB::table('customer_attachments')->where('id', $attachment)->firstOrFail();
-        $customerQuery = DB::table('customers')->where('CustomerNo', $record->CustomerNo);
+        $record = CustomerAttachment::query()->findOrFail($attachment);
+        $customerQuery = Customer::query()->where('CustomerNo', $record->CustomerNo);
 
         $this->restrictCustomerReadAccess($customerQuery, $request->user());
 
@@ -85,12 +92,12 @@ class CustomerController extends Controller
 
     public function downloadAllAttachments(Request $request, string $customerNo)
     {
-        $customerQuery = DB::table('customers')->where('CustomerNo', $customerNo);
+        $customerQuery = Customer::query()->where('CustomerNo', $customerNo);
 
         $this->restrictCustomerReadAccess($customerQuery, $request->user());
 
         $customerQuery->firstOrFail();
-        $attachments = DB::table('customer_attachments')
+        $attachments = CustomerAttachment::query()
             ->where('CustomerNo', $customerNo)
             ->orderBy('id')
             ->get();
@@ -148,7 +155,31 @@ class CustomerController extends Controller
         abort_unless($request->user()->user_type === 'internal', 403);
 
         $now = now();
-        $customerQuery = DB::table('customers')
+        $customer = Customer::query()
+            ->from('customers as customer')
+            ->leftJoin('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+            ->where('customer.CustomerNo', $customerNo)
+            ->where('customer.HmeterTransferStatus', self::TRANSFER_PENDING)
+            ->select('customer.CustomerNo', 'creator.responsibility_group_id as CreatorGroupId');
+        $this->customerAccess->applyReadScope($customer, $request->user(), 'customer');
+        $customer = $customer->first();
+
+        if (! $customer) {
+            $accessibleCustomer = Customer::query()->where('CustomerNo', $customerNo);
+            $this->customerAccess->applyReadScope($accessibleCustomer, $request->user());
+            abort_unless($accessibleCustomer->exists(), 404);
+
+            return response()->json([
+                'message' => __('customerhistory::messages.transfer.already_transferred'),
+            ], 409);
+        }
+
+        $delegationId = $this->activeDelegationId(
+            $request->user(),
+            $customer->CreatorGroupId,
+            $now
+        );
+        $customerQuery = Customer::query()
             ->where('CustomerNo', $customerNo)
             ->where('HmeterTransferStatus', self::TRANSFER_PENDING);
         $this->customerAccess->applyReadScope($customerQuery, $request->user());
@@ -157,12 +188,13 @@ class CustomerController extends Controller
             'HmeterTransferStatus' => self::TRANSFERRED,
             'HmeterTransferredAt' => $now,
             'HmeterTransferredBy' => $request->user()->getAuthIdentifier(),
+            'HmeterWorkDelegationId' => $delegationId,
             'AttachmentPurgeAfter' => $now->copy()->addDays(self::ATTACHMENT_RETENTION_DAYS),
             'AttachmentsPurgedAt' => null,
         ]);
 
         if ($updated === 0) {
-            $accessibleCustomer = DB::table('customers')->where('CustomerNo', $customerNo);
+            $accessibleCustomer = Customer::query()->where('CustomerNo', $customerNo);
             $this->customerAccess->applyReadScope($accessibleCustomer, $request->user());
             abort_unless($accessibleCustomer->exists(), 404);
 
@@ -186,10 +218,28 @@ class CustomerController extends Controller
         ]);
     }
 
+    private function activeDelegationId(User $user, ?int $groupId, $at): ?int
+    {
+        if ($groupId === null || $user->isAdmin() || (int) $user->responsibility_group_id === $groupId) {
+            return null;
+        }
+
+        $delegationId = WorkDelegation::query()
+            ->where('responsibility_group_id', $groupId)
+            ->where('delegate_user_id', $user->getAuthIdentifier())
+            ->whereNull('cancelled_at')
+            ->where('starts_at', '<=', $at)
+            ->where('ends_at', '>=', $at)
+            ->value('id');
+
+        return $delegationId === null ? null : (int) $delegationId;
+    }
+
     public function show(Request $request, string $customerNo): JsonResponse
     {
         $user = $request->user();
-        $customerQuery = DB::table('customers as customer')
+        $customerQuery = Customer::query()
+            ->from('customers as customer')
             ->leftJoin('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
             ->leftJoin('users as transfer_user', 'transfer_user.id', '=', 'customer.HmeterTransferredBy')
             ->leftJoin('identity_card_types as identity_type', 'identity_type.IdentityCardTypeCode', '=', 'customer.IdentityCardTypeCode')
@@ -214,13 +264,13 @@ class CustomerController extends Controller
 
         $customer = $customerQuery->firstOrFail();
 
-        $email = DB::table('customer_emails')->where('CustomerNo', $customerNo)->orderBy('EmailId')->first();
-        $remark = DB::table('customer_remarks')->where('CustomerNo', $customerNo)->orderBy('RemarkId')->first();
+        $email = $customer->emails()->orderBy('EmailId')->first();
+        $remark = $customer->remarks()->orderBy('RemarkId')->first();
 
         return response()->json([
             'customer' => $customer,
-            'addresses' => DB::table('customer_addresses')->where('CustomerNo', $customerNo)->orderBy('AddressId')->get(),
-            'phones' => DB::table('customer_phones')->where('CustomerNo', $customerNo)->orderBy('PhoneId')->get(),
+            'addresses' => $customer->addresses()->orderBy('AddressId')->get(),
+            'phones' => $customer->phones()->orderBy('PhoneId')->get(),
             'email_remark' => $email?->Remark,
             'comment' => $remark?->Comment,
             'hmeter_transfer' => [
@@ -234,7 +284,8 @@ class CustomerController extends Controller
                 'visible' => $user->user_type === 'internal',
             ],
             'download_all_attachments_url' => route('customer-history.attachments.download-all', $customerNo),
-            'attachments' => DB::table('customer_attachments as attachment')
+            'attachments' => CustomerAttachment::query()
+                ->from('customer_attachments as attachment')
                 ->join('document_types as document_type', 'document_type.id', '=', 'attachment.DocumentTypeId')
                 ->where('attachment.CustomerNo', $customerNo)
                 ->orderBy('document_type.SortOrder')
@@ -282,7 +333,7 @@ class CustomerController extends Controller
             return $this->managerReadOnlyResponse();
         }
 
-        $customerQuery = DB::table('customers')->where('CustomerNo', $customerNo);
+        $customerQuery = Customer::query()->where('CustomerNo', $customerNo);
         $this->customerAccess->applyReadScope($customerQuery, $request->user());
 
         $customer = $customerQuery->firstOrFail();
@@ -404,7 +455,7 @@ class CustomerController extends Controller
             ]);
         }
 
-        $duplicateIdentityQuery = DB::table('customers')
+        $duplicateIdentityQuery = Customer::query()
             ->where('IdentityCardTypeCode', 1)
             ->where('IdentityCardId', $validated['IdentityCardId']);
 
@@ -425,7 +476,7 @@ class CustomerController extends Controller
         $now = now();
         $values = $this->customerValues($validated, $occupation);
 
-        DB::table('customers')->insert([
+        Customer::query()->create([
             ...$values,
             'CustomerNo' => $customerNo,
             'CustomerRefNo' => $customerNo,
@@ -467,7 +518,7 @@ class CustomerController extends Controller
         $now = now();
         $values = $this->customerValues($validated, $occupation);
 
-        DB::table('customers')->where('CustomerNo', $customerNo)->update([
+        Customer::query()->where('CustomerNo', $customerNo)->update([
             ...$values,
             'UpdateUserId' => 4,
             'UpdateDate' => $now,
@@ -580,8 +631,8 @@ class CustomerController extends Controller
         int|string $addressTypeCode,
         Carbon $now
     ): void {
-        DB::table('customer_addresses')->where('CustomerNo', $customerNo)->delete();
-        DB::table('customer_addresses')->insert(
+        CustomerAddress::query()->where('CustomerNo', $customerNo)->delete();
+        CustomerAddress::query()->insert(
             collect($validated['AddressItems'])->map(fn (array $address) => [
                 'CustomerNo' => $customerNo,
                 'AddressId' => $address['AddressId'],
@@ -599,8 +650,8 @@ class CustomerController extends Controller
             ])->all()
         );
 
-        DB::table('customer_phones')->where('CustomerNo', $customerNo)->delete();
-        DB::table('customer_phones')->insert(
+        CustomerPhone::query()->where('CustomerNo', $customerNo)->delete();
+        CustomerPhone::query()->insert(
             collect($validated['PhoneItems'])->map(fn (array $phone) => [
                 'CustomerNo' => $customerNo,
                 'PhoneId' => $phone['PhoneId'],
@@ -610,8 +661,8 @@ class CustomerController extends Controller
             ])->all()
         );
 
-        DB::table('customer_emails')->where('CustomerNo', $customerNo)->delete();
-        DB::table('customer_emails')->insert([
+        CustomerEmail::query()->where('CustomerNo', $customerNo)->delete();
+        CustomerEmail::query()->create([
             'CustomerNo' => $customerNo,
             'EmailId' => 1,
             'Email' => $validated['Email'],
@@ -620,9 +671,9 @@ class CustomerController extends Controller
             'Remark' => $validated['EmailRemark'] ?? null,
         ]);
 
-        DB::table('customer_remarks')->where('CustomerNo', $customerNo)->delete();
+        CustomerRemark::query()->where('CustomerNo', $customerNo)->delete();
         if (! empty($validated['Comment'])) {
-            DB::table('customer_remarks')->insert([
+            CustomerRemark::query()->create([
                 'CustomerNo' => $customerNo,
                 'RemarkId' => 1,
                 'Comment' => $validated['Comment'],
@@ -715,7 +766,7 @@ class CustomerController extends Controller
 
             abort_if(! $path, 500, 'Unable to store customer attachment.');
 
-            DB::table('customer_attachments')->insert([
+            CustomerAttachment::query()->create([
                 'CustomerNo' => $customerNo,
                 'DocumentName' => $attachment['DocumentName'],
                 'DocumentTypeId' => $attachment['DocumentTypeId'],
@@ -724,8 +775,6 @@ class CustomerController extends Controller
                 'MimeType' => $file->getMimeType(),
                 'FileSize' => $file->getSize(),
                 'UploadedBy' => $userId,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         }
     }
@@ -742,12 +791,12 @@ class CustomerController extends Controller
             return;
         }
 
-        $attachments = DB::table('customer_attachments')
+        $attachments = CustomerAttachment::query()
             ->where('CustomerNo', $customerNo)
             ->whereIn('id', $ids)
             ->get();
 
-        DB::table('customer_attachments')->whereIn('id', $attachments->pluck('id'))->delete();
+        CustomerAttachment::query()->whereIn('id', $attachments->pluck('id'))->delete();
         Storage::disk('local')->delete($attachments->pluck('FilePath')->all());
     }
 
@@ -755,7 +804,7 @@ class CustomerController extends Controller
     {
         $customerNumberDate = now(config('app.local_timezone'));
         $prefix = '00CU'.$customerNumberDate->format('ymd');
-        $latestCustomerNo = DB::table('customers')
+        $latestCustomerNo = Customer::query()
             ->where('CustomerNo', 'like', $prefix.'%')
             ->orderByDesc('CustomerNo')
             ->lockForUpdate()

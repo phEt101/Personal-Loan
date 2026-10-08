@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Settings\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -13,6 +12,11 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected static function newFactory(): UserFactory
+    {
+        return UserFactory::new();
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -69,16 +73,6 @@ class User extends Authenticatable
     public function responsibilityGroup(): BelongsTo
     {
         return $this->belongsTo(ResponsibilityGroup::class);
-    }
-
-    public function delegatedWork(): HasMany
-    {
-        return $this->hasMany(WorkDelegation::class, 'delegate_user_id');
-    }
-
-    public function workDelegations(): HasMany
-    {
-        return $this->hasMany(WorkDelegation::class, 'delegator_user_id');
     }
 
     public function isAdmin(): bool

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Modules\CustomerHistory\Console\Commands;
 
+use App\Modules\CustomerHistory\Models\Customer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ class PurgeTransferredAttachments extends Command
         $purgedCustomers = 0;
         $failedCustomers = 0;
 
-        DB::table('customers')
+        Customer::query()
             ->where('HmeterTransferStatus', 'transferred')
             ->whereNull('AttachmentsPurgedAt')
             ->whereNotNull('AttachmentPurgeAfter')
@@ -25,9 +26,7 @@ class PurgeTransferredAttachments extends Command
             ->orderBy('id')
             ->chunkById(100, function ($customers) use (&$purgedCustomers, &$failedCustomers): void {
                 foreach ($customers as $customer) {
-                    $attachments = DB::table('customer_attachments')
-                        ->where('CustomerNo', $customer->CustomerNo)
-                        ->get(['id', 'FilePath']);
+                    $attachments = $customer->attachments()->get(['id', 'FilePath']);
                     $allDeleted = true;
 
                     foreach ($attachments as $attachment) {
@@ -44,10 +43,8 @@ class PurgeTransferredAttachments extends Command
                     }
 
                     DB::transaction(function () use ($customer): void {
-                        DB::table('customer_attachments')->where('CustomerNo', $customer->CustomerNo)->delete();
-                        DB::table('customers')->where('id', $customer->id)->update([
-                            'AttachmentsPurgedAt' => now(),
-                        ]);
+                        $customer->attachments()->delete();
+                        $customer->update(['AttachmentsPurgedAt' => now()]);
                     });
                     $purgedCustomers++;
                 }

@@ -2,9 +2,9 @@
 
 namespace App\Modules\Settings\Http\Controllers;
 
-use App\Models\ResponsibilityGroup;
-use App\Models\Role;
-use App\Models\User;
+use App\Modules\Settings\Models\ResponsibilityGroup;
+use App\Modules\Settings\Models\Role;
+use App\Modules\Settings\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;

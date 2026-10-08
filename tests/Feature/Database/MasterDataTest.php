@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Database;
 
-use App\Models\User;
+use App\Modules\Settings\Models\User;
 use Database\Seeders\MasterLookupSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;

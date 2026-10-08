@@ -10,5 +10,5 @@ Artisan::command('inspire', function () {
 
 Schedule::command('attachments:purge-transferred')
     ->dailyAt('02:00')
-    ->timezone('Asia/Bangkok')
+    ->timezone(config('app.local_timezone'))
     ->withoutOverlapping();

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\CustomerHistory;
 
-use App\Models\User;
+use App\Modules\Settings\Models\User;
 use Carbon\Carbon;
 use Database\Seeders\MasterLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

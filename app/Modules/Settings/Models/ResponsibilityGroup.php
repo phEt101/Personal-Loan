@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Settings\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,4 +23,5 @@ class ResponsibilityGroup extends Model
     {
         return $this->hasMany(User::class)->where('user_type', 'external');
     }
+
 }

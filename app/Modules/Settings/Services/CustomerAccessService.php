@@ -1,14 +1,45 @@
 <?php
 
-namespace App\Modules\CustomerHistory\Services;
+namespace App\Modules\Settings\Services;
 
-use App\Models\User;
-use Illuminate\Database\Query\Builder;
+use App\Modules\Settings\Models\User;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class CustomerAccessService
 {
-    public function applyReadScope(Builder $query, User $user, string $customerTable = 'customers'): void
+    public function accessibleExternalGroupIds(User $user): ?Collection
+    {
+        if ($user->isAdmin()) {
+            return null;
+        }
+
+        $groupIds = collect();
+        if ($user->responsibility_group_id !== null) {
+            $groupIds->push((int) $user->responsibility_group_id);
+        }
+
+        return $groupIds
+            ->merge(DB::table('work_delegations as delegation')
+                ->join('responsibility_groups as delegated_group', 'delegated_group.id', '=', 'delegation.responsibility_group_id')
+                ->where('delegation.delegate_user_id', $user->id)
+                ->where('delegated_group.is_active', true)
+                ->whereNull('delegation.cancelled_at')
+                ->where('delegation.starts_at', '<=', now())
+                ->where('delegation.ends_at', '>=', now())
+                ->pluck('delegation.responsibility_group_id'))
+            ->map(fn ($groupId) => (int) $groupId)
+            ->unique()
+            ->values();
+    }
+
+    public function applyReadScope(
+        EloquentBuilder|QueryBuilder $query,
+        User $user,
+        string $customerTable = 'customers'
+    ): void
     {
         if ($user->user_type === 'internal') {
             if (! $user->isAdmin()) {
@@ -29,9 +60,13 @@ class CustomerAccessService
         $query->where("{$customerTable}.sysInsertUserId", $user->getAuthIdentifier());
     }
 
-    private function applyInternalScope(Builder $query, User $user, string $customerTable): void
+    private function applyInternalScope(
+        EloquentBuilder|QueryBuilder $query,
+        User $user,
+        string $customerTable
+    ): void
     {
-        $query->where(function (Builder $query) use ($customerTable, $user) {
+        $query->where(function ($query) use ($customerTable, $user) {
             $query->whereIn("{$customerTable}.sysInsertUserId", DB::table('users')
                 ->where('user_type', 'internal')
                 ->select('id'));

@@ -2,10 +2,12 @@
 
 namespace App\Modules\CustomerHistory\Http\Controllers;
 
-use App\Models\User;
-use App\Modules\CustomerHistory\Services\CustomerAccessService;
+use App\Modules\CustomerHistory\Models\Customer;
+use App\Modules\Settings\Models\User;
+use App\Modules\Settings\Services\CustomerAccessService;
+use App\Modules\WorkDelegation\Models\WorkDelegation;
 use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller;
@@ -90,7 +92,8 @@ class CustomerHistoryController extends Controller
 
     private function customerListQuery(User $user, array $access): Builder
     {
-        $query = DB::table('customers as customer')
+        $query = Customer::query()
+            ->from('customers as customer')
             ->select([
                 'customer.CustomerNo',
                 'customer.Firstname',
@@ -209,7 +212,6 @@ class CustomerHistoryController extends Controller
 
         return [
             'customers' => $customers,
-            'paginationPages' => $this->paginationPages($customers->currentPage(), $customers->lastPage()),
             'isInternalUser' => $access['isInternalUser'],
             'isExternalManager' => $access['isExternalManager'],
             'canViewCreator' => $access['canViewCreator'],
@@ -231,13 +233,14 @@ class CustomerHistoryController extends Controller
             return collect();
         }
 
-        $accessibleCreators = DB::table('customers as scoped_customer')
+        $accessibleCreators = Customer::query()
+            ->from('customers as scoped_customer')
             ->select('scoped_customer.sysInsertUserId')
             ->whereNotNull('scoped_customer.sysInsertUserId')
             ->distinct();
         $this->customerAccess->applyReadScope($accessibleCreators, $user, 'scoped_customer');
 
-        return DB::table('users')
+        return User::query()
             ->whereIn('id', $accessibleCreators)
             ->orderBy('employee_code')
             ->get(['id', 'employee_code', 'first_name', 'last_name']);
@@ -251,7 +254,8 @@ class CustomerHistoryController extends Controller
 
         $delegations = collect();
         if (! $user->isAdmin()) {
-            $delegations = DB::table('work_delegations as delegation')
+            $delegations = WorkDelegation::query()
+                ->from('work_delegations as delegation')
                 ->join('users as delegator', 'delegator.id', '=', 'delegation.delegator_user_id')
                 ->where('delegation.delegate_user_id', $user->id)
                 ->whereNull('delegation.cancelled_at')
@@ -409,18 +413,4 @@ class CustomerHistoryController extends Controller
         }
     }
 
-    private function paginationPages(int $currentPage, int $lastPage): array
-    {
-        if ($lastPage <= 1) {
-            return [1];
-        }
-
-        $pages = [1, $lastPage];
-        for ($page = max(1, $currentPage - 2); $page <= min($lastPage, $currentPage + 2); $page++) {
-            $pages[] = $page;
-        }
-        sort($pages);
-
-        return array_values(array_unique($pages));
-    }
 }

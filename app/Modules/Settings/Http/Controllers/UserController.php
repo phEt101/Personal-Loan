@@ -2,8 +2,8 @@
 
 namespace App\Modules\Settings\Http\Controllers;
 
-use App\Models\Role;
-use App\Models\User;
+use App\Modules\Settings\Models\Role;
+use App\Modules\Settings\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -70,7 +70,6 @@ class UserController extends Controller
             'perPageOptions' => $perPageOptions,
             'sort' => $sort,
             'direction' => $direction,
-            'paginationPages' => $this->paginationPages($users->currentPage(), $users->lastPage()),
         ]);
     }
 
@@ -164,7 +163,7 @@ class UserController extends Controller
 
         $user->update(['is_active' => ! $user->is_active]);
 
-        if (! $user->is_active) {
+        if (! $user->is_active && config('session.driver') === 'database') {
             DB::table('sessions')->where('user_id', $user->getKey())->delete();
         }
 
@@ -197,20 +196,4 @@ class UserController extends Controller
         return $prefix.str_pad((string) ($lastNumber + 1), 4, '0', STR_PAD_LEFT);
     }
 
-    private function paginationPages(int $currentPage, int $lastPage): array
-    {
-        if ($lastPage <= 1) {
-            return [1];
-        }
-
-        $pages = [1, $lastPage];
-
-        for ($page = max(1, $currentPage - 2); $page <= min($lastPage, $currentPage + 2); $page++) {
-            $pages[] = $page;
-        }
-
-        sort($pages);
-
-        return array_values(array_unique($pages));
-    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Modules\CustomerHistory\Console\Commands\PurgeTransferredAttachments;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +12,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->commands([
+            PurgeTransferredAttachments::class,
+        ]);
     }
 
     /**
@@ -26,6 +29,14 @@ class AppServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(app_path('Modules/CustomerHistory/Routes/web.php'));
         $this->loadViewsFrom(app_path('Modules/CustomerHistory/Resources/views'), 'customerhistory');
         $this->loadTranslationsFrom(app_path('Modules/CustomerHistory/Resources/lang'), 'customerhistory');
+
+        $this->loadRoutesFrom(app_path('Modules/Report/Routes/web.php'));
+        $this->loadViewsFrom(app_path('Modules/Report/Resources/views'), 'report');
+        $this->loadTranslationsFrom(app_path('Modules/Report/Resources/lang'), 'report');
+
+        $this->loadRoutesFrom(app_path('Modules/WorkDelegation/Routes/web.php'));
+        $this->loadViewsFrom(app_path('Modules/WorkDelegation/Resources/views'), 'workdelegation');
+        $this->loadTranslationsFrom(app_path('Modules/WorkDelegation/Resources/lang'), 'workdelegation');
 
         $this->loadRoutesFrom(app_path('Modules/Profile/Routes/web.php'));
         $this->loadViewsFrom(app_path('Modules/Profile/Resources/views'), 'profile');
