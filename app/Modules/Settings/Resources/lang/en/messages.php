@@ -6,6 +6,7 @@ return [
     'user_information' => 'User information',
     'employee_code' => 'Employee code',
     'user_type' => 'User type',
+    'all_user_types' => 'All user types',
     'select_user_type' => '-- Please select --',
     'internal' => 'Internal employee',
     'external' => 'External employee',

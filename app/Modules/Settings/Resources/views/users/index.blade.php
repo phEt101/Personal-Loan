@@ -32,8 +32,16 @@
                     <label for="settings_user_search">{{ __('settings::messages.search') }}</label>
                     <input id="settings_user_search" name="q" type="search" value="{{ $search }}" placeholder="{{ __('settings::messages.search_placeholder') }}">
                 </div>
+                <div class="module-field">
+                    <label for="settings_user_type_filter">{{ __('settings::messages.user_type') }}</label>
+                    <select id="settings_user_type_filter" name="user_type">
+                        <option value="">{{ __('settings::messages.all_user_types') }}</option>
+                        <option value="internal" @selected($userType === 'internal')>{{ __('settings::messages.internal') }}</option>
+                        <option value="external" @selected($userType === 'external')>{{ __('settings::messages.external') }}</option>
+                    </select>
+                </div>
                 <button type="submit" class="action-btn">{{ __('settings::messages.search') }}</button>
-                @if ($search !== '')
+                @if ($search !== '' || $userType !== '')
                     <a href="{{ route('settings.users.index', ['per_page' => $perPage, 'sort' => $sort, 'direction' => $direction]) }}" class="action-btn outline">{{ __('settings::messages.clear_search') }}</a>
                 @endif
             </form>

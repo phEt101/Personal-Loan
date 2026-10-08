@@ -23,6 +23,9 @@ class UserController extends Controller
         }
 
         $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
+        $userType = in_array($request->query('user_type'), ['internal', 'external'], true)
+            ? (string) $request->query('user_type')
+            : '';
         $sortableColumns = ['employee_code', 'full_name', 'email', 'user_type', 'role', 'status', 'created_at'];
         $sort = in_array($request->query('sort'), $sortableColumns, true)
             ? (string) $request->query('sort')
@@ -30,6 +33,7 @@ class UserController extends Controller
         $direction = $request->query('direction') === 'desc' ? 'desc' : 'asc';
         $usersQuery = User::query()
             ->with('role')
+            ->when($userType !== '', fn ($query) => $query->where('user_type', $userType))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query
@@ -66,6 +70,7 @@ class UserController extends Controller
         return view('settings::users.index', [
             'users' => $users,
             'search' => $search,
+            'userType' => $userType,
             'perPage' => $perPage,
             'perPageOptions' => $perPageOptions,
             'sort' => $sort,

@@ -44,7 +44,7 @@
                 @endphp
 
                 <div class="responsibility-member-panels">
-                    <section class="responsibility-member-panel" data-member-panel>
+                    <section class="responsibility-member-panel" data-member-panel data-selected-label="{{ __('settings::messages.selected_members') }}">
                         <div class="responsibility-member-panel-heading">
                             <div>
                                 <h4>{{ __('settings::messages.internal_members') }}</h4>
@@ -52,7 +52,8 @@
                             </div>
                             <span data-selected-count></span>
                         </div>
-                        <input class="responsibility-member-search" type="search" placeholder="{{ __('settings::messages.search_members') }}" data-member-search>
+                        <label class="visually-hidden" for="internal_member_search">{{ __('settings::messages.search_members') }}</label>
+                        <input id="internal_member_search" class="responsibility-member-search" type="search" placeholder="{{ __('settings::messages.search_members') }}" data-member-search>
                         <div class="responsibility-member-list">
                             @foreach ($internalUsers as $user)
                                 <label class="responsibility-member-option" data-member-option data-search-text="{{ mb_strtolower($user->employee_code.' '.$user->full_name) }}">
@@ -66,7 +67,7 @@
                         </div>
                     </section>
 
-                    <section class="responsibility-member-panel" data-member-panel>
+                    <section class="responsibility-member-panel" data-member-panel data-selected-label="{{ __('settings::messages.selected_members') }}">
                         <div class="responsibility-member-panel-heading">
                             <div>
                                 <h4>{{ __('settings::messages.external_members') }}</h4>
@@ -74,7 +75,8 @@
                             </div>
                             <span data-selected-count></span>
                         </div>
-                        <input class="responsibility-member-search" type="search" placeholder="{{ __('settings::messages.search_members') }}" data-member-search>
+                        <label class="visually-hidden" for="external_member_search">{{ __('settings::messages.search_members') }}</label>
+                        <input id="external_member_search" class="responsibility-member-search" type="search" placeholder="{{ __('settings::messages.search_members') }}" data-member-search>
                         <div class="responsibility-member-list">
                             @foreach ($externalUsers as $user)
                                 @php $assignedGroupId = $externalAssignments[$user->id] ?? null; @endphp
@@ -107,7 +109,7 @@
             const search = panel.querySelector('[data-member-search]');
             const updateCount = () => {
                 const count = options.filter((option) => option.querySelector('input').checked).length;
-                counter.textContent = @js(__('settings::messages.selected_members')).replace(':count', count);
+                counter.textContent = panel.dataset.selectedLabel.replace(':count', count);
             };
 
             search.addEventListener('input', () => {

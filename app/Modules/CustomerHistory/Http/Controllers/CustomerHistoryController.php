@@ -20,6 +20,8 @@ class CustomerHistoryController extends Controller
 
     private const DEFAULT_PER_PAGE = 10;
 
+    private const DATE_INPUT_FORMAT = '!Y-m-d';
+
     public function __construct(private readonly CustomerAccessService $customerAccess) {}
 
     public function index(Request $request)
@@ -134,7 +136,7 @@ class CustomerHistoryController extends Controller
             $query->where(
                 'customer.sysInsertDateTime',
                 '>=',
-                Carbon::createFromFormat('!Y-m-d', $filters['dateFrom'], config('app.local_timezone'))
+                Carbon::createFromFormat(self::DATE_INPUT_FORMAT, $filters['dateFrom'], config('app.local_timezone'))
                     ->startOfDay()
                     ->utc()
             );
@@ -143,7 +145,7 @@ class CustomerHistoryController extends Controller
             $query->where(
                 'customer.sysInsertDateTime',
                 '<=',
-                Carbon::createFromFormat('!Y-m-d', $filters['dateTo'], config('app.local_timezone'))
+                Carbon::createFromFormat(self::DATE_INPUT_FORMAT, $filters['dateTo'], config('app.local_timezone'))
                     ->endOfDay()
                     ->utc()
             );
@@ -405,12 +407,11 @@ class CustomerHistoryController extends Controller
         }
 
         try {
-            $parsedDate = Carbon::createFromFormat('!Y-m-d', $date, config('app.local_timezone'));
+            $parsedDate = Carbon::createFromFormat(self::DATE_INPUT_FORMAT, $date, config('app.local_timezone'));
 
             return $parsedDate->format('Y-m-d') === $date ? $date : '';
         } catch (\Throwable) {
             return '';
         }
     }
-
 }

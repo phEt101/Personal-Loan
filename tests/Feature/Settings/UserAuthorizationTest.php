@@ -284,6 +284,20 @@ class UserAuthorizationTest extends TestCase
             ->assertOk();
     }
 
+    public function test_user_list_can_filter_by_user_type(): void
+    {
+        $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG)]);
+        $internal = User::factory()->create(['user_type' => 'internal']);
+        $external = User::factory()->create(['user_type' => 'external']);
+
+        $this->actingAs($admin)
+            ->get('/settings/users?user_type=external')
+            ->assertOk()
+            ->assertViewHas('userType', 'external')
+            ->assertViewHas('users', fn ($users) => $users->pluck('id')->contains($external->id)
+                && ! $users->pluck('id')->contains($internal->id));
+    }
+
     public function test_user_list_can_sort_columns_in_both_directions(): void
     {
         $admin = User::factory()->create([

@@ -6,6 +6,7 @@ return [
     'user_information' => 'ข้อมูลผู้ใช้งาน',
     'employee_code' => 'รหัสพนักงาน',
     'user_type' => 'ประเภทผู้ใช้งาน',
+    'all_user_types' => 'ทุกประเภทผู้ใช้งาน',
     'select_user_type' => '-- กรุณาเลือก --',
     'internal' => 'พนักงานภายใน',
     'external' => 'พนักงานภายนอก',
