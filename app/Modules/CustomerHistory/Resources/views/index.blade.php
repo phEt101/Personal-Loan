@@ -1,5 +1,9 @@
 @extends('layouts.app', ['title' => __('customerhistory::messages.index.page_title')])
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/customer-history.css') }}?v={{ filemtime(public_path('css/customer-history.css')) }}">
+@endpush
+
 @section('content')
     <section class="dashboard customer-history-page">
         <div class="hero compact-hero hero-with-actions">

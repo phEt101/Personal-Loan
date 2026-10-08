@@ -1,0 +1,304 @@
+/* Styles for the settings module. */
+
+.module-form .responsibility-member-panel-heading h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+body .module-card > h3,
+body .settings-user-filter-card > h3 {
+    margin-bottom: 0.9rem;
+}
+
+body .settings-user-list-heading {
+    margin-bottom: 0.85rem;
+}
+
+body .settings-user-search {
+    gap: 0.6rem;
+}
+
+body .settings-user-type,
+body .settings-user-role,
+body .settings-user-status {
+    padding: 0.28rem 0.55rem;
+    font-size: 0.75rem;
+}
+
+.settings-add-user-button {
+    text-decoration: none;
+}
+
+.settings-create-back {
+    display: flex;
+}
+
+.settings-user-list-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.settings-user-list-heading h3 {
+    margin: 0;
+}
+
+.settings-user-list-heading span {
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: #effbea;
+    color: #278b16;
+    font-weight: 700;
+}
+
+.settings-user-search {
+    display: grid;
+    grid-template-columns: minmax(18rem, 1fr) auto auto;
+    align-items: end;
+    gap: 0.75rem;
+    margin-bottom: 0;
+}
+
+.settings-user-filter-card > h3 {
+    margin-bottom: 1.25rem;
+}
+
+.responsibility-back-link .action-btn {
+    min-height: 2.25rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.responsibility-group-basics {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(12rem, 1fr);
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--consent-line);
+}
+
+.responsibility-member-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+.responsibility-member-panel {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--consent-line);
+    border-radius: 0.85rem;
+    background: #fbfdfc;
+}
+
+.responsibility-member-panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.responsibility-member-panel-heading p {
+    margin: 0.25rem 0 0;
+    color: var(--consent-muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.responsibility-member-panel-heading > span {
+    flex: 0 0 auto;
+    padding: 0.28rem 0.55rem;
+    border-radius: 999px;
+    background: var(--consent-mint);
+    color: var(--consent-teal-dark);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.responsibility-member-search {
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--consent-line);
+    border-radius: 0.6rem;
+    background: #fff;
+    font: inherit;
+}
+
+.responsibility-member-list {
+    display: grid;
+    gap: 0.4rem;
+    max-height: 22rem;
+    margin-top: 0.7rem;
+    overflow-y: auto;
+}
+
+.responsibility-member-option {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 0.7rem;
+    border: 1px solid transparent;
+    border-radius: 0.6rem;
+    background: #fff;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
+}
+
+.responsibility-member-option:hover {
+    border-color: #b9ddae;
+}
+
+.responsibility-member-option:has(input:checked) {
+    border-color: #8fd47a;
+    background: #f1faee;
+}
+
+.responsibility-member-option input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    accent-color: var(--consent-teal);
+}
+
+.responsibility-member-copy {
+    min-width: 0;
+}
+
+.responsibility-member-copy strong,
+.responsibility-member-copy small,
+.responsibility-member-copy em {
+    display: block;
+}
+
+.responsibility-member-copy strong {
+    color: var(--consent-ink);
+    font-size: 0.88rem;
+}
+
+.responsibility-member-copy small {
+    margin-top: 0.1rem;
+    color: var(--consent-muted);
+    font-size: 0.75rem;
+}
+
+.responsibility-member-copy em {
+    margin-top: 0.25rem;
+    color: #b45309;
+    font-size: 0.7rem;
+    font-style: normal;
+}
+
+@media (max-width: 900px) {
+    .responsibility-group-basics,
+    .responsibility-member-panels {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.settings-user-sort-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.settings-user-sort-link:hover,
+.settings-user-sort-link.is-active {
+    color: #078b61;
+}
+
+.settings-user-sort-icon {
+    min-width: 0.8rem;
+    color: #78918a;
+    font-size: 0.68rem;
+    text-align: center;
+}
+
+.settings-user-sort-link.is-active .settings-user-sort-icon {
+    color: #078b61;
+}
+
+.settings-user-type {
+    display: inline-flex;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.settings-user-type-internal {
+    background: #eaf8e5;
+    color: #278b16;
+}
+
+.settings-user-type-external {
+    background: #eef4ff;
+    color: #3763a5;
+}
+
+.settings-user-role {
+    display: inline-flex;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.settings-user-role-admin {
+    background: #fff4e5;
+    color: #b45309;
+}
+
+.settings-user-role-manager {
+    background: #eef4ff;
+    color: #315ea8;
+}
+
+.settings-user-role-user {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.settings-user-status {
+    display: inline-flex;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.settings-user-status.is-active {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.settings-user-status.is-inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+@media (max-width: 760px) {
+    .settings-user-search {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Page-level responsive layouts */
+@media (max-width: 768px) {
+    body .settings-user-type,
+    body .settings-user-role,
+    body .settings-user-status {
+        justify-self: end;
+    }
+}

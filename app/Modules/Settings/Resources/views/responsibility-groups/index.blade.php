@@ -1,7 +1,11 @@
 @extends('layouts.app', ['title' => __('settings::messages.responsibility_groups')])
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/settings.css') }}?v={{ filemtime(public_path('css/settings.css')) }}">
+@endpush
+
 @section('content')
-    <section class="dashboard settings-user-page">
+    <section class="dashboard module-page">
         <div class="hero compact-hero hero-with-actions">
             <div class="hero-body">
                 <h2>{{ __('settings::messages.responsibility_groups') }}</h2>
@@ -14,9 +18,9 @@
             </div>
         </div>
 
-        <div class="settings-user-card">
-            <div class="settings-user-table-wrap">
-                <table class="settings-user-table">
+        <div class="module-card">
+            <div class="module-table-wrap">
+                <table class="module-table">
                     <thead>
                         <tr>
                             <th>{{ __('settings::messages.group_name') }}</th>
@@ -34,13 +38,13 @@
                                 <td>{{ $group->externalUsers->pluck('full_name')->join(', ') ?: '—' }}</td>
                                 <td>{{ $group->is_active ? __('settings::messages.active') : __('settings::messages.inactive') }}</td>
                                 <td>
-                                    <a class="settings-user-action-button" href="{{ route('settings.responsibility-groups.edit', $group) }}">
+                                    <a class="module-action-button" href="{{ route('settings.responsibility-groups.edit', $group) }}">
                                         {{ __('settings::messages.edit') }}
                                     </a>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="settings-user-empty">{{ __('settings::messages.no_responsibility_groups') }}</td></tr>
+                            <tr><td colspan="5" class="module-table-empty">{{ __('settings::messages.no_responsibility_groups') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

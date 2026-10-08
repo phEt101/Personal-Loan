@@ -179,56 +179,17 @@
         </table>
     </div>
 
-    @if ($customers->total() > 0)
-        <div class="pagination-container">
-            <nav class="pagination-nav" aria-label="Pagination">
-                <div class="customer-history-pagination-info">
-                    <span class="pagination-summary">
-                        {{ __('customerhistory::messages.index.showing_customers', ['from' => $customers->firstItem(), 'to' => $customers->lastItem(), 'total' => $customers->total()]) }}
-                    </span>
-                    <form method="GET" action="{{ route('customer-history.index') }}" class="customer-history-per-page-form">
-                        @if ($search !== '')
-                            <input type="hidden" name="q" value="{{ $search }}">
-                        @endif
-                        @if ($dateFrom !== '')
-                            <input type="hidden" name="date_from" value="{{ $dateFrom }}">
-                        @endif
-                        @if ($dateTo !== '')
-                            <input type="hidden" name="date_to" value="{{ $dateTo }}">
-                        @endif
-                        @if ($creatorType !== '')
-                            <input type="hidden" name="creator_type" value="{{ $creatorType }}">
-                        @endif
-                        <input type="hidden" name="sort" value="{{ $sort }}">
-                        <input type="hidden" name="direction" value="{{ $direction }}">
-                        <label for="customerHistoryPerPage">{{ __('customerhistory::messages.index.rows_per_page') }}</label>
-                        <select id="customerHistoryPerPage" name="per_page">
-                            @foreach ($perPageOptions as $option)
-                                <option value="{{ $option }}" @selected($perPage === $option)>{{ $option }}</option>
-                            @endforeach
-                        </select>
-                    </form>
-                </div>
-                <div class="pagination-list">
-                    <a class="pagination-link {{ $customers->onFirstPage() ? 'is-disabled' : '' }}" href="{{ $customers->previousPageUrl() ?: '#' }}">
-                        {{ __('customerhistory::messages.index.previous_page') }}
-                    </a>
-                    @foreach ($paginationPages as $index => $page)
-                        @if ($index > 0 && $page - $paginationPages[$index - 1] > 1)
-                            <span class="pagination-ellipsis">…</span>
-                        @endif
-
-                        @if ($page === $customers->currentPage())
-                            <span class="pagination-current" aria-current="page">{{ $page }}</span>
-                        @else
-                            <a class="pagination-link" href="{{ $customers->url($page) }}">{{ $page }}</a>
-                        @endif
-                    @endforeach
-                    <a class="pagination-link {{ $customers->hasMorePages() ? '' : 'is-disabled' }}" href="{{ $customers->nextPageUrl() ?: '#' }}">
-                        {{ __('customerhistory::messages.index.next_page') }}
-                    </a>
-                </div>
-            </nav>
-        </div>
-    @endif
+    @include('partials.pagination', [
+        'paginator' => $customers,
+        'summary' => __('customerhistory::messages.index.showing_customers', ['from' => $customers->firstItem(), 'to' => $customers->lastItem(), 'total' => $customers->total()]),
+        'action' => route('customer-history.index'),
+        'formClass' => 'customer-history-per-page-form',
+        'selectId' => 'customerHistoryPerPage',
+        'perPage' => $perPage,
+        'perPageOptions' => $perPageOptions,
+        'rowsPerPageLabel' => __('customerhistory::messages.index.rows_per_page'),
+        'previousLabel' => __('customerhistory::messages.index.previous_page'),
+        'nextLabel' => __('customerhistory::messages.index.next_page'),
+        'queryParameters' => request()->except(['page', 'partial', 'per_page']),
+    ])
 </div>

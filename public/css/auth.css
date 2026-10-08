@@ -6,7 +6,7 @@
     --auth-ink: #0f172a;
     --auth-muted: #5b6475;
     --auth-panel: rgba(255, 255, 255, 0.82);
-    --auth-border: rgba(15, 23, 42, 0.10);
+    --auth-border: rgba(15, 23, 42, 0.1);
     --auth-accent: #059669;
     --auth-accent-strong: #047857;
     --auth-warning: #dc2626;
@@ -20,8 +20,16 @@ body.auth-page {
     font-family: "Segoe UI Variable", "Segoe UI", "Noto Sans Thai", sans-serif;
     color: var(--auth-ink);
     background:
-        radial-gradient(circle at top left, rgba(16, 185, 129, 0.24), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.18), transparent 28%),
+        radial-gradient(
+            circle at top left,
+            rgba(16, 185, 129, 0.24),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at bottom right,
+            rgba(245, 158, 11, 0.18),
+            transparent 28%
+        ),
         linear-gradient(135deg, #f8fafc 0%, #eefdf6 55%, #fff7ed 100%);
     overflow-x: hidden;
 }
@@ -71,7 +79,8 @@ body.auth-page {
 
 .auth-marketing {
     max-width: 42rem;
-    padding: clamp(1rem, 2vw, 2rem) clamp(0.5rem, 1vw, 1rem) clamp(1rem, 2vw, 2rem) 0;
+    padding: clamp(1rem, 2vw, 2rem) clamp(0.5rem, 1vw, 1rem)
+        clamp(1rem, 2vw, 2rem) 0;
 }
 
 .auth-brand {
@@ -149,7 +158,11 @@ body.auth-page {
     width: 2.2rem;
     height: 2.2rem;
     border-radius: 999px;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(5, 150, 105, 0.08));
+    background: linear-gradient(
+        135deg,
+        rgba(16, 185, 129, 0.18),
+        rgba(5, 150, 105, 0.08)
+    );
     color: var(--auth-accent-strong);
     font-weight: 800;
     border: 1px solid rgba(16, 185, 129, 0.2);
@@ -274,7 +287,10 @@ body.auth-page {
     color: var(--auth-ink);
     padding: 0.95rem 1rem;
     font: inherit;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
 }
 
 .auth-field input::placeholder {
@@ -310,14 +326,20 @@ body.auth-page {
     border: none;
     border-radius: 1rem;
     padding: 1rem 1.2rem;
-    background: linear-gradient(135deg, var(--auth-accent) 0%, var(--auth-accent-strong) 100%);
+    background: linear-gradient(
+        135deg,
+        var(--auth-accent) 0%,
+        var(--auth-accent-strong) 100%
+    );
     color: #ffffff;
     font: inherit;
     font-weight: 800;
     letter-spacing: 0.02em;
     cursor: pointer;
     box-shadow: 0 16px 28px rgba(5, 150, 105, 0.22);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .auth-submit:hover {
@@ -440,7 +462,11 @@ body.auth-page {
     padding: 0;
     font-family: "Aptos", "Leelawadee UI", "Segoe UI", sans-serif;
     background:
-        radial-gradient(circle at 12% 12%, rgba(74, 195, 29, 0.14), transparent 25rem),
+        radial-gradient(
+            circle at 12% 12%,
+            rgba(74, 195, 29, 0.14),
+            transparent 25rem
+        ),
         #f4f7f6;
 }
 
@@ -592,7 +618,10 @@ body.auth-page {
     .auth-shell {
         width: 100%;
         min-height: 100dvh;
-        padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+        padding: max(0.75rem, env(safe-area-inset-top))
+            max(0.75rem, env(safe-area-inset-right))
+            max(0.75rem, env(safe-area-inset-bottom))
+            max(0.75rem, env(safe-area-inset-left));
     }
 
     .auth-marketing {

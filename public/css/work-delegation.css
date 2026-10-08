@@ -1,0 +1,128 @@
+/* Styles for the work-delegation module. */
+
+/* Styles for the work-delegation module. */
+
+.delegation-form-card {
+    width: min(100%, 1080px);
+    margin-inline: auto;
+    padding: 0;
+    overflow: hidden;
+}
+
+.delegation-back-action {
+    width: min(100%, 1080px);
+    margin-inline: auto;
+}
+
+.delegation-form-card form {
+    display: grid;
+    gap: 0;
+}
+
+.delegation-section {
+    padding: 1.6rem 1.75rem;
+    border-bottom: 1px solid #e3eee9;
+}
+
+.delegation-section--note {
+    background: #fbfdfc;
+}
+
+.delegation-section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+.delegation-section-heading h3,
+.delegation-section-heading p {
+    margin: 0;
+}
+
+.delegation-section-heading h3 {
+    color: #173042;
+    font-size: 1.05rem;
+}
+
+.delegation-section-heading p {
+    margin-top: 0.25rem;
+    color: #6b7f8e;
+    font-size: 0.86rem;
+}
+
+.delegation-section-number {
+    display: inline-grid;
+    flex: 0 0 2rem;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 50%;
+    color: #08795b;
+    background: #e4f8ef;
+    font-weight: 800;
+}
+
+.delegation-current-user {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 1.25rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid #d7ebe2;
+    border-radius: 0.75rem;
+    background: #f5fbf8;
+}
+
+.delegation-current-user span,
+.delegation-current-user small {
+    color: #6b7f8e;
+    font-size: 0.82rem;
+}
+
+.delegation-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.delegation-note-field {
+    grid-column: 1 / -1;
+}
+
+.delegation-form-actions {
+    justify-content: flex-end;
+    padding: 1.25rem 1.75rem;
+    background: #fff;
+}
+
+@media (max-width: 760px) {
+    .delegation-form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .delegation-note-field {
+        grid-column: auto;
+    }
+
+    .delegation-section {
+        padding: 1.2rem 1rem;
+    }
+
+    .delegation-current-user {
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
+    }
+
+    .delegation-form-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 1rem;
+    }
+
+    .delegation-form-actions .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

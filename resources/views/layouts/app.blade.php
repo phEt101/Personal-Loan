@@ -8,7 +8,8 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('icon/S__.ico') }}?v={{ filemtime(public_path('icon/S__.ico')) }}">
     <link rel="stylesheet" href="{{ asset('vendor/choices/choices.min.css') }}?v={{ filemtime(public_path('vendor/choices/choices.min.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/customer-history.css') }}?v={{ filemtime(public_path('css/customer-history.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/modules.css') }}?v={{ filemtime(public_path('css/modules.css')) }}">
+    @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/toast.css') }}?v={{ filemtime(public_path('css/toast.css')) }}">
 </head>
 <body>

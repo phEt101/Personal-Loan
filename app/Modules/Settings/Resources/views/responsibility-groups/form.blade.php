@@ -1,7 +1,11 @@
 @extends('layouts.app', ['title' => __('settings::messages.responsibility_groups')])
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/settings.css') }}?v={{ filemtime(public_path('css/settings.css')) }}">
+@endpush
+
 @section('content')
-    <section class="dashboard settings-user-page">
+    <section class="dashboard module-page">
         <div class="hero compact-hero">
             <div class="hero-body">
                 <h2>{{ $group->exists ? __('settings::messages.edit_responsibility_group') : __('settings::messages.add_responsibility_group') }}</h2>
@@ -13,19 +17,19 @@
             <a href="{{ route('settings.responsibility-groups.index') }}" class="action-btn outline">← {{ __('settings::messages.responsibility_groups') }}</a>
         </div>
 
-        <div class="settings-user-card">
-            <form method="POST" action="{{ $group->exists ? route('settings.responsibility-groups.update', $group) : route('settings.responsibility-groups.store') }}" class="profile-form">
+        <div class="module-card">
+            <form method="POST" action="{{ $group->exists ? route('settings.responsibility-groups.update', $group) : route('settings.responsibility-groups.store') }}" class="module-form">
                 @csrf
                 @if ($group->exists) @method('PUT') @endif
 
                 <div class="responsibility-group-basics">
-                    <div class="profile-field">
+                    <div class="module-field">
                         <label for="responsibility_group_name">{{ __('settings::messages.group_name') }} <span class="required-asterisk">*</span></label>
                         <input id="responsibility_group_name" name="name" value="{{ old('name', $group->name) }}" required maxlength="100">
                         @error('name')<small class="field-error">{{ $message }}</small>@enderror
                     </div>
 
-                    <div class="profile-field">
+                    <div class="module-field">
                         <label for="responsibility_group_status">{{ __('settings::messages.status') }}</label>
                         <select id="responsibility_group_status" name="is_active">
                             <option value="1" @selected((string) old('is_active', (int) $group->is_active) === '1')>{{ __('settings::messages.active') }}</option>
@@ -89,7 +93,7 @@
                     </section>
                 </div>
 
-                <div class="profile-form-actions">
+                <div class="module-form-actions">
                     <button type="submit" class="action-btn">{{ __('settings::messages.save_changes') }}</button>
                 </div>
             </form>

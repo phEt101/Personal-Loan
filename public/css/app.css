@@ -4,7 +4,13 @@
 
 body {
     margin: 0;
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family:
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
     background: #f8f9fa;
     color: #1f2937;
     overflow-x: hidden;
@@ -27,7 +33,9 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform 0.25s ease, opacity 0.25s ease;
+    transition:
+        transform 0.25s ease,
+        opacity 0.25s ease;
     z-index: 40;
 }
 
@@ -178,7 +186,11 @@ body {
     justify-content: center;
     flex: 0 0 1.5rem;
     border-radius: 999px;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(5, 150, 105, 0.1));
+    background: linear-gradient(
+        135deg,
+        rgba(16, 185, 129, 0.14),
+        rgba(5, 150, 105, 0.1)
+    );
     border: 1px solid rgba(16, 185, 129, 0.16);
     pointer-events: none;
 }
@@ -308,7 +320,10 @@ body {
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s ease;
     z-index: 20;
 }
 
@@ -414,8 +429,13 @@ body {
     cursor: pointer;
     white-space: nowrap;
 }
-.file-view-zip-btn:hover { background:#f0fdf8; }
-.file-view-zip-btn:disabled { opacity:0.6; cursor:default; }
+.file-view-zip-btn:hover {
+    background: #f0fdf8;
+}
+.file-view-zip-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
 
 #zipContentsCloseBtn {
     padding: 0.4rem 0.8rem;
@@ -425,11 +445,21 @@ body {
     color: #374151;
     cursor: pointer;
 }
-#zipContentsCloseBtn:hover { background:#f3f4f6; }
+#zipContentsCloseBtn:hover {
+    background: #f3f4f6;
+}
 
-.zip-entry-row { padding:0.35rem 0; border-bottom:1px solid #f3f4f6; }
-.zip-entry-row a { color: #0f766e; text-decoration: none; }
-.zip-entry-row a:hover { text-decoration: underline; }
+.zip-entry-row {
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+.zip-entry-row a {
+    color: #0f766e;
+    text-decoration: none;
+}
+.zip-entry-row a:hover {
+    text-decoration: underline;
+}
 
 .user-name-compact {
     font-weight: 600;
@@ -613,7 +643,6 @@ body {
     gap: 0.5rem;
     align-items: center;
     justify-content: center;
-
 }
 
 .table-actions-form {
@@ -693,7 +722,9 @@ body {
     font-size: 0.95rem;
     color: #1f2937;
     background: #ffffff;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .form-group input:focus {
@@ -756,11 +787,13 @@ body {
     gap: 0.5rem;
     padding: 0.45rem 0.9rem;
     border-radius: 9999px;
-    border: 1px solid rgba(0,0,0,0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
     background: linear-gradient(180deg, #10b981 0%, #059669 100%);
     color: #ffffff;
     font-weight: 700;
-    box-shadow: 0 2px 0 rgba(0,0,0,0.06) inset, 0 2px 6px rgba(5,150,105,0.12);
+    box-shadow:
+        0 2px 0 rgba(0, 0, 0, 0.06) inset,
+        0 2px 6px rgba(5, 150, 105, 0.12);
     cursor: pointer;
     text-decoration: none;
 }
@@ -768,12 +801,12 @@ body {
 .action-link.view-docs:hover,
 .action-link.view-docs:focus {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(5,150,105,0.18);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.18);
 }
 
 .action-link.view-docs:active {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(5,150,105,0.12);
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.12);
 }
 
 .action-link.view-docs .icon {
@@ -856,8 +889,8 @@ body {
     pointer-events: none;
 }
 
-.sidebar.open+.sidebar-overlay,
-.sidebar.open~.sidebar-overlay {
+.sidebar.open + .sidebar-overlay,
+.sidebar.open ~ .sidebar-overlay {
     display: block;
     opacity: 1;
     pointer-events: auto;
@@ -935,7 +968,9 @@ body {
 .modal-content {
     background-color: #ffffff;
     border-radius: 1rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     width: 90%;
     max-width: 500px;
     max-height: calc(100vh - 2rem);
@@ -1099,7 +1134,7 @@ body {
 }
 
 .wizard-steps::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 15px;
     left: 0;
@@ -1502,7 +1537,9 @@ body {
     font-size: 0.95rem;
     color: #1f2937;
     background: #ffffff;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .form-group select:focus,
@@ -1603,7 +1640,6 @@ body {
 }
 
 @media (max-width: 768px) {
-
     .col-9,
     .col-8,
     .col-6,
@@ -1887,7 +1923,11 @@ body {
     padding: 0 2rem 1.5rem;
     margin-left: 272px;
     background:
-        radial-gradient(circle at 92% 8%, rgba(74, 195, 29, 0.08), transparent 24rem),
+        radial-gradient(
+            circle at 92% 8%,
+            rgba(74, 195, 29, 0.08),
+            transparent 24rem
+        ),
         var(--shell-canvas);
 }
 
@@ -2331,6 +2371,30 @@ body {
     pointer-events: none;
 }
 
+.pagination-info,
+.pagination-per-page-form {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.pagination-per-page-form label {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.pagination-per-page-form select {
+    min-width: 4.5rem;
+    padding: 0.45rem 1.8rem 0.45rem 0.65rem;
+    border: 1px solid #dbead8;
+    border-radius: 0.55rem;
+    background-color: #fff;
+    color: #172b3a;
+    font: inherit;
+}
+
 @media (max-width: 640px) {
     .pagination-nav {
         padding: 0.75rem;
@@ -2347,6 +2411,17 @@ body {
         width: 100%;
         justify-content: center;
         gap: 0.35rem;
+    }
+
+    .pagination-nav,
+    .pagination-info {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+    }
+
+    .pagination-per-page-form {
+        justify-content: center;
     }
 
     .pagination-link,
