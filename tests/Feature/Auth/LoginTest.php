@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\Role;
-use App\Models\User;
+use App\Modules\Settings\Models\Role;
+use App\Modules\Settings\Models\User;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -96,6 +96,40 @@ class LoginTest extends TestCase
             ->assertOk()
             ->assertSee('id="appToast"', false)
             ->assertSee(__('auth::messages.logged_out'));
+    }
+
+    public function test_disabled_authenticated_user_is_logged_out_on_next_request(): void
+    {
+        $user = User::factory()->create(['is_active' => true]);
+
+        $this->actingAs($user);
+        $user->update(['is_active' => false]);
+
+        $this->get('/customer-history')
+            ->assertRedirect(self::LOGIN_PATH)
+            ->assertSessionHas('status', __('auth::messages.account_disabled'));
+
+        $this->assertGuest();
+    }
+
+    public function test_disabled_authenticated_user_receives_unauthorized_ajax_response(): void
+    {
+        $user = User::factory()->create(['is_active' => true]);
+
+        $this->actingAs($user);
+        $user->update(['is_active' => false]);
+
+        $this->withHeaders([
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])->get('/customer-history?partial=1')
+            ->assertUnauthorized()
+            ->assertJson([
+                'message' => __('auth::messages.account_disabled'),
+                'login_url' => url(self::LOGIN_PATH),
+            ]);
+
+        $this->assertGuest();
     }
 
     public function test_invalid_credentials_are_rendered_as_error_toast(): void

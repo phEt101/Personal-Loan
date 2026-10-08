@@ -16,4 +16,5 @@ return [
     'throttle' => 'Too many login attempts. Please try again later.',
     'logged_out' => 'You have been signed out.',
     'session_expired' => 'Your session has expired. Please sign in again.',
+    'account_disabled' => 'This account has been disabled. Please contact an administrator.',
 ];
