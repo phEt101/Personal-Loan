@@ -415,55 +415,50 @@
                 </section>
 
                 <section class="customer-form-section customer-form-step" data-customer-step="5">
-                    <div class="customer-attachment-list">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>{{ __('customerhistory::messages.common.number') }}</th>
-                                    <th>{{ __('customerhistory::messages.form.attachments.document_name') }}</th>
-                                    <th>{{ __('customerhistory::messages.form.attachments.document_type') }}</th>
-                                    <th>{{ __('customerhistory::messages.form.attachments.file') }}</th>
-                                    <th>{{ __('customerhistory::messages.form.attachments.actions') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customerAttachmentRows"></tbody>
-                        </table>
-                        <div class="customer-attachment-toolbar">
-                            <button type="button" class="action-btn customer-attachment-add" id="customerAttachmentAdd">+ {{ __('customerhistory::messages.form.attachments.add') }}</button>
+                    <div class="customer-attachment-heading">
+                        <div>
+                            <h4>{{ __('customerhistory::messages.form.attachments.title') }}</h4>
+                            <p>{{ __('customerhistory::messages.form.attachments.help') }}</p>
+                        </div>
+                        <div class="customer-attachment-heading-actions">
+                            <span class="customer-attachment-summary" id="customerAttachmentSummary"></span>
                             <a class="action-btn customer-attachment-download-all" id="customerAttachmentDownloadAll" href="#" hidden>
                                 {{ __('customerhistory::messages.form.attachments.download_all') }}
                             </a>
                         </div>
                     </div>
-                    <div id="customerAttachmentPayload" hidden></div>
-                    <div class="customer-attachment-editor" id="customerAttachmentEditor" hidden>
-                        <div class="form-grid customer-form-grid">
-                            <div class="form-group col-4">
-                                <label for="customer_attachment_type">{{ __('customerhistory::messages.form.attachments.document_type') }} <span class="required-asterisk">*</span></label>
-                                <select id="customer_attachment_type" required disabled>
-                                    <option value="">{{ __('customerhistory::messages.form.select_option') }}</option>
-                                    @foreach ($documentTypes as $documentType)
-                                    @php($documentTypeName = app()->getLocale() === 'th' ? $documentType->DocumentTypeNameTh : $documentType->DocumentTypeNameEn)
-                                    <option value="{{ $documentType->id }}" data-document-name="{{ $documentTypeName }}">
-                                        {{ $documentTypeName }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                    <div class="customer-attachment-types" id="customerAttachmentTypes">
+                        @foreach ($documentTypes as $documentType)
+                        @php($documentTypeName = app()->getLocale() === 'th' ? $documentType->DocumentTypeNameTh : $documentType->DocumentTypeNameEn)
+                        <article @class([
+                            'customer-attachment-type',
+                            'has-custom-name' => $documentType->DocumentTypeNameEn === 'Other',
+                        ]) data-attachment-type-id="{{ $documentType->id }}">
+                            <span class="customer-attachment-type-icon" aria-hidden="true">+</span>
+                            <div class="customer-attachment-type-content">
+                                <strong>{{ $documentTypeName }}</strong>
+                                <span data-attachment-type-status>{{ __('customerhistory::messages.form.attachments.not_attached') }}</span>
                             </div>
-                            <div class="form-group col-4">
-                                <label for="customer_attachment_name">{{ __('customerhistory::messages.form.attachments.document_name') }} <span class="required-asterisk">*</span></label>
-                                <input id="customer_attachment_name" type="text" maxlength="255" required disabled>
-                            </div>
-                            <div class="form-group col-4" id="customer_attachment_file_group">
-                                <label for="customer_attachment_file">{{ __('customerhistory::messages.form.attachments.file') }} <span class="required-asterisk">*</span></label>
-                                <input id="customer_attachment_file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required disabled>
-                            </div>
-                            <div class="col-12 customer-attachment-editor-actions">
-                                <button type="button" class="action-btn outline" id="customerAttachmentCancel">{{ __('customerhistory::messages.form.attachments.close') }}</button>
-                                <button type="button" class="action-btn" id="customerAttachmentCommit">{{ __('customerhistory::messages.common.add') }}</button>
-                            </div>
-                        </div>
+                            <button type="button"
+                                class="customer-attachment-quick-add"
+                                data-quick-attachment-type="{{ $documentType->id }}"
+                                data-quick-attachment-name="{{ $documentTypeName }}">
+                                {{ __('customerhistory::messages.form.attachments.choose_file') }}
+                            </button>
+                            @if ($documentType->DocumentTypeNameEn === 'Other')
+                            <label class="customer-attachment-custom-name">
+                                <span>{{ __('customerhistory::messages.form.attachments.other_name') }}</span>
+                                <input type="text"
+                                    maxlength="255"
+                                    data-attachment-custom-name
+                                    placeholder="{{ __('customerhistory::messages.form.attachments.other_name_placeholder') }}">
+                            </label>
+                            @endif
+                            <div class="customer-attachment-card-files" data-attachment-type-files></div>
+                        </article>
+                        @endforeach
                     </div>
+                    <div id="customerAttachmentPayload" hidden></div>
                 </section>
 
                 <section class="customer-form-section customer-form-step" data-customer-step="6">
@@ -584,17 +579,10 @@
         const yearlyBonusInput = document.getElementById('customer_bonus');
         const netIncomeInput = document.getElementById('customer_net_income');
         const averageIncomeInput = document.getElementById('customer_average_income');
-        const attachmentRows = document.getElementById('customerAttachmentRows');
+        const attachmentTypesContainer = document.getElementById('customerAttachmentTypes');
+        const attachmentSummary = document.getElementById('customerAttachmentSummary');
         const attachmentPayload = document.getElementById('customerAttachmentPayload');
-        const attachmentEditor = document.getElementById('customerAttachmentEditor');
-        const attachmentNameInput = document.getElementById('customer_attachment_name');
-        const attachmentTypeInput = document.getElementById('customer_attachment_type');
-        const attachmentFileGroup = document.getElementById('customer_attachment_file_group');
-        let attachmentFileInput = document.getElementById('customer_attachment_file');
-        const attachmentAddButton = document.getElementById('customerAttachmentAdd');
         const attachmentDownloadAllButton = document.getElementById('customerAttachmentDownloadAll');
-        const attachmentCancelButton = document.getElementById('customerAttachmentCancel');
-        const attachmentCommitButton = document.getElementById('customerAttachmentCommit');
         const hmeterTransferPanel = document.getElementById('customerHmeterTransferPanel');
         const hmeterTransferStatus = document.getElementById('customerHmeterTransferStatus');
         const hmeterTransferDetails = document.getElementById('customerHmeterTransferDetails');
@@ -659,7 +647,6 @@
         let existingAttachments = [];
         let newAttachments = [];
         let removedAttachmentIds = new Set();
-        let editingAttachmentIndex = null;
         let attachmentDownloadAllUrl = '';
         let hmeterTransfer = null;
 
@@ -694,12 +681,34 @@
         };
 
         const renderAttachments = () => {
-            if (!attachmentRows || !attachmentPayload) return;
-            attachmentRows.replaceChildren();
+            if (!attachmentTypesContainer || !attachmentPayload) return;
             attachmentPayload.replaceChildren();
             const visibleExistingAttachments = existingAttachments.filter(
                 (attachment) => !removedAttachmentIds.has(Number(attachment.id))
             );
+            const attachmentCounts = new Map();
+            [...visibleExistingAttachments, ...newAttachments].forEach((attachment) => {
+                const typeId = String(attachment.document_type_id ?? attachment.documentType);
+                attachmentCounts.set(typeId, (attachmentCounts.get(typeId) || 0) + 1);
+            });
+            const attachmentTypeCards = Array.from(
+                attachmentTypesContainer?.querySelectorAll('[data-attachment-type-id]') || []
+            );
+            attachmentTypeCards.forEach((card) => {
+                const count = attachmentCounts.get(String(card.dataset.attachmentTypeId)) || 0;
+                card.querySelector('[data-attachment-type-files]')?.replaceChildren();
+                card.classList.toggle('is-attached', count > 0);
+                card.querySelector('.customer-attachment-type-icon').textContent = count > 0 ? '✓' : '+';
+                card.querySelector('[data-attachment-type-status]').textContent = count > 0
+                    ? config.messages.attachedFiles.replace(':count', String(count))
+                    : config.messages.notAttached;
+            });
+            if (attachmentSummary) {
+                const attachedTypeCount = attachmentTypeCards.filter((card) => card.classList.contains('is-attached')).length;
+                attachmentSummary.textContent = config.messages.attachmentSummary
+                    .replace(':attached', String(attachedTypeCount))
+                    .replace(':total', String(attachmentTypeCards.length));
+            }
             if (attachmentDownloadAllButton) {
                 const canDownloadAll = visibleExistingAttachments.length > 0 && Boolean(attachmentDownloadAllUrl);
                 attachmentDownloadAllButton.hidden = !isViewMode;
@@ -708,43 +717,32 @@
                 attachmentDownloadAllButton.setAttribute('aria-disabled', String(!canDownloadAll));
             }
 
-            if (visibleExistingAttachments.length === 0 && newAttachments.length === 0) {
-                const row = document.createElement('tr');
-                const empty = document.createElement('td');
-                empty.colSpan = 5;
-                empty.className = 'customer-attachment-empty';
-                const purgedAt = hmeterTransfer?.attachments_purged_at;
+            const appendFileToCard = (typeId, link, actions) => {
+                const card = attachmentTypeCards.find(
+                    (item) => String(item.dataset.attachmentTypeId) === String(typeId)
+                );
+                const fileList = card?.querySelector('[data-attachment-type-files]');
+                if (!fileList) return;
 
-                if (purgedAt) {
-                    empty.classList.add('is-purged');
-                    const message = document.createElement('strong');
-                    message.textContent = config.messages.attachmentsPurgedEmpty;
-                    const removedAt = document.createElement('small');
-                    removedAt.textContent = `${config.messages.attachmentsPurgedAt} ${formatTransferDateTime(purgedAt)}`;
-                    empty.append(message, removedAt);
-                } else {
-                    empty.textContent = config.messages.noAttachments;
-                }
-                row.appendChild(empty);
-                attachmentRows.appendChild(row);
-            }
+                const fileItem = document.createElement('div');
+                fileItem.className = 'customer-attachment-card-file';
+                const actionGroup = document.createElement('div');
+                actionGroup.className = 'customer-attachment-card-file-actions';
+                actions.forEach((action) => actionGroup.appendChild(action));
+                fileItem.append(link, actionGroup);
+                fileList.appendChild(fileItem);
+            };
 
-            visibleExistingAttachments.forEach((attachment, index) => {
-                const row = document.createElement('tr');
-                row.className = 'customer-attachment-row';
-                const numberCell = document.createElement('td');
-                numberCell.textContent = String(index + 1);
-                const nameCell = document.createElement('td');
-                nameCell.textContent = attachment.document_name;
-                const typeCell = document.createElement('td');
-                typeCell.textContent = config.attachmentTypes[attachment.document_type_id] || '';
-                const fileCell = document.createElement('td');
-                const link = document.createElement('a');
-                link.href = attachment.preview_url;
-                link.textContent = attachment.original_name;
-                link.className = 'customer-attachment-preview-link';
-                link.title = config.messages.previewAttachment;
-                link.addEventListener('click', (event) => {
+            visibleExistingAttachments.forEach((attachment) => {
+                const cardLink = document.createElement('a');
+                cardLink.href = attachment.preview_url;
+                const typeName = config.attachmentTypes[attachment.document_type_id] || '';
+                cardLink.textContent = attachment.document_name && attachment.document_name !== typeName
+                    ? `${attachment.document_name} · ${attachment.original_name}`
+                    : attachment.original_name;
+                cardLink.className = 'customer-attachment-preview-link';
+                cardLink.title = config.messages.previewAttachment;
+                cardLink.addEventListener('click', (event) => {
                     window.openAttachmentPreview?.(
                         event,
                         attachment.preview_url,
@@ -752,40 +750,29 @@
                         attachment.original_name
                     );
                 });
-                fileCell.appendChild(link);
-                const actionCell = document.createElement('td');
-                const actions = document.createElement('div');
-                actions.className = 'customer-attachment-row-actions';
+                const cardActions = [];
                 if (!isViewMode) {
-                    const removeButton = document.createElement('button');
-                    removeButton.type = 'button';
-                    removeButton.className = 'action-btn outline';
-                    removeButton.dataset.deleteExistingAttachment = String(attachment.id);
-                    removeButton.textContent = config.messages.removeAttachment;
-                    actions.appendChild(removeButton);
+                    const removeCardButton = document.createElement('button');
+                    removeCardButton.type = 'button';
+                    removeCardButton.dataset.deleteExistingAttachment = String(attachment.id);
+                    removeCardButton.textContent = config.messages.removeAttachment;
+                    cardActions.push(removeCardButton);
                 }
-                actionCell.appendChild(actions);
-                row.append(numberCell, nameCell, typeCell, fileCell, actionCell);
-                attachmentRows.appendChild(row);
+                appendFileToCard(attachment.document_type_id, cardLink, cardActions);
             });
 
             newAttachments.forEach((attachment, index) => {
-                const row = document.createElement('tr');
-                row.className = 'customer-attachment-row';
-                const numberCell = document.createElement('td');
-                numberCell.textContent = String(visibleExistingAttachments.length + index + 1);
-                const nameCell = document.createElement('td');
-                nameCell.textContent = attachment.documentName;
-                const typeCell = document.createElement('td');
-                typeCell.textContent = config.attachmentTypes[attachment.documentType] || attachment.documentType;
-                const fileCell = document.createElement('td');
                 const selectedFile = attachment.fileInput.files[0];
-                const link = document.createElement('a');
-                link.href = '#';
-                link.textContent = selectedFile?.name || '';
-                link.className = 'customer-attachment-preview-link';
-                link.title = config.messages.previewAttachment;
-                link.addEventListener('click', (event) => {
+                const cardLink = document.createElement('a');
+                cardLink.href = '#';
+                const typeName = config.attachmentTypes[attachment.documentType] || '';
+                const fileName = selectedFile?.name || attachment.documentName;
+                cardLink.textContent = attachment.documentName !== typeName
+                    ? `${attachment.documentName} · ${fileName}`
+                    : fileName;
+                cardLink.className = 'customer-attachment-preview-link';
+                cardLink.title = config.messages.previewAttachment;
+                cardLink.addEventListener('click', (event) => {
                     event.preventDefault();
                     if (!selectedFile) return;
 
@@ -798,24 +785,11 @@
                         () => URL.revokeObjectURL(objectUrl)
                     );
                 });
-                fileCell.appendChild(link);
-                const actionCell = document.createElement('td');
-                const actions = document.createElement('div');
-                actions.className = 'customer-attachment-row-actions';
-                const editButton = document.createElement('button');
-                editButton.type = 'button';
-                editButton.className = 'action-btn outline';
-                editButton.dataset.editNewAttachment = String(index);
-                editButton.textContent = config.messages.editAttachment;
-                const removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'action-btn outline';
-                removeButton.dataset.deleteNewAttachment = String(index);
-                removeButton.textContent = config.messages.removeAttachment;
-                actions.append(editButton, removeButton);
-                actionCell.appendChild(actions);
-                row.append(numberCell, nameCell, typeCell, fileCell, actionCell);
-                attachmentRows.appendChild(row);
+                const removeCardButton = document.createElement('button');
+                removeCardButton.type = 'button';
+                removeCardButton.dataset.deleteNewAttachment = String(index);
+                removeCardButton.textContent = config.messages.removeAttachment;
+                appendFileToCard(attachment.documentType, cardLink, [removeCardButton]);
 
                 const nameInput = document.createElement('input');
                 nameInput.type = 'hidden';
@@ -839,121 +813,63 @@
             });
         };
 
-        const setAttachmentEditorOpen = (isOpen) => {
-            attachmentEditor.hidden = !isOpen;
-            attachmentEditor?.querySelectorAll('input, select').forEach((field) => {
-                field.disabled = !isOpen;
-            });
-        };
+        attachmentTypesContainer?.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-quick-attachment-type]');
+            if (!button || isViewMode) return;
 
-        const resetAttachmentEditor = () => {
-            editingAttachmentIndex = null;
-            attachmentNameInput.value = '';
-            attachmentTypeInput.value = '';
-            attachmentFileInput.value = '';
-            attachmentFileInput.required = true;
-            attachmentCommitButton.textContent = config.messages.addAttachment;
-            attachmentEditor?.querySelectorAll('.has-error').forEach((group) => group.classList.remove('has-error'));
-        };
+            const card = button.closest('[data-attachment-type-id]');
+            const customNameInput = card?.querySelector('[data-attachment-custom-name]');
+            const documentName = customNameInput?.value.trim() || button.dataset.quickAttachmentName;
+            if (customNameInput && !customNameInput.value.trim()) {
+                if (window.showToast) {
+                    window.showToast(config.messages.otherAttachmentNameRequired, 'error');
+                } else {
+                    window.alert(config.messages.otherAttachmentNameRequired);
+                }
+                customNameInput.focus();
+                return;
+            }
 
-        const openAttachmentEditor = (index = null) => {
-            resetAttachmentEditor();
-            setAttachmentEditorOpen(true);
-            if (index === null) return;
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
+            fileInput.addEventListener('change', () => {
+                const file = fileInput.files[0];
+                if (!file) return;
 
-            const attachment = newAttachments[index];
-            if (!attachment) return;
-            editingAttachmentIndex = index;
-            attachmentNameInput.value = attachment.documentName;
-            attachmentTypeInput.value = attachment.documentType;
-            attachmentFileInput.required = false;
-            attachmentCommitButton.textContent = config.messages.saveAttachment;
-        };
+                const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+                const allowedExtension = /\.(pdf|jpe?g|png)$/i.test(file.name);
+                if ((!allowedTypes.includes(file.type) && !allowedExtension) || file.size > (10 * 1024 * 1024)) {
+                    if (window.showToast) {
+                        window.showToast(config.messages.invalidAttachment, 'error');
+                    } else {
+                        window.alert(config.messages.invalidAttachment);
+                    }
+                    return;
+                }
 
-        attachmentAddButton?.addEventListener('click', () => openAttachmentEditor());
+                newAttachments.push({
+                    documentName,
+                    documentType: button.dataset.quickAttachmentType,
+                    fileInput,
+                });
+                if (customNameInput) customNameInput.value = '';
+                renderAttachments();
+            }, { once: true });
+            fileInput.click();
+        });
         attachmentDownloadAllButton?.addEventListener('click', (event) => {
             if (attachmentDownloadAllButton.getAttribute('aria-disabled') === 'true') {
                 event.preventDefault();
             }
         });
-        attachmentTypeInput?.addEventListener('change', () => {
-            const selectedOption = attachmentTypeInput.selectedOptions[0];
-            attachmentNameInput.value = selectedOption?.value ?
-                (selectedOption.dataset.documentName || selectedOption.textContent.trim()) :
-                '';
-            attachmentNameInput.dispatchEvent(new Event('input', {
-                bubbles: true
-            }));
-        });
-        attachmentCancelButton?.addEventListener('click', () => {
-            resetAttachmentEditor();
-            attachmentFileInput.required = true;
-            setAttachmentEditorOpen(false);
-        });
-        attachmentCommitButton?.addEventListener('click', () => {
-            const documentName = attachmentNameInput.value.trim();
-            const documentType = attachmentTypeInput.value;
-            const file = attachmentFileInput.files[0];
-            const currentAttachment = editingAttachmentIndex === null ? null : newAttachments[editingAttachmentIndex];
-
-            [attachmentNameInput, attachmentTypeInput].forEach((field) => {
-                setFieldError(field, !field.value, requiredMessage);
-            });
-            setFieldError(attachmentFileInput, !file && !currentAttachment, requiredMessage);
-
-            if (!documentName || !documentType || (!file && !currentAttachment)) {
-                [attachmentNameInput, attachmentTypeInput, attachmentFileInput]
-                .find((field) => !field.value && !(field === attachmentFileInput && currentAttachment))?.focus();
-                return;
-            }
-
-            const selectedFile = file || currentAttachment?.fileInput.files[0];
-            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-            const allowedExtension = /\.(pdf|jpe?g|png)$/i.test(selectedFile.name);
-            if ((!allowedTypes.includes(selectedFile.type) && !allowedExtension) || selectedFile.size > (10 * 1024 * 1024)) {
-                setFieldError(attachmentFileInput, true, config.messages.invalidAttachment);
-                attachmentFileInput.focus();
-                return;
-            }
-
-            const selectedEditorFileInput = attachmentFileInput;
-            const usesSelectedEditorFile = !currentAttachment || Boolean(file);
-
-            if (currentAttachment) {
-                currentAttachment.documentName = documentName;
-                currentAttachment.documentType = documentType;
-                if (file) currentAttachment.fileInput = selectedEditorFileInput;
-            } else {
-                newAttachments.push({
-                    documentName,
-                    documentType,
-                    fileInput: selectedEditorFileInput
-                });
-            }
-
-            attachmentFileInput = selectedEditorFileInput.cloneNode();
-            attachmentFileInput.value = '';
-            if (usesSelectedEditorFile) {
-                attachmentFileGroup.appendChild(attachmentFileInput);
-            } else {
-                attachmentFileGroup.replaceChild(attachmentFileInput, selectedEditorFileInput);
-            }
-            renderAttachments();
-            resetAttachmentEditor();
-            attachmentFileInput.required = true;
-            setAttachmentEditorOpen(false);
-        });
-
-        attachmentRows?.addEventListener('click', (event) => {
+        attachmentTypesContainer?.addEventListener('click', (event) => {
             const existingId = Number(event.target.dataset.deleteExistingAttachment || 0);
             const newIndex = Number(event.target.dataset.deleteNewAttachment ?? -1);
-            const editIndex = Number(event.target.dataset.editNewAttachment ?? -1);
 
             if (existingId) {
                 removedAttachmentIds.add(existingId);
                 renderAttachments();
-            } else if (editIndex >= 0) {
-                openAttachmentEditor(editIndex);
             } else if (newIndex >= 0) {
                 newAttachments.splice(newIndex, 1);
                 renderAttachments();
@@ -1537,8 +1453,6 @@
             form.querySelectorAll('input, select, textarea').forEach((field) => {
                 field.disabled = false;
             });
-            resetAttachmentEditor();
-            setAttachmentEditorOpen(false);
             resetAddressEditor();
             setAddressEditorOpen(false);
             renderAddresses();
@@ -1731,8 +1645,12 @@
                 );
 
                 if (!hasAttachment) {
-                    openAttachmentEditor();
-                    attachmentNameInput?.focus();
+                    if (window.showToast) {
+                        window.showToast(config.messages.attachmentRequired, 'error');
+                    } else {
+                        window.alert(config.messages.attachmentRequired);
+                    }
+                    attachmentTypesContainer?.querySelector('[data-quick-attachment-type]')?.focus();
                     return;
                 }
             }
@@ -1915,7 +1833,6 @@
         renderAddresses();
         setPhoneEditorOpen(false);
         renderPhones();
-        setAttachmentEditorOpen(false);
         renderAttachments();
         updateStep();
     })();

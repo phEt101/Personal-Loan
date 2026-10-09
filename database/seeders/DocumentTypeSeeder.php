@@ -15,6 +15,9 @@ class DocumentTypeSeeder extends Seeder
             ['DocumentTypeNameTh' => 'สำเนาทะเบียนบ้าน', 'DocumentTypeNameEn' => 'House registration copy'],
             ['DocumentTypeNameTh' => 'Statement', 'DocumentTypeNameEn' => 'Statement'],
             ['DocumentTypeNameTh' => 'สลิปเงินเดือน', 'DocumentTypeNameEn' => 'Salary slip'],
+            ['DocumentTypeNameTh' => 'ใบเปลี่ยนชื่อ', 'DocumentTypeNameEn' => 'Name change certificate'],
+            ['DocumentTypeNameTh' => '50 ทวิ/ ภ.งด. 90/91', 'DocumentTypeNameEn' => '50 Tawi / P.N.D. 90/91'],
+            ['DocumentTypeNameTh' => 'หนังสือรับรองรายได้', 'DocumentTypeNameEn' => 'Income certificate'],
             ['DocumentTypeNameTh' => 'อื่นๆ', 'DocumentTypeNameEn' => 'Other'],
         ];
 

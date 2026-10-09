@@ -83,61 +83,231 @@
     background: #ffffff;
 }
 
-.customer-attachment-editor {
-    margin-top: 0.5rem;
-    padding: 1rem;
-    border: 1px solid #e1ece7;
-    border-radius: 0.9rem;
-    background: #fff;
-}
-
-.customer-attachment-editor[hidden] {
-    display: none !important;
-}
-
-.customer-attachment-editor-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-}
-
-.customer-attachment-list table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 0.9rem;
-}
-
-.customer-attachment-list th,
-.customer-attachment-list td {
-    padding: 0.75rem 0.9rem;
-    border-bottom: 1px solid #dbe5e1;
-    text-align: left;
-    vertical-align: middle;
-}
-
-.customer-attachment-list th {
-    background: #f0f2f5;
-    color: #344d5b;
-}
-
-.customer-attachment-list th:first-child {
-    width: 5rem;
-}
-
-.customer-attachment-list th:last-child {
-    width: 10rem;
-}
-
-.customer-attachment-toolbar {
+.customer-attachment-heading {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.customer-attachment-heading {
     margin-bottom: 1rem;
 }
 
-.customer-attachment-toolbar .action-btn {
+.customer-attachment-heading h4 {
     margin: 0;
+    color: #203744;
+}
+
+.customer-attachment-heading h4 {
+    font-size: 1.05rem;
+}
+
+.customer-attachment-heading p {
+    margin: 0.3rem 0 0;
+    color: #5f707a;
+    font-size: 0.86rem;
+}
+
+.customer-attachment-summary {
+    flex: 0 0 auto;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: #e9f8ef;
+    color: #047857;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.customer-attachment-heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.customer-attachment-types {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.customer-attachment-type {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 4.5rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #d9e7e0;
+    border-radius: 0.85rem;
+    background: #fbfdfc;
+}
+
+.customer-attachment-type.is-attached {
+    border-color: #9fd8bd;
+    background: #f1fbf6;
+}
+
+.customer-attachment-type.has-custom-name {
+    grid-template-columns: auto minmax(0, 1fr) minmax(10rem, 0.9fr) auto;
+}
+
+.customer-attachment-type-icon {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 50%;
+    background: #edf2f0;
+    color: #52656f;
+    font-weight: 900;
+}
+
+.customer-attachment-type.is-attached .customer-attachment-type-icon {
+    background: #d7f4e4;
+    color: #047857;
+}
+
+.customer-attachment-type-content {
+    min-width: 0;
+}
+
+.customer-attachment-type-content strong,
+.customer-attachment-type-content span {
+    display: block;
+}
+
+.customer-attachment-type-content strong {
+    overflow: hidden;
+    color: #203744;
+    font-size: 0.88rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.customer-attachment-type-content span {
+    margin-top: 0.2rem;
+    color: #657781;
+    font-size: 0.76rem;
+}
+
+.customer-attachment-card-files {
+    display: grid;
+    grid-column: 1 / -1;
+    gap: 0.4rem;
+}
+
+.customer-attachment-custom-name {
+    display: block;
+    grid-column: 3;
+    grid-row: 1;
+    min-width: 0;
+}
+
+.customer-attachment-custom-name span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.customer-attachment-custom-name input {
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #cfe2d8;
+    border-radius: 0.65rem;
+    background: #fff;
+    color: #203744;
+    font: inherit;
+    font-size: 0.82rem;
+}
+
+.customer-attachment-type.has-custom-name .customer-attachment-quick-add {
+    grid-column: 4;
+    grid-row: 1;
+}
+
+.customer-attachment-custom-name input:focus {
+    border-color: #047857;
+    box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
+    outline: none;
+}
+
+.customer-attachment-card-files:empty {
+    display: none;
+}
+
+.customer-attachment-card-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    min-width: 0;
+    padding-top: 0.55rem;
+    border-top: 1px solid #d7e9df;
+}
+
+.customer-attachment-card-file > a {
+    overflow: hidden;
+    min-width: 0;
+    color: #047857;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.customer-attachment-card-file-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.45rem;
+}
+
+.customer-attachment-card-file-actions button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #9f1239;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.customer-attachment-card-file-actions button:first-child:not(:last-child) {
+    color: #047857;
+}
+
+.customer-attachment-quick-add {
+    border: 0;
+    background: transparent;
+    color: #047857;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.customer-attachment-quick-add {
+    padding: 0.5rem 0.6rem;
+    border: 1px solid #b9dec9;
+    border-radius: 0.65rem;
+    background: #fff;
+}
+
+.customer-attachment-quick-add:hover,
+.customer-attachment-quick-add:focus-visible {
+    border-color: #047857;
+    background: #ecfdf5;
 }
 
 .customer-attachment-download-all[hidden] {
@@ -150,62 +320,19 @@
     opacity: 0.45;
 }
 
-.customer-attachment-row-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.customer-attachment-row-actions button {
-    padding: 0.45rem 0.7rem;
-}
-
-#customerHistoryFormModal.is-view-mode .customer-attachment-editor,
-#customerHistoryFormModal.is-view-mode .customer-attachment-add,
-#customerHistoryFormModal.is-view-mode .customer-attachment-list th:last-child,
-#customerHistoryFormModal.is-view-mode .customer-attachment-list td:last-child {
+#customerHistoryFormModal.is-view-mode .customer-attachment-quick-add {
     display: none;
 }
 
-#customerHistoryFormModal.is-view-mode
-    .customer-attachment-list
-    td.customer-attachment-empty {
-    display: table-cell !important;
-}
-
-.customer-attachment-row {
-    color: #344a55;
-}
-
-.customer-attachment-row a {
-    overflow-wrap: anywhere;
-    color: #078b61;
+#customerHistoryFormModal.is-view-mode .customer-attachment-custom-name {
+    display: none;
 }
 
 .customer-address-empty td,
-.customer-phone-empty td,
-.customer-attachment-list td.customer-attachment-empty {
+.customer-phone-empty td {
     padding: 0.75rem 0.9rem;
     color: #70818b;
     text-align: center !important;
-}
-
-.customer-attachment-list td.customer-attachment-empty.is-purged {
-    padding: 1.15rem;
-    border-radius: 0.75rem;
-    background: #fff7e8;
-    color: #a46000;
-}
-
-.customer-attachment-empty.is-purged strong,
-.customer-attachment-empty.is-purged small {
-    display: block;
-}
-
-.customer-attachment-empty.is-purged small {
-    margin-top: 0.35rem;
-    color: #7b6b54;
-    font-size: 0.82rem;
 }
 
 .customer-form-step {
@@ -597,6 +724,32 @@
 @media (max-width: 760px) {
     .customer-form-section {
         padding: 1rem;
+    }
+
+    .customer-attachment-types {
+        grid-template-columns: 1fr;
+    }
+
+    .customer-attachment-heading {
+        align-items: flex-start;
+    }
+
+    .customer-attachment-type {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .customer-attachment-type.has-custom-name {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .customer-attachment-custom-name {
+        grid-column: 2 / -1;
+        grid-row: 2;
+    }
+
+    .customer-attachment-type.has-custom-name .customer-attachment-quick-add {
+        grid-column: 3;
+        grid-row: 1;
     }
 
     .customer-form-grid .col-3,
