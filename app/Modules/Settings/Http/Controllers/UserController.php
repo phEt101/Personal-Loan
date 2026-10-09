@@ -5,6 +5,7 @@ namespace App\Modules\Settings\Http\Controllers;
 use App\Modules\Settings\Models\Role;
 use App\Modules\Settings\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -162,7 +163,7 @@ class UserController extends Controller
             ->with('status', __('settings::messages.user_updated'));
     }
 
-    public function toggleActive(Request $request, User $user): RedirectResponse
+    public function toggleActive(Request $request, User $user): RedirectResponse|JsonResponse
     {
         abort_if($user->employee_code === 'EMP0001', 422, __('settings::messages.cannot_disable_admin'));
 
@@ -172,11 +173,24 @@ class UserController extends Controller
             DB::table('sessions')->where('user_id', $user->getKey())->delete();
         }
 
-        return redirect()
-            ->route('settings.users.index')
-            ->with('status', $user->is_active
-                ? __('settings::messages.user_enabled')
-                : __('settings::messages.user_disabled'));
+        $message = $user->is_active
+            ? __('settings::messages.user_enabled')
+            : __('settings::messages.user_disabled');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'is_active' => $user->is_active,
+                'status_label' => $user->is_active
+                    ? __('settings::messages.active')
+                    : __('settings::messages.inactive'),
+                'action_label' => $user->is_active
+                    ? __('settings::messages.disable')
+                    : __('settings::messages.enable'),
+            ]);
+        }
+
+        return redirect()->route('settings.users.index')->with('status', $message);
     }
 
     private function activeRoles(): Collection

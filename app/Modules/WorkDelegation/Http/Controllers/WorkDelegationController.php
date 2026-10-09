@@ -72,7 +72,7 @@ class WorkDelegationController extends Controller
         $this->authorizeManagement($request, $workDelegation);
         $this->ensureDelegationIsManageable($workDelegation);
 
-        $validated = $this->validatedData($request, $workDelegation);
+        $validated = $this->validatedData($request);
         $this->ensureNoOverlap($validated, $workDelegation);
         $workDelegation->update($validated);
 
@@ -124,7 +124,7 @@ class WorkDelegationController extends Controller
         ]);
     }
 
-    private function validatedData(Request $request, ?WorkDelegation $delegation = null): array
+    private function validatedData(Request $request): array
     {
         $user = $request->user();
         $validated = $request->validate([

@@ -276,6 +276,23 @@ class UserAuthorizationTest extends TestCase
         $this->assertTrue($user->refresh()->is_active);
     }
 
+    public function test_admin_can_toggle_a_standard_user_without_a_page_reload(): void
+    {
+        $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG)]);
+        $user = User::factory()->create(['is_active' => true]);
+
+        $this->actingAs($admin)
+            ->patchJson(self::USERS_PATH."/{$user->id}/active")
+            ->assertOk()
+            ->assertJson([
+                'is_active' => false,
+                'status_label' => __('settings::messages.inactive'),
+                'action_label' => __('settings::messages.enable'),
+            ]);
+
+        $this->assertFalse($user->refresh()->is_active);
+    }
+
     public function test_user_list_can_search_and_paginate(): void
     {
         $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG)]);

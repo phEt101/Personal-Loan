@@ -122,7 +122,7 @@
                                             <form method="POST" action="{{ route('settings.users.toggle-active', $user) }}" class="settings-user-toggle-form" data-confirm="{{ __('settings::messages.toggle_confirmation') }}">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="module-action-button {{ $user->is_active ? 'is-danger' : 'is-success' }}">
+                                                <button type="submit" class="module-action-button settings-user-toggle-button {{ $user->is_active ? 'is-danger' : 'is-success' }}">
                                                     {{ $user->is_active ? __('settings::messages.disable') : __('settings::messages.enable') }}
                                                 </button>
                                             </form>
@@ -156,9 +156,37 @@
 
     <script>
         document.querySelectorAll('.settings-user-toggle-form').forEach((form) => {
-            form.addEventListener('submit', (event) => {
-                if (!window.confirm(form.dataset.confirm)) {
-                    event.preventDefault();
+            form.addEventListener('submit', async (event) => {
+                if (event.defaultPrevented) return;
+                event.preventDefault();
+
+                const button = form.querySelector('.settings-user-toggle-button');
+                const status = form.closest('tr')?.querySelector('.settings-user-status');
+                button.disabled = true;
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: new FormData(form),
+                    });
+                    const payload = await response.json();
+                    if (!response.ok) throw new Error(payload.message || response.statusText);
+
+                    status?.classList.toggle('is-active', payload.is_active);
+                    status?.classList.toggle('is-inactive', !payload.is_active);
+                    if (status) status.textContent = payload.status_label;
+                    button.classList.toggle('is-danger', payload.is_active);
+                    button.classList.toggle('is-success', !payload.is_active);
+                    button.textContent = payload.action_label;
+                    window.showToast?.(payload.message);
+                } catch (error) {
+                    window.showToast?.(error.message, 'error');
+                } finally {
+                    button.disabled = false;
                 }
             });
         });

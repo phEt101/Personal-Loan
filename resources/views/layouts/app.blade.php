@@ -12,7 +12,10 @@
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/toast.css') }}?v={{ filemtime(public_path('css/toast.css')) }}">
 </head>
-<body>
+<body
+    data-session-expired-message="{{ __('auth::messages.session_expired') }}"
+    data-login-url="{{ route('login') }}"
+>
     <div class="layout">
         @include('partials.sidebar')
 
@@ -49,8 +52,8 @@
                         payload = {};
                     }
 
-                    window.alert(payload.message || @js(__('auth::messages.session_expired')));
-                    const loginUrl = new URL(payload.login_url || @js(route('login')), window.location.origin);
+                    window.alert(payload.message || document.body.dataset.sessionExpiredMessage);
+                    const loginUrl = new URL(payload.login_url || document.body.dataset.loginUrl, window.location.origin);
                     loginUrl.searchParams.set('redirect', `${window.location.pathname}${window.location.search}${window.location.hash}`);
                     window.location.assign(loginUrl);
                 }
@@ -110,6 +113,12 @@
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') closeSidebar();
         });
+        document.addEventListener('submit', (event) => {
+            const form = event.target.closest('form[data-confirm]');
+            if (form && !window.confirm(form.dataset.confirm)) {
+                event.preventDefault();
+            }
+        }, true);
         userToggle?.addEventListener('click', toggleUserDropdown);
         document.addEventListener('click', (event) => {
             if (!userDropdown.contains(event.target) && !userToggle.contains(event.target)) {
