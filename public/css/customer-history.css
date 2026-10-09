@@ -88,18 +88,12 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-}
-
-.customer-attachment-heading {
     margin-bottom: 1rem;
 }
 
 .customer-attachment-heading h4 {
     margin: 0;
     color: #203744;
-}
-
-.customer-attachment-heading h4 {
     font-size: 1.05rem;
 }
 
@@ -288,16 +282,11 @@
 }
 
 .customer-attachment-quick-add {
-    border: 0;
-    background: transparent;
     color: #047857;
     cursor: pointer;
     font: inherit;
     font-size: 0.8rem;
     font-weight: 800;
-}
-
-.customer-attachment-quick-add {
     padding: 0.5rem 0.6rem;
     border: 1px solid #b9dec9;
     border-radius: 0.65rem;
@@ -436,7 +425,7 @@
     flex: 0 0 2rem;
     border-radius: 50%;
     color: #ffffff;
-    background: #39c51f;
+    background: #15803d;
     font-size: 0.75rem;
     font-weight: 800;
 }
@@ -481,10 +470,6 @@
 
 .customer-address-list {
     order: 1;
-}
-
-.customer-address-editor {
-    order: 2;
 }
 
 .customer-address-assignment {
@@ -536,6 +521,7 @@
 }
 
 .customer-address-editor {
+    order: 2;
     margin-top: 0.5rem;
     padding: 1rem;
     border: 1px solid #e1ece7;
@@ -626,7 +612,7 @@
     border: 1px solid #cfe5da;
     border-left: 0;
     border-radius: 0 0.9rem 0.9rem 0;
-    color: #70818b;
+    color: #52616a;
     background: #f5f8f6;
     font-size: 0.8rem;
     font-weight: 700;
@@ -914,10 +900,10 @@ body .consent-table td {
 
 .customer-history-row-actions .customer-edit-button:hover {
     background: #fff8e8;
-    color: #b96f00;
+    color: #8a4f00;
 }
 
-.customer-form-modal {
+#customerHistoryFormModal .customer-form-modal {
     max-width: 1180px;
 }
 
@@ -933,7 +919,7 @@ body .consent-table td {
     padding: 0.7rem 1.05rem;
 }
 
-.customer-history-steps {
+#customerHistoryFormModal .customer-history-steps {
     margin-bottom: 0.85rem;
     padding-top: 0.15rem;
 }
@@ -944,17 +930,17 @@ body .consent-table td {
     font-size: 0.88rem;
 }
 
-.customer-history-steps .wizard-step-label {
+#customerHistoryFormModal .customer-history-steps .wizard-step-label {
     font-size: 0.68rem;
 }
 
-.customer-form-section {
+#customerHistoryFormModal .customer-form-section {
     margin-bottom: 0.7rem;
     padding: 0.9rem 1rem 1rem;
     border-radius: 0.75rem;
 }
 
-.customer-form-grid {
+#customerHistoryFormModal .customer-form-grid {
     gap: 0.68rem 0.8rem;
     margin-bottom: 0;
 }
@@ -980,13 +966,13 @@ body .consent-table td {
     gap: 0.3rem;
 }
 
-.customer-form-grid label {
+#customerHistoryFormModal .customer-form-grid label {
     font-size: 0.75rem;
 }
 
-.customer-form-grid input,
-.customer-form-grid select,
-.customer-form-grid textarea {
+#customerHistoryFormModal .customer-form-grid input,
+#customerHistoryFormModal .customer-form-grid select,
+#customerHistoryFormModal .customer-form-grid textarea {
     min-height: 2.55rem;
     padding: 0.6rem 0.75rem;
     border-radius: 0.58rem;
@@ -997,18 +983,18 @@ body .consent-table td {
     min-height: 5rem;
 }
 
-.customer-form-grid .choices__inner {
+#customerHistoryFormModal .customer-form-grid .choices__inner {
     min-height: 2.55rem;
     padding: 0.6rem 2rem 0.6rem 0.75rem;
     border-radius: 0.58rem;
     font-size: 0.88rem;
 }
 
-.customer-input-unit input {
+#customerHistoryFormModal .customer-input-unit input {
     border-radius: 0.58rem 0 0 0.58rem;
 }
 
-.customer-input-unit span {
+#customerHistoryFormModal .customer-input-unit span {
     padding: 0 0.75rem;
     border-radius: 0 0.58rem 0.58rem 0;
     font-size: 0.74rem;
@@ -1173,7 +1159,7 @@ body .consent-table td {
 .applicant-photo-edit {
     top: 8px;
     right: 0;
-    background: #10b981;
+    background: #047857;
     color: #fff;
 }
 
@@ -1567,7 +1553,7 @@ body .consent-table td {
 
 .customer-history-transfer-status.is-pending {
     background: #fff4d6;
-    color: #9a6700;
+    color: #7a4c00;
 }
 
 .customer-history-transfer-status.is-transferred {
@@ -1575,7 +1561,7 @@ body .consent-table td {
     color: #087a58;
 }
 
-.customer-history-row-actions {
+body .customer-history-row-actions {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1599,14 +1585,14 @@ body
     .action-btn.outline.table-action-btn-small.customer-edit-button {
     border-color: #f59e0b;
     background: #fff7e6;
-    color: #c96b00;
+    color: #8f4b00;
 }
 
 body
     .customer-history-row-actions
     .action-btn.outline.table-action-btn-small.customer-edit-button:hover {
     border-color: #d97706;
-    background: #f59e0b;
+    background: #b45309;
     color: #ffffff;
 }
 

@@ -77,7 +77,7 @@
 
 .report-tabs a.is-active {
     background: #fff;
-    color: #059669;
+    color: #047857;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
@@ -172,7 +172,7 @@
     padding: 0.3rem 0.6rem;
     border-radius: 999px;
     background: #e9f8ea;
-    color: #2f8b2b;
+    color: #166534;
     font-size: 0.78rem;
     font-weight: 700;
     white-space: nowrap;

@@ -447,7 +447,7 @@ body.auth-page {
     }
 }
 
-:root {
+html:root {
     --auth-ink: #172b3a;
     --auth-muted: #667784;
     --auth-panel: #ffffff;
@@ -458,7 +458,7 @@ body.auth-page {
     --auth-success: #087668;
 }
 
-body.auth-page {
+html body.auth-page {
     padding: 0;
     font-family: "Aptos", "Leelawadee UI", "Segoe UI", sans-serif;
     background:
@@ -470,11 +470,11 @@ body.auth-page {
         #f4f7f6;
 }
 
-.auth-orb {
+body.auth-page .auth-orb {
     display: none;
 }
 
-.auth-shell {
+body.auth-page .auth-shell {
     width: min(1180px, 100%);
     min-height: 100dvh;
     grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
@@ -482,11 +482,11 @@ body.auth-page {
     padding: clamp(2rem, 6vw, 5rem);
 }
 
-.auth-marketing {
+body.auth-page .auth-marketing {
     padding: 0;
 }
 
-.auth-brand {
+body.auth-page .auth-brand {
     padding: 0;
     border: 0;
     border-radius: 0;
@@ -511,34 +511,34 @@ body.auth-page {
     color: var(--auth-accent-strong);
 }
 
-.auth-marketing h1 {
+body.auth-page .auth-marketing h1 {
     color: var(--auth-ink);
     letter-spacing: -0.025em;
 }
 
-.auth-panel {
+body.auth-page .auth-panel {
     padding: clamp(1.5rem, 3vw, 2rem);
 }
 
-.auth-panel::before {
+body.auth-page .auth-panel::before {
     border: 1px solid var(--auth-border);
     border-radius: 1rem;
     box-shadow: 0 24px 55px rgba(23, 43, 58, 0.12);
     backdrop-filter: none;
 }
 
-.auth-panel-header {
+body.auth-page .auth-panel-header {
     gap: 1.5rem;
 }
 
-.auth-language select {
+body.auth-page .auth-language select {
     border-color: var(--auth-border);
     background: #f7fbf9;
     color: var(--auth-ink);
     box-shadow: none;
 }
 
-.auth-field input {
+body.auth-page .auth-field input {
     border-color: var(--auth-border);
     background: #fbfdfc;
     color: var(--auth-ink);
@@ -552,13 +552,13 @@ body.auth-page {
     outline: none;
 }
 
-.auth-submit {
+body.auth-page .auth-submit {
     border-radius: 0.7rem;
     background: var(--auth-accent);
     box-shadow: 0 12px 24px rgba(74, 195, 29, 0.2);
 }
 
-.auth-submit:hover {
+body.auth-page .auth-submit:hover {
     background: var(--auth-accent-strong);
     box-shadow: 0 14px 28px rgba(8, 118, 104, 0.24);
 }
