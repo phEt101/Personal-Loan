@@ -15,6 +15,16 @@ class UserAuthorizationTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const USERS_PATH = '/settings/users';
+
+    private const CUSTOMER_HISTORY_PATH = '/customer-history';
+
+    private const CUSTOMERS_TABLE = 'customers as customer';
+
+    private const CREATOR_JOIN_TABLE = 'users as creator';
+
+    private const NEEDLE_EMAIL = 'needle@example.com';
+
     public function test_admin_can_access_user_management(): void
     {
         $admin = User::factory()->create([
@@ -26,7 +36,7 @@ class UserAuthorizationTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get('/settings/users')
+            ->get(self::USERS_PATH)
             ->assertOk()
             ->assertSee('user-avatar-compact">ธ', false)
             ->assertSee('user-avatar-large">ธ', false)
@@ -38,13 +48,13 @@ class UserAuthorizationTest extends TestCase
         $user = User::factory()->create(['role_id' => $this->roleId(Role::USER_SLUG)]);
 
         $this->actingAs($user)
-            ->get('/settings/users')
-            ->assertRedirect('/customer-history')
+            ->get(self::USERS_PATH)
+            ->assertRedirect(self::CUSTOMER_HISTORY_PATH)
             ->assertSessionHas('status', __('settings::messages.unauthorized'));
 
         $this->actingAs($user)
-            ->get('/settings/users/999/edit')
-            ->assertRedirect('/customer-history');
+            ->get(self::USERS_PATH.'/999/edit')
+            ->assertRedirect(self::CUSTOMER_HISTORY_PATH);
     }
 
     public function test_unauthorized_message_uses_the_selected_thai_locale(): void
@@ -53,8 +63,8 @@ class UserAuthorizationTest extends TestCase
 
         $this->withSession(['locale' => 'th'])
             ->actingAs($user)
-            ->get('/settings/users')
-            ->assertRedirect('/customer-history')
+            ->get(self::USERS_PATH)
+            ->assertRedirect(self::CUSTOMER_HISTORY_PATH)
             ->assertSessionHas('status', 'คุณไม่มีสิทธิ์เข้าถึงหน้าจัดการผู้ใช้งาน');
     }
 
@@ -64,7 +74,7 @@ class UserAuthorizationTest extends TestCase
         $userRoleId = $this->roleId(Role::USER_SLUG);
         $admin = User::factory()->create(['role_id' => $adminRoleId]);
 
-        $this->actingAs($admin)->post('/settings/users', [
+        $this->actingAs($admin)->post(self::USERS_PATH, [
             'user_type' => 'internal',
             'role_id' => $adminRoleId,
             'first_name' => 'New',
@@ -72,9 +82,9 @@ class UserAuthorizationTest extends TestCase
             'email' => 'new-admin@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ])->assertRedirect('/settings/users');
+        ])->assertRedirect(self::USERS_PATH);
 
-        $this->actingAs($admin)->post('/settings/users', [
+        $this->actingAs($admin)->post(self::USERS_PATH, [
             'user_type' => 'external',
             'role_id' => $userRoleId,
             'first_name' => 'External',
@@ -82,7 +92,7 @@ class UserAuthorizationTest extends TestCase
             'email' => 'external@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ])->assertRedirect('/settings/users');
+        ])->assertRedirect(self::USERS_PATH);
 
         $this->assertDatabaseHas('users', ['employee_code' => 'EMP0001', 'role_id' => $adminRoleId]);
         $this->assertDatabaseHas('users', ['employee_code' => 'EXT0001', 'role_id' => $userRoleId]);
@@ -143,22 +153,22 @@ class UserAuthorizationTest extends TestCase
 
         $this->seed(CustomerMockSeeder::class);
         $this->assertSame(17, DB::table('customers')->count());
-        $this->assertSame(0, DB::table('customers as customer')
-            ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+        $this->assertSame(0, DB::table(self::CUSTOMERS_TABLE)
+            ->join(self::CREATOR_JOIN_TABLE, 'creator.id', '=', 'customer.sysInsertUserId')
             ->join('roles as role', 'role.id', '=', 'creator.role_id')
             ->where('creator.user_type', 'external')
             ->where('role.slug', Role::MANAGER_SLUG)
             ->count());
-        $this->assertSame(0, DB::table('customers as customer')
-            ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+        $this->assertSame(0, DB::table(self::CUSTOMERS_TABLE)
+            ->join(self::CREATOR_JOIN_TABLE, 'creator.id', '=', 'customer.sysInsertUserId')
             ->where('creator.user_type', 'internal')
             ->count());
-        $this->assertSame(0, DB::table('customers as customer')
-            ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+        $this->assertSame(0, DB::table(self::CUSTOMERS_TABLE)
+            ->join(self::CREATOR_JOIN_TABLE, 'creator.id', '=', 'customer.sysInsertUserId')
             ->whereNotIn('creator.employee_code', ['EXT0004', 'EXT0005', 'EXT0006', 'EXT0007'])
             ->count());
-        $this->assertSame(0, DB::table('customers as customer')
-            ->join('users as creator', 'creator.id', '=', 'customer.sysInsertUserId')
+        $this->assertSame(0, DB::table(self::CUSTOMERS_TABLE)
+            ->join(self::CREATOR_JOIN_TABLE, 'creator.id', '=', 'customer.sysInsertUserId')
             ->whereIn('creator.employee_code', ['EXT0008', 'EXT0009', 'EXT0010', 'EXT0011'])
             ->count());
     }
@@ -167,7 +177,7 @@ class UserAuthorizationTest extends TestCase
     {
         $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG), 'email' => 'taken@example.com']);
 
-        $this->actingAs($admin)->post('/settings/users', [
+        $this->actingAs($admin)->post(self::USERS_PATH, [
             'user_type' => 'invalid',
             'role_id' => 999999,
             'first_name' => '',
@@ -185,15 +195,15 @@ class UserAuthorizationTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($admin)
-            ->get("/settings/users/{$user->id}/edit")
+            ->get(self::USERS_PATH."/{$user->id}/edit")
             ->assertOk();
 
-        $this->actingAs($admin)->put("/settings/users/{$user->id}", [
+        $this->actingAs($admin)->put(self::USERS_PATH."/{$user->id}", [
             'email' => 'changed@example.com',
             'role_id' => $adminRoleId,
             'password' => 'new-password',
             'password_confirmation' => 'new-password',
-        ])->assertRedirect('/settings/users');
+        ])->assertRedirect(self::USERS_PATH);
 
         $user->refresh();
         $this->assertSame('changed@example.com', $user->email);
@@ -208,14 +218,14 @@ class UserAuthorizationTest extends TestCase
         $managerRoleId = $this->roleId(Role::MANAGER_SLUG);
 
         $this->actingAs($admin)
-            ->get('/settings/users/create')
+            ->get(self::USERS_PATH.'/create')
             ->assertOk()
             ->assertSee(__('settings::messages.role_admin'))
             ->assertSee(__('settings::messages.role_manager'))
             ->assertSee(__('settings::messages.role_user'))
             ->assertDontSee('Viewer');
 
-        $this->actingAs($admin)->post('/settings/users', [
+        $this->actingAs($admin)->post(self::USERS_PATH, [
             'user_type' => 'external',
             'role_id' => $managerRoleId,
             'first_name' => 'Loan',
@@ -223,7 +233,7 @@ class UserAuthorizationTest extends TestCase
             'email' => 'loan-manager@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ])->assertRedirect('/settings/users');
+        ])->assertRedirect(self::USERS_PATH);
 
         $this->assertDatabaseHas('users', [
             'email' => 'loan-manager@example.com',
@@ -239,17 +249,17 @@ class UserAuthorizationTest extends TestCase
             'role_id' => $this->roleId(Role::ADMIN_SLUG),
         ]);
 
-        $this->actingAs($admin)->put("/settings/users/{$admin->id}", [
+        $this->actingAs($admin)->put(self::USERS_PATH."/{$admin->id}", [
             'email' => $admin->email,
             'role_id' => $this->roleId(Role::USER_SLUG),
             'password' => '',
             'password_confirmation' => '',
-        ])->assertRedirect('/settings/users');
+        ])->assertRedirect(self::USERS_PATH);
 
         $this->assertTrue($admin->refresh()->isAdmin());
 
         $this->actingAs($admin)
-            ->patch("/settings/users/{$admin->id}/active")
+            ->patch(self::USERS_PATH."/{$admin->id}/active")
             ->assertStatus(422);
         $this->assertTrue($admin->refresh()->is_active);
     }
@@ -259,28 +269,28 @@ class UserAuthorizationTest extends TestCase
         $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG)]);
         $user = User::factory()->create(['is_active' => true]);
 
-        $this->actingAs($admin)->patch("/settings/users/{$user->id}/active")->assertRedirect();
+        $this->actingAs($admin)->patch(self::USERS_PATH."/{$user->id}/active")->assertRedirect();
         $this->assertFalse($user->refresh()->is_active);
 
-        $this->actingAs($admin)->patch("/settings/users/{$user->id}/active")->assertRedirect();
+        $this->actingAs($admin)->patch(self::USERS_PATH."/{$user->id}/active")->assertRedirect();
         $this->assertTrue($user->refresh()->is_active);
     }
 
     public function test_user_list_can_search_and_paginate(): void
     {
         $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG)]);
-        User::factory()->create(['first_name' => 'Needle', 'email' => 'needle@example.com']);
+        User::factory()->create(['first_name' => 'Needle', 'email' => self::NEEDLE_EMAIL]);
         User::factory()->count(6)->create();
 
         $this->actingAs($admin)
-            ->get('/settings/users?q=Needle&per_page=5')
+            ->get(self::USERS_PATH.'?q=Needle&per_page=5')
             ->assertOk()
-            ->assertSee('needle@example.com')
+            ->assertSee(self::NEEDLE_EMAIL)
             ->assertViewHas('users', fn ($users) => $users->total() === 1
-                && $users->first()->email === 'needle@example.com');
+                && $users->first()->email === self::NEEDLE_EMAIL);
 
         $this->actingAs($admin)
-            ->get('/settings/users?per_page=5&page=2')
+            ->get(self::USERS_PATH.'?per_page=5&page=2')
             ->assertOk();
     }
 
@@ -291,7 +301,7 @@ class UserAuthorizationTest extends TestCase
         $external = User::factory()->create(['user_type' => 'external']);
 
         $this->actingAs($admin)
-            ->get('/settings/users?user_type=external')
+            ->get(self::USERS_PATH.'?user_type=external')
             ->assertOk()
             ->assertViewHas('userType', 'external')
             ->assertViewHas('users', fn ($users) => $users->pluck('id')->contains($external->id)
@@ -308,14 +318,14 @@ class UserAuthorizationTest extends TestCase
         User::factory()->create(['employee_code' => 'EXT0001']);
 
         $this->actingAs($admin)
-            ->get('/settings/users')
+            ->get(self::USERS_PATH)
             ->assertOk()
             ->assertSee('aria-sort="ascending"', false)
             ->assertViewHas('users', fn ($users) => $users->pluck('employee_code')->all() === [
                 'EMP0001', 'EXT0001', 'EXT0002',
             ]);
 
-        $this->get('/settings/users?sort=employee_code&direction=desc')
+        $this->get(self::USERS_PATH.'?sort=employee_code&direction=desc')
             ->assertOk()
             ->assertSee('aria-sort="descending"', false)
             ->assertViewHas('users', fn ($users) => $users->pluck('employee_code')->all() === [

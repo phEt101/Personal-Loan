@@ -14,6 +14,10 @@ class ResponsibilityGroupTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const TEAM_A = 'Team A';
+
+    private const RESPONSIBILITY_GROUPS_PATH = '/settings/responsibility-groups';
+
     public function test_database_seeder_creates_default_responsibility_groups(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -54,14 +58,14 @@ class ResponsibilityGroupTest extends TestCase
         $internal = User::factory()->create(['user_type' => 'internal']);
         $external = User::factory()->create(['user_type' => 'external']);
 
-        $this->actingAs($admin)->post('/settings/responsibility-groups', [
-            'name' => 'Team A',
+        $this->actingAs($admin)->post(self::RESPONSIBILITY_GROUPS_PATH, [
+            'name' => self::TEAM_A,
             'is_active' => 1,
             'internal_user_ids' => [$internal->id],
             'external_user_ids' => [$external->id],
-        ])->assertRedirect('/settings/responsibility-groups');
+        ])->assertRedirect(self::RESPONSIBILITY_GROUPS_PATH);
 
-        $groupId = DB::table('responsibility_groups')->where('name', 'Team A')->value('id');
+        $groupId = DB::table('responsibility_groups')->where('name', self::TEAM_A)->value('id');
         $this->assertDatabaseHas('users', [
             'id' => $internal->id,
             'responsibility_group_id' => $groupId,
@@ -71,9 +75,9 @@ class ResponsibilityGroupTest extends TestCase
             'responsibility_group_id' => $groupId,
         ]);
 
-        $this->get('/settings/responsibility-groups')
+        $this->get(self::RESPONSIBILITY_GROUPS_PATH)
             ->assertOk()
-            ->assertSee('Team A')
+            ->assertSee(self::TEAM_A)
             ->assertSee($internal->full_name)
             ->assertSee($external->full_name);
 
@@ -90,7 +94,7 @@ class ResponsibilityGroupTest extends TestCase
         $admin = User::factory()->create(['role_id' => $this->roleId(Role::ADMIN_SLUG)]);
         $external = User::factory()->create(['user_type' => 'external']);
         $firstGroup = DB::table('responsibility_groups')->insertGetId([
-            'name' => 'Team A', 'is_active' => true, 'created_at' => now(), 'updated_at' => now(),
+            'name' => self::TEAM_A, 'is_active' => true, 'created_at' => now(), 'updated_at' => now(),
         ]);
         $secondGroup = DB::table('responsibility_groups')->insertGetId([
             'name' => 'Team B', 'is_active' => true, 'created_at' => now(), 'updated_at' => now(),
@@ -104,11 +108,11 @@ class ResponsibilityGroupTest extends TestCase
             'sysInsertUserId' => $external->id,
         ]);
 
-        $this->actingAs($admin)->put("/settings/responsibility-groups/{$secondGroup}", [
+        $this->actingAs($admin)->put(self::RESPONSIBILITY_GROUPS_PATH."/{$secondGroup}", [
             'name' => 'Team B',
             'is_active' => 1,
             'external_user_ids' => [$external->id],
-        ])->assertRedirect('/settings/responsibility-groups');
+        ])->assertRedirect(self::RESPONSIBILITY_GROUPS_PATH);
 
         $this->assertDatabaseHas('users', [
             'id' => $external->id,
@@ -125,7 +129,7 @@ class ResponsibilityGroupTest extends TestCase
         $user = User::factory()->create(['role_id' => $this->roleId(Role::USER_SLUG)]);
 
         $this->actingAs($user)
-            ->get('/settings/responsibility-groups')
+            ->get(self::RESPONSIBILITY_GROUPS_PATH)
             ->assertRedirect('/customer-history');
     }
 
@@ -137,19 +141,19 @@ class ResponsibilityGroupTest extends TestCase
             'user_type' => 'external',
             'role_id' => $this->roleId(Role::MANAGER_SLUG),
         ]);
-        $externalUser = User::factory()->create([
+        User::factory()->create([
             'employee_code' => 'EXT-USER',
             'user_type' => 'external',
             'role_id' => $this->roleId(Role::USER_SLUG),
         ]);
 
         $this->actingAs($admin)
-            ->get('/settings/responsibility-groups/create')
+            ->get(self::RESPONSIBILITY_GROUPS_PATH.'/create')
             ->assertOk()
             ->assertDontSee('EXT-MANAGER')
             ->assertSee('EXT-USER');
 
-        $this->post('/settings/responsibility-groups', [
+        $this->post(self::RESPONSIBILITY_GROUPS_PATH, [
             'name' => 'Invalid Team',
             'is_active' => 1,
             'external_user_ids' => [$manager->id],

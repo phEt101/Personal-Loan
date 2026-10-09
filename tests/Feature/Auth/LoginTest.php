@@ -16,6 +16,8 @@ class LoginTest extends TestCase
 
     private const LOGIN_PATH = '/login';
 
+    private const CUSTOMER_HISTORY_PATH = '/customer-history';
+
     public function test_root_redirects_to_login(): void
     {
         $this->get('/')->assertRedirect(self::LOGIN_PATH);
@@ -23,7 +25,7 @@ class LoginTest extends TestCase
 
     public function test_guest_cannot_access_home(): void
     {
-        $this->get('/customer-history')->assertRedirect(self::LOGIN_PATH);
+        $this->get(self::CUSTOMER_HISTORY_PATH)->assertRedirect(self::LOGIN_PATH);
     }
 
     public function test_expired_ajax_session_returns_localized_json_response(): void
@@ -33,7 +35,7 @@ class LoginTest extends TestCase
                 'Accept' => 'text/html',
                 'X-Requested-With' => 'XMLHttpRequest',
             ])
-            ->get('/customer-history?partial=1')
+            ->get(self::CUSTOMER_HISTORY_PATH.'?partial=1')
             ->assertUnauthorized()
             ->assertJson([
                 'message' => 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',
@@ -44,7 +46,7 @@ class LoginTest extends TestCase
     public function test_expired_csrf_token_returns_session_expired_json(): void
     {
         app()->setLocale('th');
-        $request = Request::create('/customer-history', 'POST', server: [
+        $request = Request::create(self::CUSTOMER_HISTORY_PATH, 'POST', server: [
             'HTTP_ACCEPT' => 'application/json',
             'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
         ]);
@@ -54,7 +56,7 @@ class LoginTest extends TestCase
         $this->assertSame([
             'message' => 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',
             'login_url' => url(self::LOGIN_PATH),
-        ], $response->getData(true));
+        ], json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR));
     }
 
     public function test_expired_csrf_token_on_standard_form_redirects_to_login_with_return_path(): void
@@ -67,7 +69,7 @@ class LoginTest extends TestCase
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame(
-            'http://localhost:8080/login?redirect=%2Fsettings%2Fusers%3Fper_page%3D25',
+            'http://localhost:8080'.self::LOGIN_PATH.'?redirect=%2Fsettings%2Fusers%3Fper_page%3D25',
             $response->headers->get('Location')
         );
     }
@@ -79,10 +81,10 @@ class LoginTest extends TestCase
             'password' => 'password',
         ]);
 
-        $this->post('/login', [
+        $this->post(self::LOGIN_PATH, [
             'email' => $user->email,
             'password' => 'password',
-        ])->assertRedirect('/customer-history');
+        ])->assertRedirect(self::CUSTOMER_HISTORY_PATH);
 
         $this->assertAuthenticatedAs($user);
 
@@ -105,7 +107,7 @@ class LoginTest extends TestCase
         $this->actingAs($user);
         $user->update(['is_active' => false]);
 
-        $this->get('/customer-history')
+        $this->get(self::CUSTOMER_HISTORY_PATH)
             ->assertRedirect(self::LOGIN_PATH)
             ->assertSessionHas('status', __('auth::messages.account_disabled'));
 
@@ -122,7 +124,7 @@ class LoginTest extends TestCase
         $this->withHeaders([
             'Accept' => 'application/json',
             'X-Requested-With' => 'XMLHttpRequest',
-        ])->get('/customer-history?partial=1')
+        ])->get(self::CUSTOMER_HISTORY_PATH.'?partial=1')
             ->assertUnauthorized()
             ->assertJson([
                 'message' => __('auth::messages.account_disabled'),
@@ -134,12 +136,12 @@ class LoginTest extends TestCase
 
     public function test_invalid_credentials_are_rendered_as_error_toast(): void
     {
-        $this->from('/login')->post('/login', [
+        $this->from(self::LOGIN_PATH)->post(self::LOGIN_PATH, [
             'email' => 'missing@example.com',
             'password' => 'wrong-password',
-        ])->assertRedirect('/login');
+        ])->assertRedirect(self::LOGIN_PATH);
 
-        $this->get('/login')
+        $this->get(self::LOGIN_PATH)
             ->assertOk()
             ->assertSee(__('auth::messages.invalid_credentials'))
             ->assertSee('window.showToast(', false)
@@ -155,9 +157,9 @@ class LoginTest extends TestCase
             'password' => 'password',
         ]);
 
-        $this->get('/login?redirect=/settings/users')->assertOk();
+        $this->get(self::LOGIN_PATH.'?redirect=/settings/users')->assertOk();
 
-        $this->post('/login', [
+        $this->post(self::LOGIN_PATH, [
             'email' => $user->email,
             'password' => 'password',
         ])->assertRedirect('/settings/users');

@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
             ->whereIn('employee_code', $internalEmployeeCodes)
             ->get()
             ->each(fn (User $user) => $user->update([
-                'email' => strtolower($user->employee_code).self::TEMP_EMAIL_DOMAIN,
+                'email' => strtolower((string) $user->getAttribute('employee_code')).self::TEMP_EMAIL_DOMAIN,
             ]));
 
         foreach ($internalUsers as $internalUser) {
@@ -105,7 +105,7 @@ class DatabaseSeeder extends Seeder
             ->whereIn('employee_code', collect($externalManagers)->pluck('employee_code'))
             ->get()
             ->each(fn (User $user) => $user->update([
-                'email' => strtolower($user->employee_code).self::TEMP_EMAIL_DOMAIN,
+                'email' => strtolower((string) $user->getAttribute('employee_code')).self::TEMP_EMAIL_DOMAIN,
             ]));
 
         foreach ($externalManagers as $externalManager) {
@@ -162,7 +162,7 @@ class DatabaseSeeder extends Seeder
             ->whereIn('employee_code', $externalEmployeeCodes)
             ->get()
             ->each(fn (User $user) => $user->update([
-                'email' => strtolower($user->employee_code).self::TEMP_EMAIL_DOMAIN,
+                'email' => strtolower((string) $user->getAttribute('employee_code')).self::TEMP_EMAIL_DOMAIN,
             ]));
 
         foreach ($externalUsers as $externalUser) {

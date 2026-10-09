@@ -8,12 +8,15 @@ use App\Modules\Settings\Models\User;
 use App\Modules\WorkDelegation\Models\WorkDelegation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Tests\TestCase;
 use ZipArchive;
 
 class ReportTest extends TestCase
 {
     use RefreshDatabase;
+
+    private const CUSTOMER_REPORT_PATH = '/reports?report=customers';
 
     public function test_internal_user_can_view_both_reports(): void
     {
@@ -35,7 +38,7 @@ class ReportTest extends TestCase
             ->assertOk()
             ->assertSee('REPORT-00000001');
 
-        $this->get('/reports?report=customers&submitted=1')
+        $this->get(self::CUSTOMER_REPORT_PATH.'&submitted=1')
             ->assertOk()
             ->assertSee($external->full_name)
             ->assertSee('REPORT-00000001')
@@ -105,7 +108,7 @@ class ReportTest extends TestCase
         ]);
 
         $this->actingAs($internal)
-            ->get('/reports?report=customers&partial=1')
+            ->get(self::CUSTOMER_REPORT_PATH.'&partial=1')
             ->assertOk()
             ->assertViewIs('report::_report_content')
             ->assertSee('report-filter-grid', false)
@@ -121,7 +124,7 @@ class ReportTest extends TestCase
         ]);
 
         $this->actingAs($internal)
-            ->get('/reports?report=customers')
+            ->get(self::CUSTOMER_REPORT_PATH)
             ->assertOk()
             ->assertViewHas('hasSearched', false)
             ->assertViewHas('customerRows', null)
@@ -152,7 +155,7 @@ class ReportTest extends TestCase
         ]);
 
         $this->actingAs($internal)
-            ->get('/reports?report=customers')
+            ->get(self::CUSTOMER_REPORT_PATH)
             ->assertOk()
             ->assertSee('data-group-id="'.$group->id.'"', false)
             ->assertSee($externalUser->full_name)
@@ -189,7 +192,7 @@ class ReportTest extends TestCase
         ]);
 
         $this->actingAs($internal)
-            ->get('/reports?report=customers')
+            ->get(self::CUSTOMER_REPORT_PATH)
             ->assertOk()
             ->assertSee($ownGroup->name)
             ->assertSee($ownExternal->full_name)
@@ -205,7 +208,7 @@ class ReportTest extends TestCase
             'created_by' => $delegator->id,
         ]);
 
-        $this->get('/reports?report=customers')
+        $this->get(self::CUSTOMER_REPORT_PATH)
             ->assertOk()
             ->assertSee($otherGroup->name)
             ->assertSee($otherExternal->full_name);
@@ -228,7 +231,7 @@ class ReportTest extends TestCase
         $this->insertCustomer('STATUS-CONFIRMED', $external, 'transferred', $internal);
 
         $this->actingAs($internal)
-            ->get('/reports?report=customers&transfer_status=pending&submitted=1')
+            ->get(self::CUSTOMER_REPORT_PATH.'&transfer_status=pending&submitted=1')
             ->assertOk()
             ->assertSee('STATUS-PENDING')
             ->assertDontSee('STATUS-CONFIRMED');
@@ -253,7 +256,7 @@ class ReportTest extends TestCase
         }
 
         $this->actingAs($internal)
-            ->get('/reports?report=customers&submitted=1')
+            ->get(self::CUSTOMER_REPORT_PATH.'&submitted=1')
             ->assertOk()
             ->assertViewHas('customerRows', fn ($rows) => $rows->total() === 21
                 && $rows->perPage() === 10
@@ -281,8 +284,10 @@ class ReportTest extends TestCase
             ->assertOk()
             ->assertDownload();
 
-        $path = $response->baseResponse->getFile()->getPathname();
-        $zip = new ZipArchive();
+        /** @var BinaryFileResponse $downloadResponse */
+        $downloadResponse = $response->baseResponse;
+        $path = $downloadResponse->getFile()->getPathname();
+        $zip = new ZipArchive;
         $this->assertTrue($zip->open($path) === true);
         $sheet = $zip->getFromName('xl/worksheets/sheet1.xml');
         $zip->close();

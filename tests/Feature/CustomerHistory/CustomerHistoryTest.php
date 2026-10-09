@@ -15,6 +15,20 @@ class CustomerHistoryTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const CUSTOMER_HISTORY_PATH = '/customer-history';
+
+    private const CUSTOMER_FIRST_NAME = 'สมชาย';
+
+    private const NATIONAL_ID_DOCUMENT_NAME = 'สำเนาบัตรประชาชน';
+
+    private const PDF_MIME_TYPE = 'application/pdf';
+
+    private const SEPTEMBER_TENTH_AT_TEN = '2026-09-10 10:00:00';
+
+    private const SEPTEMBER_ELEVENTH_AT_TEN = '2026-09-11 10:00:00';
+
+    private const OCTOBER_FIRST_AT_TEN = '2026-10-01 10:00:00';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,7 +40,7 @@ class CustomerHistoryTest extends TestCase
         $user = User::factory()->create();
 
         $create = $this->actingAs($user)
-            ->postJson('/customer-history', $this->customerPayload())
+            ->postJson(self::CUSTOMER_HISTORY_PATH, $this->customerPayload())
             ->assertCreated()
             ->assertJsonStructure(['message', 'customer_no']);
 
@@ -35,7 +49,7 @@ class CustomerHistoryTest extends TestCase
         $this->assertDatabaseHas('customers', [
             'CustomerNo' => $customerNo,
             'CustomerRefNo' => $customerNo,
-            'Firstname' => 'สมชาย',
+            'Firstname' => self::CUSTOMER_FIRST_NAME,
             'sysInsertUserId' => $user->id,
         ]);
         $this->assertDatabaseHas('customer_addresses', ['CustomerNo' => $customerNo, 'AddressId' => 1]);
@@ -43,7 +57,7 @@ class CustomerHistoryTest extends TestCase
 
         $this->getJson("/customer-history/{$customerNo}")
             ->assertOk()
-            ->assertJsonPath('customer.Firstname', 'สมชาย')
+            ->assertJsonPath('customer.Firstname', self::CUSTOMER_FIRST_NAME)
             ->assertJsonCount(1, 'addresses')
             ->assertJsonCount(1, 'phones');
 
@@ -69,7 +83,7 @@ class CustomerHistoryTest extends TestCase
     public function test_customer_form_config_is_rendered_as_valid_json(): void
     {
         $user = User::factory()->create();
-        $html = $this->actingAs($user)->get('/customer-history')->assertOk()->getContent();
+        $html = $this->actingAs($user)->get(self::CUSTOMER_HISTORY_PATH)->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression(
             '/<script type="application\/json" id="customerHistoryFormConfig">(.*?)<\/script>/s',
@@ -90,11 +104,11 @@ class CustomerHistoryTest extends TestCase
         $user = User::factory()->create();
 
         $firstCustomerNo = $this->actingAs($user)
-            ->postJson('/customer-history', $this->customerPayload())
+            ->postJson(self::CUSTOMER_HISTORY_PATH, $this->customerPayload())
             ->assertCreated()
             ->json('customer_no');
 
-        $secondCustomerNo = $this->postJson('/customer-history', $this->customerPayload([
+        $secondCustomerNo = $this->postJson(self::CUSTOMER_HISTORY_PATH, $this->customerPayload([
             'IdentityCardId' => 'P87654321',
             'Email' => 'second@example.com',
         ]))
@@ -114,7 +128,7 @@ class CustomerHistoryTest extends TestCase
         try {
             $user = User::factory()->create();
             $customerNo = $this->actingAs($user)
-                ->postJson('/customer-history', $this->customerPayload())
+                ->postJson(self::CUSTOMER_HISTORY_PATH, $this->customerPayload())
                 ->assertCreated()
                 ->json('customer_no');
 
@@ -134,9 +148,9 @@ class CustomerHistoryTest extends TestCase
         $payload = $this->customerPayload([
             'NewAttachments' => [
                 [
-                    'DocumentName' => 'สำเนาบัตรประชาชน',
+                    'DocumentName' => self::NATIONAL_ID_DOCUMENT_NAME,
                     'DocumentTypeId' => $nationalIdType,
-                    'File' => UploadedFile::fake()->create('national-id.pdf', 100, 'application/pdf'),
+                    'File' => UploadedFile::fake()->create('national-id.pdf', 100, self::PDF_MIME_TYPE),
                 ],
                 [
                     'DocumentName' => 'สลิปเดือนล่าสุด',
@@ -148,13 +162,13 @@ class CustomerHistoryTest extends TestCase
 
         $customerNo = $this->actingAs($owner)
             ->withHeader('Accept', 'application/json')
-            ->post('/customer-history', $payload)
+            ->post(self::CUSTOMER_HISTORY_PATH, $payload)
             ->assertCreated()
             ->json('customer_no');
 
         $attachments = DB::table('customer_attachments')->where('CustomerNo', $customerNo)->get();
         $this->assertCount(2, $attachments);
-        $this->assertSame('สำเนาบัตรประชาชน', $attachments->firstWhere('DocumentTypeId', $nationalIdType)->DocumentName);
+        $this->assertSame(self::NATIONAL_ID_DOCUMENT_NAME, $attachments->firstWhere('DocumentTypeId', $nationalIdType)->DocumentName);
         foreach ($attachments->pluck('FilePath') as $path) {
             $this->assertTrue(Storage::disk('local')->exists($path));
         }
@@ -165,7 +179,7 @@ class CustomerHistoryTest extends TestCase
         $previewUrl = $detail->json('attachments.0.preview_url');
         $downloadAllUrl = $detail->json('download_all_attachments_url');
         $attachmentId = $detail->json('attachments.0.id');
-        $this->assertSame('application/pdf', $detail->json('attachments.0.mime_type'));
+        $this->assertSame(self::PDF_MIME_TYPE, $detail->json('attachments.0.mime_type'));
 
         $this->get($previewUrl)
             ->assertOk()
@@ -178,7 +192,7 @@ class CustomerHistoryTest extends TestCase
         file_put_contents($zipPath, $download->streamedContent());
         $this->assertTrue($zip->open($zipPath));
         $this->assertSame(2, $zip->numFiles);
-        $this->assertSame('01-สำเนาบัตรประชาชน.pdf', $zip->getNameIndex(0));
+        $this->assertSame('01-'.self::NATIONAL_ID_DOCUMENT_NAME.'.pdf', $zip->getNameIndex(0));
         $this->assertSame('02-สลิปเดือนล่าสุด.jpg', $zip->getNameIndex(1));
         $zip->close();
         unlink($zipPath);
@@ -214,7 +228,7 @@ class CustomerHistoryTest extends TestCase
             'DocumentTypeId' => DB::table('document_types')->value('id'),
             'OriginalName' => 'missing.pdf',
             'FilePath' => "customer-attachments/{$customerNo}/missing.pdf",
-            'MimeType' => 'application/pdf',
+            'MimeType' => self::PDF_MIME_TYPE,
             'FileSize' => 100,
             'UploadedBy' => $owner->id,
             'created_at' => now(),
@@ -229,7 +243,7 @@ class CustomerHistoryTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->postJson('/customer-history', [])
+            ->postJson(self::CUSTOMER_HISTORY_PATH, [])
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
                 'TitleCode', 'Firstname', 'Lastname', 'GenderCode', 'BirthDate',
@@ -238,7 +252,7 @@ class CustomerHistoryTest extends TestCase
             ]);
 
         $payload = $this->customerPayload(['IdentityCardAddressId' => 99]);
-        $this->postJson('/customer-history', $payload)
+        $this->postJson(self::CUSTOMER_HISTORY_PATH, $payload)
             ->assertUnprocessable()
             ->assertJsonValidationErrors('IdentityCardAddressId');
     }
@@ -256,7 +270,7 @@ class CustomerHistoryTest extends TestCase
         User::query()->whereKey([$internal->id, $external->id])
             ->update(['responsibility_group_id' => $groupId]);
         $internal->refresh();
-        $this->insertCustomer('MOCK000000000001', 'Needle', $external, '2026-09-10 10:00:00');
+        $this->insertCustomer('MOCK000000000001', 'Needle', $external, self::SEPTEMBER_TENTH_AT_TEN);
 
         foreach (range(2, 7) as $number) {
             $this->insertCustomer(
@@ -289,7 +303,7 @@ class CustomerHistoryTest extends TestCase
         $this->insertCustomer('MOCK000000000002', 'Bravo', $internal, '2026-09-02 10:00:00');
 
         $this->actingAs($internal)
-            ->get('/customer-history')
+            ->get(self::CUSTOMER_HISTORY_PATH)
             ->assertOk()
             ->assertSee('aria-sort="descending"', false)
             ->assertViewHas('customers', fn ($customers) => $customers->pluck('CustomerNo')->all() === [
@@ -334,11 +348,11 @@ class CustomerHistoryTest extends TestCase
     {
         $external = User::factory()->create(['user_type' => 'external']);
         $other = User::factory()->create(['user_type' => 'external']);
-        $this->insertCustomer('MOCK000000000001', 'Owned', $external, '2026-09-10 10:00:00');
-        $this->insertCustomer('MOCK000000000002', 'Hidden', $other, '2026-09-11 10:00:00');
+        $this->insertCustomer('MOCK000000000001', 'Owned', $external, self::SEPTEMBER_TENTH_AT_TEN);
+        $this->insertCustomer('MOCK000000000002', 'Hidden', $other, self::SEPTEMBER_ELEVENTH_AT_TEN);
 
         $this->actingAs($external)
-            ->get('/customer-history')
+            ->get(self::CUSTOMER_HISTORY_PATH)
             ->assertOk()
             ->assertViewHas('customers', fn ($customers) => $customers->total() === 1
                 && $customers->first()->Firstname === 'Owned');
@@ -363,12 +377,12 @@ class CustomerHistoryTest extends TestCase
             ->update(['responsibility_group_id' => $groupId]);
         $internal->refresh();
 
-        $this->insertCustomer('MOCK000000000301', 'Assigned', $assignedExternal, '2026-09-10 10:00:00');
-        $this->insertCustomer('MOCK000000000302', 'Hidden', $otherExternal, '2026-09-11 10:00:00');
+        $this->insertCustomer('MOCK000000000301', 'Assigned', $assignedExternal, self::SEPTEMBER_TENTH_AT_TEN);
+        $this->insertCustomer('MOCK000000000302', 'Hidden', $otherExternal, self::SEPTEMBER_ELEVENTH_AT_TEN);
         $this->insertCustomer('MOCK000000000303', 'Internal', $otherInternal, '2026-09-12 10:00:00');
 
         $this->actingAs($internal)
-            ->get('/customer-history')
+            ->get(self::CUSTOMER_HISTORY_PATH)
             ->assertOk()
             ->assertViewHas('customers', fn ($customers) => $customers->pluck('CustomerNo')->sort()->values()->all() === [
                 'MOCK000000000301',
@@ -389,12 +403,12 @@ class CustomerHistoryTest extends TestCase
         ]);
         $external = User::factory()->create(['user_type' => 'external']);
         $internal = User::factory()->create(['user_type' => 'internal']);
-        $this->insertCustomer('MOCK000000000201', 'ManagerOwned', $manager, '2026-09-10 10:00:00');
-        $this->insertCustomer('MOCK000000000202', 'ExternalOwned', $external, '2026-09-11 10:00:00');
+        $this->insertCustomer('MOCK000000000201', 'ManagerOwned', $manager, self::SEPTEMBER_TENTH_AT_TEN);
+        $this->insertCustomer('MOCK000000000202', 'ExternalOwned', $external, self::SEPTEMBER_ELEVENTH_AT_TEN);
         $this->insertCustomer('MOCK000000000203', 'InternalOwned', $internal, '2026-09-12 10:00:00');
 
         $this->actingAs($manager)
-            ->get('/customer-history')
+            ->get(self::CUSTOMER_HISTORY_PATH)
             ->assertOk()
             ->assertDontSee('id="openCustomerHistoryForm"', false)
             ->assertViewHas('canViewCreator', true)
@@ -419,7 +433,7 @@ class CustomerHistoryTest extends TestCase
             'CustomerNo' => 'MOCK000000000202',
             'Firstname' => 'ExternalOwned',
         ]);
-        $this->postJson('/customer-history', $this->customerPayload([
+        $this->postJson(self::CUSTOMER_HISTORY_PATH, $this->customerPayload([
             'IdentityCardId' => 'PMANAGERNEW',
             'Email' => 'manager-new@example.com',
         ]))->assertForbidden();
@@ -435,7 +449,7 @@ class CustomerHistoryTest extends TestCase
             'last_name' => 'จุฑารัตน์จรัส',
         ]);
         $customerNo = 'MOCK000000000101';
-        $this->insertCustomer($customerNo, 'Transfer', $internal, '2026-10-01 10:00:00');
+        $this->insertCustomer($customerNo, 'Transfer', $internal, self::OCTOBER_FIRST_AT_TEN);
 
         $this->actingAs($internal)
             ->patchJson("/customer-history/{$customerNo}/hmeter-transfer")
@@ -466,7 +480,7 @@ class CustomerHistoryTest extends TestCase
     {
         $external = User::factory()->create(['user_type' => 'external']);
         $customerNo = 'MOCK000000000102';
-        $this->insertCustomer($customerNo, 'External', $external, '2026-10-01 10:00:00');
+        $this->insertCustomer($customerNo, 'External', $external, self::OCTOBER_FIRST_AT_TEN);
 
         $this->actingAs($external)
             ->patchJson("/customer-history/{$customerNo}/hmeter-transfer")
@@ -484,17 +498,17 @@ class CustomerHistoryTest extends TestCase
         Carbon::setTestNow('2026-11-06 02:00:00');
         $internal = User::factory()->create(['user_type' => 'internal']);
         $customerNo = 'MOCK000000000103';
-        $this->insertCustomer($customerNo, 'Purge', $internal, '2026-10-01 10:00:00');
+        $this->insertCustomer($customerNo, 'Purge', $internal, self::OCTOBER_FIRST_AT_TEN);
         $documentTypeId = DB::table('document_types')->value('id');
         $filePath = "customer-attachments/{$customerNo}/identity.pdf";
         Storage::disk('local')->put($filePath, 'test document');
         DB::table('customer_attachments')->insert([
             'CustomerNo' => $customerNo,
-            'DocumentName' => 'สำเนาบัตรประชาชน',
+            'DocumentName' => self::NATIONAL_ID_DOCUMENT_NAME,
             'DocumentTypeId' => $documentTypeId,
             'OriginalName' => 'identity.pdf',
             'FilePath' => $filePath,
-            'MimeType' => 'application/pdf',
+            'MimeType' => self::PDF_MIME_TYPE,
             'FileSize' => 13,
             'UploadedBy' => $internal->id,
             'created_at' => now(),
@@ -554,7 +568,7 @@ class CustomerHistoryTest extends TestCase
 
         return array_merge([
             'TitleCode' => $title->TitleCode,
-            'Firstname' => 'สมชาย',
+            'Firstname' => self::CUSTOMER_FIRST_NAME,
             'Lastname' => 'ทดสอบ',
             'GenderCode' => $title->GenderCode,
             'BirthDate' => '1990-01-01',

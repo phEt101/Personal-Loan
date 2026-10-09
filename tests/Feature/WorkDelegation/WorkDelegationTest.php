@@ -14,9 +14,17 @@ class WorkDelegationTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const TEAM_A = 'Team A';
+
+    private const CUSTOMER_HISTORY_PATH = '/customer-history';
+
+    private const WORK_DELEGATIONS_PATH = '/work-delegations';
+
+    private const DATE_TIME_FORMAT = 'Y-m-d H:i:s';
+
     public function test_internal_user_can_delegate_own_group_and_recipient_sees_group_customers(): void
     {
-        $group = ResponsibilityGroup::query()->create(['name' => 'Team A', 'is_active' => true]);
+        $group = ResponsibilityGroup::query()->create(['name' => self::TEAM_A, 'is_active' => true]);
         $delegator = $this->internalUser($group->id);
         $delegate = $this->internalUser();
         $external = User::factory()->create([
@@ -27,20 +35,20 @@ class WorkDelegationTest extends TestCase
         $this->insertCustomer('DELEGATED-001', $external);
 
         $this->actingAs($delegate)
-            ->get('/customer-history')
+            ->get(self::CUSTOMER_HISTORY_PATH)
             ->assertOk()
             ->assertViewHas('customers', fn ($customers) => $customers->total() === 0);
 
-        $this->actingAs($delegator)->post('/work-delegations', [
+        $this->actingAs($delegator)->post(self::WORK_DELEGATIONS_PATH, [
             'responsibility_group_id' => $group->id,
             'delegate_user_id' => $delegate->id,
-            'starts_at' => now()->subHour()->format('Y-m-d H:i:s'),
-            'ends_at' => now()->addDay()->format('Y-m-d H:i:s'),
+            'starts_at' => now()->subHour()->format(self::DATE_TIME_FORMAT),
+            'ends_at' => now()->addDay()->format(self::DATE_TIME_FORMAT),
             'note' => 'Annual leave',
-        ])->assertRedirect('/work-delegations');
+        ])->assertRedirect(self::WORK_DELEGATIONS_PATH);
 
         $this->actingAs($delegate)
-            ->get('/customer-history')
+            ->get(self::CUSTOMER_HISTORY_PATH)
             ->assertOk()
             ->assertViewHas('customers', fn ($customers) => $customers->pluck('CustomerNo')->all() === ['DELEGATED-001']
                 && $customers->first()->WorkSourceType === 'delegated'
@@ -48,17 +56,17 @@ class WorkDelegationTest extends TestCase
 
         $delegation = WorkDelegation::query()->firstOrFail();
         $this->actingAs($delegator)
-            ->patch("/work-delegations/{$delegation->id}/cancel")
-            ->assertRedirect('/work-delegations');
+            ->patch(self::WORK_DELEGATIONS_PATH."/{$delegation->id}/cancel")
+            ->assertRedirect(self::WORK_DELEGATIONS_PATH);
 
         $this->actingAs($delegate)
-            ->get('/customer-history')
+            ->get(self::CUSTOMER_HISTORY_PATH)
             ->assertViewHas('customers', fn ($customers) => $customers->total() === 0);
     }
 
     public function test_future_ended_and_cancelled_delegations_do_not_grant_customer_access(): void
     {
-        $group = ResponsibilityGroup::query()->create(['name' => 'Team A', 'is_active' => true]);
+        $group = ResponsibilityGroup::query()->create(['name' => self::TEAM_A, 'is_active' => true]);
         $delegator = $this->internalUser($group->id);
         $delegate = $this->internalUser();
         $external = User::factory()->create([
@@ -85,7 +93,7 @@ class WorkDelegationTest extends TestCase
         }
 
         $this->actingAs($delegate)
-            ->get('/customer-history')
+            ->get(self::CUSTOMER_HISTORY_PATH)
             ->assertOk()
             ->assertViewHas('customers', fn ($customers) => $customers->total() === 0);
     }
@@ -105,7 +113,7 @@ class WorkDelegationTest extends TestCase
         ]);
 
         $this->actingAs($delegator)
-            ->get('/work-delegations')
+            ->get(self::WORK_DELEGATIONS_PATH)
             ->assertOk()
             ->assertSee(__('workdelegation::messages.ended'))
             ->assertDontSee(route('work-delegations.edit', $delegation), false)
@@ -124,13 +132,13 @@ class WorkDelegationTest extends TestCase
         ]);
 
         $this->actingAs($external)
-            ->get('/work-delegations')
-            ->assertRedirect('/customer-history');
+            ->get(self::WORK_DELEGATIONS_PATH)
+            ->assertRedirect(self::CUSTOMER_HISTORY_PATH);
     }
 
     public function test_admin_cannot_be_selected_or_submitted_as_delegate(): void
     {
-        $group = ResponsibilityGroup::query()->create(['name' => 'Team A', 'is_active' => true]);
+        $group = ResponsibilityGroup::query()->create(['name' => self::TEAM_A, 'is_active' => true]);
         $delegator = $this->internalUser($group->id);
         $admin = User::factory()->create([
             'employee_code' => 'ADMIN-DELEGATE',
@@ -139,15 +147,15 @@ class WorkDelegationTest extends TestCase
         ]);
 
         $this->actingAs($delegator)
-            ->get('/work-delegations/create')
+            ->get(self::WORK_DELEGATIONS_PATH.'/create')
             ->assertOk()
             ->assertDontSee('ADMIN-DELEGATE');
 
-        $this->post('/work-delegations', [
+        $this->post(self::WORK_DELEGATIONS_PATH, [
             'responsibility_group_id' => $group->id,
             'delegate_user_id' => $admin->id,
-            'starts_at' => now()->format('Y-m-d H:i:s'),
-            'ends_at' => now()->addDay()->format('Y-m-d H:i:s'),
+            'starts_at' => now()->format(self::DATE_TIME_FORMAT),
+            'ends_at' => now()->addDay()->format(self::DATE_TIME_FORMAT),
         ])->assertSessionHasErrors('delegate_user_id');
 
         $this->assertDatabaseCount('work_delegations', 0);
@@ -155,17 +163,17 @@ class WorkDelegationTest extends TestCase
 
     public function test_internal_user_cannot_delegate_another_group_or_manage_another_users_delegation(): void
     {
-        $ownGroup = ResponsibilityGroup::query()->create(['name' => 'Team A', 'is_active' => true]);
+        $ownGroup = ResponsibilityGroup::query()->create(['name' => self::TEAM_A, 'is_active' => true]);
         $otherGroup = ResponsibilityGroup::query()->create(['name' => 'Team B', 'is_active' => true]);
         $delegator = $this->internalUser($ownGroup->id);
         $otherDelegator = $this->internalUser($otherGroup->id);
         $delegate = $this->internalUser();
 
-        $this->actingAs($delegator)->post('/work-delegations', [
+        $this->actingAs($delegator)->post(self::WORK_DELEGATIONS_PATH, [
             'responsibility_group_id' => $otherGroup->id,
             'delegate_user_id' => $delegate->id,
-            'starts_at' => now()->addHour()->format('Y-m-d H:i:s'),
-            'ends_at' => now()->addDay()->format('Y-m-d H:i:s'),
+            'starts_at' => now()->addHour()->format(self::DATE_TIME_FORMAT),
+            'ends_at' => now()->addDay()->format(self::DATE_TIME_FORMAT),
         ])->assertSessionHasErrors('responsibility_group_id');
 
         $delegation = WorkDelegation::query()->create([
@@ -177,8 +185,8 @@ class WorkDelegationTest extends TestCase
             'created_by' => $otherDelegator->id,
         ]);
 
-        $this->get("/work-delegations/{$delegation->id}/edit")->assertForbidden();
-        $this->patch("/work-delegations/{$delegation->id}/cancel")->assertForbidden();
+        $this->get(self::WORK_DELEGATIONS_PATH."/{$delegation->id}/edit")->assertForbidden();
+        $this->patch(self::WORK_DELEGATIONS_PATH."/{$delegation->id}/cancel")->assertForbidden();
     }
 
     private function internalUser(?int $groupId = null): User
