@@ -32,12 +32,14 @@ class EnsureUserIsActive
         $message = __('auth::messages.account_disabled');
 
         if ($request->ajax() || $request->expectsJson()) {
-            return response()->json([
+            $response = response()->json([
                 'message' => $message,
                 'login_url' => route('login'),
             ], 401);
+        } else {
+            $response = redirect()->route('login')->with('status', $message);
         }
 
-        return redirect()->route('login')->with('status', $message);
+        return $response;
     }
 }

@@ -960,6 +960,7 @@ body .module-form-actions {
 }
 
 .module-alert {
+    display: block;
     margin-top: 1.5rem;
     padding: 0.9rem 1rem;
     border-radius: 0.75rem;

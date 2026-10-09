@@ -21,9 +21,9 @@
         </div>
 
         <div id="customerHistoryListContent" class="customer-history-ajax-region">
-            <div class="customer-history-loading" role="status" aria-live="polite" data-error-message="{{ __('customerhistory::messages.index.load_failed') }}">
+            <output class="customer-history-loading" aria-live="polite" data-error-message="{{ __('customerhistory::messages.index.load_failed') }}">
                 <span class="customer-history-spinner" aria-hidden="true"></span>
-            </div>
+            </output>
             <div id="customerHistoryListPartial">
                 @include('customerhistory::_customer_list')
             </div>

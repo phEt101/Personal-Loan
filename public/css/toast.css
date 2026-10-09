@@ -1,5 +1,6 @@
 .app-toast {
     position: fixed;
+    display: block;
     top: 1.25rem;
     right: 1.25rem;
     z-index: 1000;

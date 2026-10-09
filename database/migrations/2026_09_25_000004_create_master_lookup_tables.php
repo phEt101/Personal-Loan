@@ -146,6 +146,11 @@ return new class extends Migration
             $table->boolean('IsRequireOccupation');
         });
 
+        $this->addForeignKeys();
+    }
+
+    private function addForeignKeys(): void
+    {
         Schema::table('districts', function (Blueprint $table) {
             $table->foreign('ProvinceCode', 'districts_province_fk')->references('ProvinceCode')->on('provinces');
         });

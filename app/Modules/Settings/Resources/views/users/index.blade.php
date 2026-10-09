@@ -19,7 +19,7 @@
         </div>
 
         @if (session('status'))
-            <div class="module-alert module-alert-success" role="status">{{ session('status') }}</div>
+            <output class="module-alert module-alert-success">{{ session('status') }}</output>
         @endif
 
         <div class="module-card settings-user-filter-card">
@@ -119,7 +119,7 @@
                                             {{ __('settings::messages.edit') }}
                                         </a>
                                         @if ($user->employee_code !== 'EMP0001')
-                                            <form method="POST" action="{{ route('settings.users.toggle-active', $user) }}" onsubmit="return confirm(@js(__('settings::messages.toggle_confirmation')))">
+                                            <form method="POST" action="{{ route('settings.users.toggle-active', $user) }}" class="settings-user-toggle-form" data-confirm="{{ __('settings::messages.toggle_confirmation') }}">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" class="module-action-button {{ $user->is_active ? 'is-danger' : 'is-success' }}">
@@ -153,4 +153,14 @@
             ])
         </div>
     </section>
+
+    <script>
+        document.querySelectorAll('.settings-user-toggle-form').forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                if (!window.confirm(form.dataset.confirm)) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
 @endsection

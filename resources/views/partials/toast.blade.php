@@ -1,4 +1,11 @@
-<div id="appToast" class="app-toast" role="status" aria-live="polite" hidden>
+<output
+    id="appToast"
+    class="app-toast"
+    aria-live="polite"
+    data-message="{{ $toastMessage ?? session('status') }}"
+    data-type="{{ $toastType ?? 'success' }}"
+    hidden
+>
     <span id="appToastMessage"></span>
     <button
         id="appToastClose"
@@ -6,7 +13,7 @@
         type="button"
         aria-label="{{ __('messages.toast.close') }}"
     >&times;</button>
-</div>
+</output>
 
 <script>
     (() => {
@@ -39,9 +46,6 @@
 
         closeButton?.addEventListener('click', dismissToast);
 
-        window.showToast(
-            @json($toastMessage ?? session('status')),
-            @json($toastType ?? 'success')
-        );
+        window.showToast(toast?.dataset.message, toast?.dataset.type);
     })();
 </script>

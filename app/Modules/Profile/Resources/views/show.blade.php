@@ -23,7 +23,7 @@
             </div>
 
             @if (session('status'))
-                <div class="module-alert module-alert-success" role="status">{{ session('status') }}</div>
+                <output class="module-alert module-alert-success">{{ session('status') }}</output>
             @endif
 
             @if ($errors->any())

@@ -14,9 +14,9 @@
         </header>
 
         <div id="reportContentRegion" class="report-ajax-region">
-            <div class="report-loading" role="status" aria-live="polite">
+            <output class="report-loading" aria-live="polite">
                 <span class="report-spinner" aria-hidden="true"></span>
-            </div>
+            </output>
             <div id="reportContentPartial">
                 @include('report::_report_content')
             </div>

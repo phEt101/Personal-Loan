@@ -54,7 +54,7 @@
                                             <a class="module-action-button" href="{{ route('work-delegations.edit', $delegation) }}">
                                                 {{ __('workdelegation::messages.edit') }}
                                             </a>
-                                            <form method="POST" action="{{ route('work-delegations.cancel', $delegation) }}" onsubmit="return confirm(@js(__('workdelegation::messages.cancel_confirmation')))" >
+                                            <form method="POST" action="{{ route('work-delegations.cancel', $delegation) }}" class="work-delegation-cancel-form" data-confirm="{{ __('workdelegation::messages.cancel_confirmation') }}">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button class="module-action-button is-danger" type="submit">{{ __('workdelegation::messages.cancel_action') }}</button>
@@ -89,4 +89,14 @@
             ])
         </div>
     </section>
+
+    <script>
+        document.querySelectorAll('.work-delegation-cancel-form').forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                if (!window.confirm(form.dataset.confirm)) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
 @endsection
