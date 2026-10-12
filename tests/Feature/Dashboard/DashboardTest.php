@@ -5,6 +5,7 @@ namespace Tests\Feature\Dashboard;
 use App\Modules\Settings\Models\ResponsibilityGroup;
 use App\Modules\Settings\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -12,12 +13,16 @@ class DashboardTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const DASHBOARD_PATH = '/dashboard';
+
+    private const CUSTOMER_HISTORY_PATH = '/customer-history';
+
     public function test_authenticated_user_can_view_dashboard_without_recent_activity(): void
     {
         $user = User::factory()->create(['is_active' => true]);
 
         $this->actingAs($user)
-            ->get('/dashboard')
+            ->get(self::DASHBOARD_PATH)
             ->assertOk()
             ->assertSee(__('dashboard::messages.title'))
             ->assertSee(__('dashboard::messages.work_queue'))
@@ -33,18 +38,18 @@ class DashboardTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->actingAs($user)->get('/')->assertRedirect('/dashboard');
+        $this->actingAs($user)->get('/')->assertRedirect(self::DASHBOARD_PATH);
 
-        auth()->logout();
+        Auth::logout();
         $this->post('/login', [
             'email' => 'dashboard@example.com',
             'password' => 'password',
-        ])->assertRedirect('/dashboard');
+        ])->assertRedirect(self::DASHBOARD_PATH);
     }
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/dashboard')->assertRedirect('/login');
+        $this->get(self::DASHBOARD_PATH)->assertRedirect('/login');
     }
 
     public function test_external_user_cannot_view_dashboard_or_see_its_navigation(): void
@@ -52,15 +57,15 @@ class DashboardTest extends TestCase
         $external = User::factory()->create(['user_type' => 'external', 'is_active' => true]);
 
         $this->actingAs($external)
-            ->get('/dashboard')
-            ->assertRedirect('/customer-history')
+            ->get(self::DASHBOARD_PATH)
+            ->assertRedirect(self::CUSTOMER_HISTORY_PATH)
             ->assertSessionHas('status', __('messages.authorization.dashboard_only'));
 
-        $this->get('/customer-history')
+        $this->get(self::CUSTOMER_HISTORY_PATH)
             ->assertOk()
             ->assertDontSee('href="'.route('dashboard.index').'"', false);
 
-        $this->get('/')->assertRedirect('/customer-history');
+        $this->get('/')->assertRedirect(self::CUSTOMER_HISTORY_PATH);
     }
 
     public function test_internal_dashboard_only_shows_its_accessible_groups(): void
@@ -92,7 +97,7 @@ class DashboardTest extends TestCase
         }
 
         $this->actingAs($internal)
-            ->get('/dashboard')
+            ->get(self::DASHBOARD_PATH)
             ->assertOk()
             ->assertViewHas('pending', 1)
             ->assertSee('open_customer=DASH-OWN', false)

@@ -18,6 +18,8 @@ class ReportTest extends TestCase
 
     private const CUSTOMER_REPORT_PATH = '/reports?report=customers';
 
+    private const SUBMITTED_QUERY = '&submitted=1';
+
     public function test_internal_user_can_view_both_reports(): void
     {
         $group = ResponsibilityGroup::query()->create(['name' => 'Report team', 'is_active' => true]);
@@ -38,7 +40,7 @@ class ReportTest extends TestCase
             ->assertOk()
             ->assertSee('REPORT-00000001');
 
-        $this->get(self::CUSTOMER_REPORT_PATH.'&submitted=1')
+        $this->get(self::CUSTOMER_REPORT_PATH.self::SUBMITTED_QUERY)
             ->assertOk()
             ->assertSee($external->full_name)
             ->assertSee('REPORT-00000001')
@@ -256,7 +258,7 @@ class ReportTest extends TestCase
         }
 
         $this->actingAs($internal)
-            ->get(self::CUSTOMER_REPORT_PATH.'&submitted=1')
+            ->get(self::CUSTOMER_REPORT_PATH.self::SUBMITTED_QUERY)
             ->assertOk()
             ->assertViewHas('customerRows', fn ($rows) => $rows->total() === 21
                 && $rows->perPage() === 10
@@ -284,7 +286,7 @@ class ReportTest extends TestCase
         ]);
 
         $this->actingAs($internal)
-            ->get(self::CUSTOMER_REPORT_PATH.'&submitted=1')
+            ->get(self::CUSTOMER_REPORT_PATH.self::SUBMITTED_QUERY)
             ->assertOk()
             ->assertSee('MONTH-CURRENT')
             ->assertDontSee('MONTH-OLD')
