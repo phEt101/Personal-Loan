@@ -8,6 +8,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * @property int $id
+ * @property string $employee_code
+ * @property string $user_type
+ * @property int $role_id
+ * @property int|null $responsibility_group_id
+ * @property string $first_name
+ * @property string $last_name
+ * @property string $email
+ * @property string|null $note
+ * @property bool $is_active
+ * @property-read string $full_name
+ * @property-read Role|null $role
+ * @property-read ResponsibilityGroup|null $responsibilityGroup
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
