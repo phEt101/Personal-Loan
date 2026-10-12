@@ -2,6 +2,36 @@
     display: grid;
     gap: 1rem;
 }
+
+.dashboard-ajax-region {
+    position: relative;
+    min-height: 12rem;
+}
+
+.dashboard-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    background: rgba(248, 252, 250, 0.72);
+    backdrop-filter: blur(1px);
+}
+
+.dashboard-ajax-region.is-loading .dashboard-loading {
+    display: flex;
+}
+
+.dashboard-spinner {
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0.3rem solid rgba(16, 185, 129, 0.2);
+    border-top-color: #10b981;
+    border-radius: 50%;
+    animation: dashboard-spin 0.75s linear infinite;
+}
 .dashboard-hero {
     display: flex;
     align-items: end;
@@ -358,6 +388,12 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes dashboard-spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 @media (prefers-reduced-motion: reduce) {

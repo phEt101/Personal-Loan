@@ -52,6 +52,18 @@ class DashboardTest extends TestCase
         $this->get(self::DASHBOARD_PATH)->assertRedirect('/login');
     }
 
+    public function test_partial_request_returns_only_replaceable_dashboard_content(): void
+    {
+        $internal = User::factory()->create(['user_type' => 'internal', 'is_active' => true]);
+
+        $this->actingAs($internal)
+            ->get(self::DASHBOARD_PATH.'?partial=1')
+            ->assertOk()
+            ->assertSee('dashboard-page', false)
+            ->assertDontSee('<html', false)
+            ->assertDontSee('dashboardContentRegion', false);
+    }
+
     public function test_external_user_cannot_view_dashboard_or_see_its_navigation(): void
     {
         $external = User::factory()->create(['user_type' => 'external', 'is_active' => true]);
@@ -132,12 +144,18 @@ class DashboardTest extends TestCase
             ->get(self::DASHBOARD_PATH)
             ->assertOk()
             ->assertViewHas('queue', fn ($queue) => $queue->total() === 11
-                && $queue->count() === 10
-                && $queue->lastPage() === 2);
+                && $queue->count() === 5
+                && $queue->lastPage() === 3);
 
-        $this->get(self::DASHBOARD_PATH.'?work_page=2')
+        $this->get(self::DASHBOARD_PATH.'?work_page=3')
             ->assertOk()
             ->assertViewHas('queue', fn ($queue) => $queue->count() === 1
-                && $queue->currentPage() === 2);
+                && $queue->currentPage() === 3);
+
+        $this->get(self::DASHBOARD_PATH.'?per_page=10&partial=1')
+            ->assertOk()
+            ->assertViewHas('perPage', 10)
+            ->assertViewHas('queue', fn ($queue) => $queue->count() === 10
+                && $queue->total() === 11);
     }
 }

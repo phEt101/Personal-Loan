@@ -15,9 +15,9 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    private const OVERDUE_DAYS = 7;
+    private const OVERDUE_DAYS = 5;
 
-    private const QUEUE_PER_PAGE_OPTIONS = [10, 25, 50];
+    private const QUEUE_PER_PAGE_OPTIONS = [5, 10, 25, 50];
 
     public function __construct(private readonly CustomerAccessService $customerAccess) {}
 
@@ -97,13 +97,15 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('dashboard::index', compact(
+        $viewData = compact(
             'groups', 'groupId', 'period', 'perPage', 'newToday', 'newInPeriod', 'pending',
             'transferred', 'overdue', 'trend', 'queue', 'performance'
         ) + [
             'overdueDays' => self::OVERDUE_DAYS,
             'perPageOptions' => self::QUEUE_PER_PAGE_OPTIONS,
-        ]);
+        ];
+
+        return view($request->boolean('partial') ? 'dashboard::_dashboard_content' : 'dashboard::index', $viewData);
     }
 
     private function customerQuery(?int $groupId, ?Collection $groupIds): Builder
