@@ -104,4 +104,40 @@ class DashboardTest extends TestCase
             ->assertViewHas('groups', fn ($groups) => $groups->pluck('id')->contains($ownGroup->id)
                 && ! $groups->pluck('id')->contains($otherGroup->id));
     }
+
+    public function test_work_queue_is_paginated_without_hiding_pending_items(): void
+    {
+        $group = ResponsibilityGroup::query()->create(['name' => 'Queue group', 'is_active' => true]);
+        $internal = User::factory()->create([
+            'user_type' => 'internal',
+            'responsibility_group_id' => $group->id,
+            'is_active' => true,
+        ]);
+
+        foreach (range(1, 11) as $index) {
+            $customerNo = 'DASH-Q-'.str_pad((string) $index, 2, '0', STR_PAD_LEFT);
+            DB::table('customers')->insert([
+                'CustomerNo' => $customerNo,
+                'CustomerRefNo' => $customerNo,
+                'Firstname' => 'Queue',
+                'Lastname' => "Customer {$index}",
+                'Email' => "queue{$index}@example.com",
+                'sysInsertUserId' => $internal->id,
+                'sysInsertDateTime' => now()->addSeconds($index),
+                'HmeterTransferStatus' => 'pending',
+            ]);
+        }
+
+        $this->actingAs($internal)
+            ->get(self::DASHBOARD_PATH)
+            ->assertOk()
+            ->assertViewHas('queue', fn ($queue) => $queue->total() === 11
+                && $queue->count() === 10
+                && $queue->lastPage() === 2);
+
+        $this->get(self::DASHBOARD_PATH.'?work_page=2')
+            ->assertOk()
+            ->assertViewHas('queue', fn ($queue) => $queue->count() === 1
+                && $queue->currentPage() === 2);
+    }
 }

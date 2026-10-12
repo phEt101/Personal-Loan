@@ -11,6 +11,8 @@ return [
     'work_queue_hint' => 'Oldest pending items first', 'customer' => 'Customer', 'owner' => 'Created by',
     'waiting' => 'Waiting', 'action' => 'Action', 'view' => 'View', 'day_count' => ':count days',
     'today' => 'Today', 'empty_queue' => 'No pending items', 'group_performance' => 'Group performance',
+    'showing_work' => 'Showing :from–:to of :total items', 'rows_per_page' => 'Rows per page',
+    'previous_page' => 'Previous', 'next_page' => 'Next',
     'total' => 'Total', 'success_rate' => 'Success rate', 'no_group' => 'No group',
     'no_data' => 'No data in this period.',
 ];

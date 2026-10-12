@@ -104,6 +104,24 @@
                 @endforelse
             </tbody>
         </table></div>
+        @include('partials.pagination', [
+            'paginator' => $queue,
+            'summary' => __('dashboard::messages.showing_work', [
+                'from' => $queue->firstItem(),
+                'to' => $queue->lastItem(),
+                'total' => $queue->total(),
+            ]),
+            'action' => route('dashboard.index'),
+            'formClass' => 'dashboard-per-page-form',
+            'selectId' => 'dashboardWorkPerPage',
+            'perPage' => $perPage,
+            'perPageOptions' => $perPageOptions,
+            'rowsPerPageLabel' => __('dashboard::messages.rows_per_page'),
+            'previousLabel' => __('dashboard::messages.previous_page'),
+            'nextLabel' => __('dashboard::messages.next_page'),
+            'queryParameters' => request()->except(['work_page', 'per_page']),
+            'ariaLabel' => __('dashboard::messages.work_queue'),
+        ])
     </article>
 
     <article class="dashboard-panel">

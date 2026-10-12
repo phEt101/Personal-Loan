@@ -17,6 +17,8 @@ class DashboardController extends Controller
 {
     private const OVERDUE_DAYS = 7;
 
+    private const QUEUE_PER_PAGE_OPTIONS = [10, 25, 50];
+
     public function __construct(private readonly CustomerAccessService $customerAccess) {}
 
     public function __invoke(Request $request): View
@@ -27,6 +29,7 @@ class DashboardController extends Controller
             : $this->customerAccess->accessibleExternalGroupIds($user);
         $filters = $request->validate([
             'period' => ['nullable', Rule::in(['7', '30', '90'])],
+            'per_page' => ['nullable', 'integer', Rule::in(self::QUEUE_PER_PAGE_OPTIONS)],
             'group_id' => [
                 'nullable', 'integer',
                 Rule::exists('responsibility_groups', 'id')->when(
@@ -37,6 +40,7 @@ class DashboardController extends Controller
         ]);
 
         $period = (int) ($filters['period'] ?? 30);
+        $perPage = (int) ($filters['per_page'] ?? self::QUEUE_PER_PAGE_OPTIONS[0]);
         $groupId = isset($filters['group_id']) ? (int) $filters['group_id'] : null;
         $timezone = config('app.local_timezone', 'Asia/Bangkok');
         $today = CarbonImmutable::now($timezone);
@@ -69,12 +73,12 @@ class DashboardController extends Controller
         $queue = (clone $base)
             ->where('customer.HmeterTransferStatus', 'pending')
             ->orderBy('customer.sysInsertDateTime')
-            ->limit(8)
-            ->get([
+            ->paginate($perPage, [
                 'customer.CustomerNo', 'customer.Firstname', 'customer.Lastname',
                 'customer.sysInsertDateTime', 'owner.first_name as OwnerFirstname',
                 'owner.last_name as OwnerLastname', 'owner_group.name as GroupName',
-            ]);
+            ], 'work_page')
+            ->withQueryString();
 
         $performance = (clone $base)
             ->whereBetween('customer.sysInsertDateTime', [$periodStart, $periodEnd])
@@ -94,9 +98,12 @@ class DashboardController extends Controller
             ->get();
 
         return view('dashboard::index', compact(
-            'groups', 'groupId', 'period', 'newToday', 'newInPeriod', 'pending',
+            'groups', 'groupId', 'period', 'perPage', 'newToday', 'newInPeriod', 'pending',
             'transferred', 'overdue', 'trend', 'queue', 'performance'
-        ) + ['overdueDays' => self::OVERDUE_DAYS]);
+        ) + [
+            'overdueDays' => self::OVERDUE_DAYS,
+            'perPageOptions' => self::QUEUE_PER_PAGE_OPTIONS,
+        ]);
     }
 
     private function customerQuery(?int $groupId, ?Collection $groupIds): Builder
