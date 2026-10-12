@@ -5,6 +5,16 @@
             <span>{{ __('messages.layout.title') }}</span>
         </div>
         <nav class="nav-group">
+            @if (auth()->user()?->user_type === 'internal' || auth()->user()?->isAdmin())
+            <a href="{{ route('dashboard.index') }}" class="nav-item {{ Request::routeIs('dashboard.*') ? 'active' : '' }}">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="14" y="3" width="7" height="11" rx="2" fill="currentColor"/><rect x="3" y="14" width="7" height="7" rx="2" fill="currentColor"/><rect x="14" y="18" width="7" height="3" rx="1.5" fill="currentColor"/>
+                    </svg>
+                </span>
+                <span>{{ __('messages.nav.dashboard') }}</span>
+            </a>
+            @endif
             <a href="{{ route('customer-history.index') }}" class="nav-item {{ Request::routeIs('customer-history.*') ? 'active' : '' }}">
                 <span class="nav-icon" aria-hidden="true">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

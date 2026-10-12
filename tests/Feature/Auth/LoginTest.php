@@ -84,7 +84,7 @@ class LoginTest extends TestCase
         $this->post(self::LOGIN_PATH, [
             'email' => $user->email,
             'password' => 'password',
-        ])->assertRedirect(self::CUSTOMER_HISTORY_PATH);
+        ])->assertRedirect('/dashboard');
 
         $this->assertAuthenticatedAs($user);
 

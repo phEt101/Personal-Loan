@@ -11,6 +11,7 @@ return [
         'sign_out' => 'ออกจากระบบ',
     ],
     'nav' => [
+        'dashboard' => 'แดชบอร์ด',
         'home' => 'หน้าหลัก',
         'consent' => 'ใบยินยอม',
         'customer_history' => 'ประวัติลูกค้า',
@@ -28,6 +29,7 @@ return [
     ],
     'authorization' => [
         'internal_only' => 'เฉพาะผู้ใช้งาน Internal เท่านั้นที่เข้าถึงส่วนนี้ได้',
+        'dashboard_only' => 'Dashboard สำหรับพนักงานภายในและผู้ดูแลระบบเท่านั้น',
     ],
     'toast' => [
         'close' => 'ปิดการแจ้งเตือน',

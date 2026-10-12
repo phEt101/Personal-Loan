@@ -42,7 +42,12 @@ class AuthController extends Controller
         RateLimiter::clear($this->throttleKey($request));
         $request->session()->regenerate();
 
-        return redirect()->intended(route('customer-history.index'));
+        $user = $request->user();
+        $defaultRoute = $user->user_type === 'internal' || $user->isAdmin()
+            ? route('dashboard.index')
+            : route('customer-history.index');
+
+        return redirect()->intended($defaultRoute);
     }
 
     public function logout(Request $request)

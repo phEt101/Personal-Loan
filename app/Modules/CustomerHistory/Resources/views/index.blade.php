@@ -5,7 +5,10 @@
 @endpush
 
 @section('content')
-    <section class="dashboard customer-history-page">
+    <section
+        class="dashboard customer-history-page"
+        data-auto-open-url="{{ request()->filled('open_customer') ? route('customer-history.show', ['customerNo' => request()->string('open_customer')->toString()]) : '' }}"
+    >
         <div class="hero compact-hero hero-with-actions">
             <div class="hero-body">
                 <h2>{{ __('customerhistory::messages.index.page_title') }}</h2>
@@ -186,6 +189,11 @@
                 closeModal();
                 openFormModal();
             });
+
+            const autoOpenUrl = document.querySelector('.customer-history-page')?.dataset.autoOpenUrl;
+            if (autoOpenUrl) {
+                window.openCustomerHistoryDetail?.(autoOpenUrl);
+            }
         })();
     </script>
 @endsection

@@ -3,9 +3,17 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('customer-history.index')
-        : redirect()->route('login');
+    if (! auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    $user = auth()->user();
+
+    return redirect()->route(
+        $user->user_type === 'internal' || $user->isAdmin()
+            ? 'dashboard.index'
+            : 'customer-history.index'
+    );
 });
 
 Route::get('/locale/{locale}', function (string $locale) {

@@ -26,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
         $this->loadViewsFrom(app_path('Modules/Auth/Resources/views'), 'auth');
         $this->loadTranslationsFrom(app_path('Modules/Auth/Resources/lang'), 'auth');
 
+        $this->loadRoutesFrom(app_path('Modules/Dashboard/Routes/web.php'));
+        $this->loadViewsFrom(app_path('Modules/Dashboard/Resources/views'), 'dashboard');
+        $this->loadTranslationsFrom(app_path('Modules/Dashboard/Resources/lang'), 'dashboard');
+
         $this->loadRoutesFrom(app_path('Modules/CustomerHistory/Routes/web.php'));
         $this->loadViewsFrom(app_path('Modules/CustomerHistory/Resources/views'), 'customerhistory');
         $this->loadTranslationsFrom(app_path('Modules/CustomerHistory/Resources/lang'), 'customerhistory');

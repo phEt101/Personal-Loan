@@ -11,6 +11,7 @@ return [
         'sign_out' => 'Sign Out',
     ],
     'nav' => [
+        'dashboard' => 'Dashboard',
         'home' => 'Home',
         'consent' => 'Consent',
         'customer_history' => 'Customer History',
@@ -28,6 +29,7 @@ return [
     ],
     'authorization' => [
         'internal_only' => 'This section is available to internal users only.',
+        'dashboard_only' => 'The dashboard is available to internal employees and administrators only.',
     ],
     'toast' => [
         'close' => 'Dismiss notification',
