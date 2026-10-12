@@ -170,7 +170,7 @@ class ReportController extends Controller
         $standardUserRoleId = Role::query()->where('slug', Role::USER_SLUG)->valueOrFail('id');
         $accessibleGroupIds = $this->customerAccess->accessibleExternalGroupIds($request->user());
 
-        return $request->validate([
+        $filters = $request->validate([
             'report' => ['nullable', Rule::in(['transfers', 'customers'])],
             'date_from' => ['nullable', 'date_format:Y-m-d'],
             'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
@@ -198,6 +198,14 @@ class ReportController extends Controller
             'transfer_status' => ['nullable', Rule::in(['pending', 'transferred'])],
             'per_page' => ['nullable', 'integer', Rule::in(self::PER_PAGE_OPTIONS)],
         ]);
+
+        if (blank($filters['date_from'] ?? null) && blank($filters['date_to'] ?? null)) {
+            $today = now(config('app.local_timezone'));
+            $filters['date_from'] = $today->copy()->startOfMonth()->format('Y-m-d');
+            $filters['date_to'] = $today->format('Y-m-d');
+        }
+
+        return $filters;
     }
 
     private function transferExportHeadings(): array

@@ -264,6 +264,35 @@ class ReportTest extends TestCase
                 && str_contains((string) $rows->nextPageUrl(), 'submitted=1'));
     }
 
+    public function test_report_defaults_to_current_month_when_both_dates_are_empty(): void
+    {
+        $group = ResponsibilityGroup::query()->create(['name' => 'Monthly team', 'is_active' => true]);
+        $internal = User::factory()->create([
+            'user_type' => 'internal',
+            'responsibility_group_id' => $group->id,
+            'is_active' => true,
+        ]);
+        $external = User::factory()->create([
+            'user_type' => 'external',
+            'responsibility_group_id' => $group->id,
+            'is_active' => true,
+        ]);
+        $this->insertCustomer('MONTH-CURRENT', $external);
+        $this->insertCustomer('MONTH-OLD', $external);
+        DB::table('customers')->where('CustomerNo', 'MONTH-OLD')->update([
+            'sysInsertDateTime' => now()->subMonth()->startOfMonth(),
+        ]);
+
+        $this->actingAs($internal)
+            ->get(self::CUSTOMER_REPORT_PATH.'&submitted=1')
+            ->assertOk()
+            ->assertSee('MONTH-CURRENT')
+            ->assertDontSee('MONTH-OLD')
+            ->assertViewHas('filters', fn (array $filters) =>
+                $filters['date_from'] === now(config('app.local_timezone'))->startOfMonth()->format('Y-m-d')
+                && $filters['date_to'] === now(config('app.local_timezone'))->format('Y-m-d'));
+    }
+
     public function test_internal_user_can_download_filtered_customer_report_as_xlsx(): void
     {
         $group = ResponsibilityGroup::query()->create(['name' => 'Excel team', 'is_active' => true]);
