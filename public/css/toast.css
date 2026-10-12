@@ -18,6 +18,11 @@
     transition:
         opacity 0.2s ease,
         transform 0.2s ease;
+    pointer-events: none;
+}
+
+.app-toast[hidden] {
+    display: none;
 }
 
 .app-toast-close {
@@ -55,6 +60,7 @@
 .app-toast.is-visible {
     opacity: 1;
     transform: translateY(0);
+    pointer-events: auto;
 }
 
 .app-toast.is-error {
@@ -62,6 +68,10 @@
     background: #fff0f0;
     box-shadow: 0 12px 28px rgba(153, 27, 27, 0.14);
     color: #c43d3d;
+}
+
+body:has(.modal.show) .app-toast {
+    top: 4.75rem;
 }
 
 @media (max-width: 640px) {
