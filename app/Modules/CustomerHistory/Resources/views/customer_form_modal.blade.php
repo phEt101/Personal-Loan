@@ -427,35 +427,94 @@
                             </a>
                         </div>
                     </div>
-                    <div class="customer-attachment-types" id="customerAttachmentTypes">
-                        @foreach ($documentTypes as $documentType)
-                        @php($documentTypeName = app()->getLocale() === 'th' ? $documentType->DocumentTypeNameTh : $documentType->DocumentTypeNameEn)
-                        <article @class([
-                            'customer-attachment-type',
-                            'has-custom-name' => $documentType->DocumentTypeNameEn === 'Other',
-                        ]) data-attachment-type-id="{{ $documentType->id }}">
-                            <span class="customer-attachment-type-icon" aria-hidden="true">+</span>
-                            <div class="customer-attachment-type-content">
-                                <strong>{{ $documentTypeName }}</strong>
-                                <span data-attachment-type-status>{{ __('customerhistory::messages.form.attachments.not_attached') }}</span>
-                            </div>
-                            <button type="button"
-                                class="customer-attachment-quick-add"
-                                data-quick-attachment-type="{{ $documentType->id }}"
-                                data-quick-attachment-name="{{ $documentTypeName }}">
-                                {{ __('customerhistory::messages.form.attachments.choose_file') }}
-                            </button>
-                            @if ($documentType->DocumentTypeNameEn === 'Other')
-                            <label class="customer-attachment-custom-name">
-                                <span>{{ __('customerhistory::messages.form.attachments.other_name') }}</span>
-                                <input type="text"
-                                    maxlength="255"
-                                    data-attachment-custom-name
-                                    placeholder="{{ __('customerhistory::messages.form.attachments.other_name_placeholder') }}">
-                            </label>
-                            @endif
-                            <div class="customer-attachment-card-files" data-attachment-type-files></div>
-                        </article>
+                    @php
+                        $attachmentGroups = [
+                            [
+                                'key' => 'required',
+                                'title' => __('customerhistory::messages.form.attachments.required_group_title'),
+                                'help' => __('customerhistory::messages.form.attachments.required_group_help'),
+                                'types' => $documentTypes->filter(fn ($documentType) =>
+                                    ($documentType->RequirementType === 'required' && $documentType->DocumentCode !== 'statement')
+                                    || $documentType->DocumentCode === 'name_change'
+                                ),
+                            ],
+                            [
+                                'key' => 'income',
+                                'title' => __('customerhistory::messages.form.attachments.income_group_title'),
+                                'help' => __('customerhistory::messages.form.attachments.income_group_help'),
+                                'types' => $documentTypes->filter(fn ($documentType) =>
+                                    $documentType->DocumentCode === 'statement'
+                                    || in_array($documentType->RequirementType, ['income_primary', 'income_supporting'], true)
+                                ),
+                            ],
+                            [
+                                'key' => 'if-available',
+                                'title' => __('customerhistory::messages.form.attachments.if_available_group_title'),
+                                'help' => __('customerhistory::messages.form.attachments.if_available_group_help'),
+                                'types' => $documentTypes->filter(fn ($documentType) =>
+                                    $documentType->RequirementType === 'if_available'
+                                    && $documentType->DocumentCode !== 'name_change'
+                                ),
+                            ],
+                        ];
+                    @endphp
+                    <div class="customer-attachment-groups" id="customerAttachmentTypes">
+                        @foreach ($attachmentGroups as $attachmentGroup)
+                            <section class="customer-attachment-group is-{{ $attachmentGroup['key'] }}">
+                                <div class="customer-attachment-group-heading">
+                                    <h5>
+                                        {{ $attachmentGroup['title'] }}
+                                    </h5>
+                                    @isset($attachmentGroup['help'])
+                                        <p>{{ $attachmentGroup['help'] }}</p>
+                                    @endisset
+                                    @isset($attachmentGroup['note'])
+                                        <small>{{ $attachmentGroup['note'] }}</small>
+                                    @endisset
+                                </div>
+                                <div class="customer-attachment-types">
+                                    @foreach ($attachmentGroup['types'] as $documentType)
+                                    @php($documentTypeName = app()->getLocale() === 'th' ? $documentType->DocumentTypeNameTh : $documentType->DocumentTypeNameEn)
+                                    <article @class([
+                                        'customer-attachment-type',
+                                        'has-custom-name' => $documentType->DocumentTypeNameEn === 'Other',
+                                    ]) data-attachment-type-id="{{ $documentType->id }}" data-attachment-requirement="{{ $documentType->RequirementType }}">
+                                        <span class="customer-attachment-type-icon" aria-hidden="true">+</span>
+                                        <div class="customer-attachment-type-content">
+                                            <strong>
+                                                {{ $documentTypeName }}
+                                                @if ($documentType->RequirementType === 'required')
+                                                    <span class="required-asterisk" aria-label="{{ __('customerhistory::messages.form.attachments.required_badge') }}">*</span>
+                                                @elseif ($documentType->RequirementType === 'income_primary')
+                                                    <span class="customer-attachment-requirement is-income">{{ __('customerhistory::messages.form.attachments.income_choice_badge') }}</span>
+                                                @elseif ($documentType->RequirementType === 'income_supporting')
+                                                    <span class="customer-attachment-requirement is-conditional">{{ __('customerhistory::messages.form.attachments.pnd_badge') }}</span>
+                                                @elseif ($documentType->DocumentCode === 'name_change')
+                                                    <span class="customer-attachment-requirement is-optional">({{ __('customerhistory::messages.form.attachments.if_available_badge') }})</span>
+                                                @endif
+                                            </strong>
+                                            <span data-attachment-type-status>{{ __('customerhistory::messages.form.attachments.not_attached') }}</span>
+                                        </div>
+                                        <button type="button"
+                                            class="customer-attachment-quick-add"
+                                            data-quick-attachment-type="{{ $documentType->id }}"
+                                            data-quick-attachment-name="{{ $documentTypeName }}">
+                                            {{ __('customerhistory::messages.form.attachments.choose_file') }}
+                                        </button>
+                                        @if ($documentType->DocumentTypeNameEn === 'Other')
+                                        <label class="customer-attachment-custom-name">
+                                            <span>{{ __('customerhistory::messages.form.attachments.other_name') }}</span>
+                                            <input type="text"
+                                                maxlength="255"
+                                                data-attachment-custom-name
+                                                placeholder="{{ __('customerhistory::messages.form.attachments.other_name_placeholder') }}">
+                                        </label>
+                                        @endif
+                                        <div class="customer-attachment-card-files" data-attachment-type-files></div>
+                                    </article>
+                                    @endforeach
+                                </div>
+                            </section>
                         @endforeach
                     </div>
                     <div id="customerAttachmentPayload" hidden></div>
@@ -649,6 +708,67 @@
         let removedAttachmentIds = new Set();
         let attachmentDownloadAllUrl = '';
         let hmeterTransfer = null;
+        let shouldShowAttachmentErrors = false;
+
+        const attachmentRequirementError = () => {
+            const groups = {
+                required: attachmentTypesContainer?.querySelector('.customer-attachment-group.is-required'),
+                income: attachmentTypesContainer?.querySelector('.customer-attachment-group.is-income'),
+            };
+            attachmentTypesContainer?.querySelectorAll('.customer-attachment-group, .customer-attachment-type')
+                .forEach((element) => element.classList.remove('is-invalid'));
+            if (!shouldShowAttachmentErrors) return '';
+
+            const visibleExistingAttachments = existingAttachments.filter(
+                (attachment) => !removedAttachmentIds.has(Number(attachment.id))
+            );
+            const selectedCodes = new Set(
+                [...visibleExistingAttachments, ...newAttachments]
+                    .map((attachment) => config.attachmentRequirements?.[attachment.document_type_id ?? attachment.documentType]?.code)
+                    .filter(Boolean)
+            );
+            const missingRequired = Object.entries(config.attachmentRequirements || {})
+                .filter(([, requirement]) => requirement.type === 'required' && !selectedCodes.has(requirement.code));
+            const errors = [];
+
+            if (missingRequired.length > 0) {
+                const message = config.messages.requiredDocuments.replace(
+                    ':documents',
+                    missingRequired.map(([typeId]) => config.attachmentTypes[typeId]).join(', ')
+                );
+                errors.push(message);
+                if (missingRequired.some(([, requirement]) => requirement.code !== 'statement')) {
+                    groups.required?.classList.add('is-invalid');
+                }
+                if (missingRequired.some(([, requirement]) => requirement.code === 'statement')) {
+                    groups.income?.classList.add('is-invalid');
+                }
+                missingRequired.forEach(([typeId]) => {
+                    attachmentTypesContainer?.querySelector(`[data-attachment-type-id="${typeId}"]`)?.classList.add('is-invalid');
+                });
+            }
+            const incomeMissing = !['salary_slip', 'tax_50_bis', 'income_certificate']
+                .some((code) => selectedCodes.has(code));
+            const pndNeedsCertificate = selectedCodes.has('pnd_90_91') && !selectedCodes.has('income_certificate');
+            const incomeErrors = [];
+            if (incomeMissing) {
+                incomeErrors.push(config.messages.incomeAttachmentRequired);
+            }
+            if (pndNeedsCertificate) {
+                incomeErrors.push(config.messages.pndRequiresCertificate);
+                const certificateEntry = Object.entries(config.attachmentRequirements || {})
+                    .find(([, requirement]) => requirement.code === 'income_certificate');
+                if (certificateEntry) {
+                    attachmentTypesContainer?.querySelector(`[data-attachment-type-id="${certificateEntry[0]}"]`)?.classList.add('is-invalid');
+                }
+            }
+            if (incomeErrors.length > 0) {
+                errors.push(...incomeErrors);
+                groups.income?.classList.add('is-invalid');
+            }
+
+            return errors.join(' ');
+        };
 
         const formatTransferDateTime = (value) => {
             if (!value) return '-';
@@ -658,7 +778,7 @@
             return new Intl.DateTimeFormat(document.documentElement.lang || 'th', {
                 dateStyle: 'medium',
                 timeStyle: 'short',
-                timeZone: @js(config('app.local_timezone')),
+                timeZone: config.localTimezone,
             }).format(date);
         };
 
@@ -811,6 +931,7 @@
                 input.value = String(id);
                 attachmentPayload.appendChild(input);
             });
+            attachmentRequirementError();
         };
 
         attachmentTypesContainer?.addEventListener('click', (event) => {
@@ -896,6 +1017,18 @@
             } else if (!hasError) {
                 errorMessage?.remove();
             }
+        };
+
+        const clearFormValidation = () => {
+            form.querySelectorAll('.form-group.has-error').forEach((group) => {
+                group.classList.remove('has-error');
+            });
+            form.querySelectorAll('.customer-field-error').forEach((message) => {
+                message.remove();
+            });
+            form.querySelectorAll('input, select, textarea').forEach((field) => {
+                field.setCustomValidity?.('');
+            });
         };
 
         const isValidThaiNationalId = (value) => {
@@ -1439,6 +1572,7 @@
 
         const resetCustomerForm = () => {
             form.reset();
+            clearFormValidation();
             addresses = [];
             phones = [];
             existingAttachments = [];
@@ -1446,6 +1580,7 @@
             hmeterTransfer = null;
             newAttachments = [];
             removedAttachmentIds = new Set();
+            shouldShowAttachmentErrors = false;
             currentStep = 1;
             maxReachedStep = 1;
             editingAddressId = null;
@@ -1640,15 +1775,14 @@
                 return;
             }
             if (!isViewMode && currentStep === 5) {
-                const hasAttachment = newAttachments.length > 0 || existingAttachments.some(
-                    (attachment) => !removedAttachmentIds.has(Number(attachment.id))
-                );
+                shouldShowAttachmentErrors = true;
+                const attachmentError = attachmentRequirementError();
 
-                if (!hasAttachment) {
+                if (attachmentError) {
                     if (window.showToast) {
-                        window.showToast(config.messages.attachmentRequired, 'error');
+                        window.showToast(attachmentError, 'error');
                     } else {
-                        window.alert(config.messages.attachmentRequired);
+                        window.alert(attachmentError);
                     }
                     attachmentTypesContainer?.querySelector('[data-quick-attachment-type]')?.focus();
                     return;
@@ -1805,6 +1939,7 @@
                 attachmentDownloadAllUrl = '';
                 newAttachments = [];
                 removedAttachmentIds = new Set();
+                shouldShowAttachmentErrors = false;
                 currentStep = 1;
                 maxReachedStep = 1;
                 resetAddressEditor();

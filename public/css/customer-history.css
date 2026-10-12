@@ -121,12 +121,57 @@
     justify-content: flex-end;
 }
 
+.customer-attachment-groups {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.customer-attachment-group {
+    padding: 1rem;
+    border: 1px solid #dce8e2;
+    border-radius: 0.9rem;
+    background: #f9fcfa;
+}
+
+.customer-attachment-group.is-invalid {
+    border-color: #ff3b75;
+}
+
+.customer-attachment-type.is-invalid {
+    border-color: #ff3b75;
+}
+
+.customer-attachment-group-heading {
+    margin-bottom: 0.75rem;
+}
+
+.customer-attachment-group-heading h5 {
+    margin: 0;
+    color: #203744;
+    font-size: 0.95rem;
+}
+
+.customer-attachment-group-heading p {
+    margin: 0.25rem 0 0;
+    color: #657781;
+    font-size: 0.8rem;
+}
+
+.customer-attachment-group-heading small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #9a3412;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
 .customer-attachment-types {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
     gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0;
 }
 
 .customer-attachment-type {
@@ -170,8 +215,8 @@
     min-width: 0;
 }
 
-.customer-attachment-type-content strong,
-.customer-attachment-type-content span {
+.customer-attachment-type-content > strong,
+.customer-attachment-type-content > span {
     display: block;
 }
 
@@ -183,7 +228,41 @@
     white-space: nowrap;
 }
 
-.customer-attachment-type-content span {
+.customer-attachment-type-content .customer-attachment-requirement {
+    display: inline-block;
+    margin: 0 0 0 0.35rem;
+    padding: 0.12rem 0.4rem;
+    border-radius: 999px;
+    background: #edf2f0;
+    color: #52656f;
+    font-size: 0.66rem;
+    font-weight: 800;
+    vertical-align: middle;
+}
+
+.customer-attachment-type-content .customer-attachment-requirement.is-required {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.customer-attachment-type-content .customer-attachment-requirement.is-income {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.customer-attachment-type-content .customer-attachment-requirement.is-conditional {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.customer-attachment-type-content strong .required-asterisk {
+    display: inline;
+    margin-left: 0.15rem;
+    color: #dc2626;
+    font-size: inherit;
+}
+
+.customer-attachment-type-content > span {
     margin-top: 0.2rem;
     color: #657781;
     font-size: 0.76rem;

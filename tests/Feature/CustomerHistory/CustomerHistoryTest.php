@@ -23,6 +23,8 @@ class CustomerHistoryTest extends TestCase
 
     private const PDF_MIME_TYPE = 'application/pdf';
 
+    private const JSON_MIME_TYPE = 'application/json';
+
     private const SEPTEMBER_TENTH_AT_TEN = '2026-09-10 10:00:00';
 
     private const SEPTEMBER_ELEVENTH_AT_TEN = '2026-09-11 10:00:00';
@@ -32,6 +34,7 @@ class CustomerHistoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Storage::fake('local');
         $this->seed(MasterLookupSeeder::class);
     }
 
@@ -140,11 +143,12 @@ class CustomerHistoryTest extends TestCase
 
     public function test_customer_attachments_can_be_uploaded_downloaded_and_removed(): void
     {
-        Storage::fake('local');
         $owner = User::factory()->create(['user_type' => 'external']);
         $otherUser = User::factory()->create(['user_type' => 'external']);
         $nationalIdType = DB::table('document_types')->where('DocumentTypeNameEn', 'National ID copy')->value('id');
         $salarySlipType = DB::table('document_types')->where('DocumentTypeNameEn', 'Salary slip')->value('id');
+        $houseRegistrationType = DB::table('document_types')->where('DocumentCode', 'house_registration')->value('id');
+        $statementType = DB::table('document_types')->where('DocumentCode', 'statement')->value('id');
         $payload = $this->customerPayload([
             'NewAttachments' => [
                 [
@@ -157,17 +161,27 @@ class CustomerHistoryTest extends TestCase
                     'DocumentTypeId' => $salarySlipType,
                     'File' => UploadedFile::fake()->image('salary-slip.jpg'),
                 ],
+                [
+                    'DocumentName' => 'สำเนาทะเบียนบ้าน',
+                    'DocumentTypeId' => $houseRegistrationType,
+                    'File' => UploadedFile::fake()->create('house-registration.pdf', 100, self::PDF_MIME_TYPE),
+                ],
+                [
+                    'DocumentName' => 'Statement',
+                    'DocumentTypeId' => $statementType,
+                    'File' => UploadedFile::fake()->create('statement.pdf', 100, self::PDF_MIME_TYPE),
+                ],
             ],
         ]);
 
         $customerNo = $this->actingAs($owner)
-            ->withHeader('Accept', 'application/json')
+            ->withHeader('Accept', self::JSON_MIME_TYPE)
             ->post(self::CUSTOMER_HISTORY_PATH, $payload)
             ->assertCreated()
             ->json('customer_no');
 
         $attachments = DB::table('customer_attachments')->where('CustomerNo', $customerNo)->get();
-        $this->assertCount(2, $attachments);
+        $this->assertCount(4, $attachments);
         $this->assertSame(self::NATIONAL_ID_DOCUMENT_NAME, $attachments->firstWhere('DocumentTypeId', $nationalIdType)->DocumentName);
         foreach ($attachments->pluck('FilePath') as $path) {
             $this->assertTrue(Storage::disk('local')->exists($path));
@@ -175,7 +189,7 @@ class CustomerHistoryTest extends TestCase
 
         $detail = $this->getJson("/customer-history/{$customerNo}")
             ->assertOk()
-            ->assertJsonCount(2, 'attachments');
+            ->assertJsonCount(4, 'attachments');
         $previewUrl = $detail->json('attachments.0.preview_url');
         $downloadAllUrl = $detail->json('download_all_attachments_url');
         $attachmentId = $detail->json('attachments.0.id');
@@ -191,7 +205,7 @@ class CustomerHistoryTest extends TestCase
         $zipPath = tempnam(sys_get_temp_dir(), 'customer-documents-');
         file_put_contents($zipPath, $download->streamedContent());
         $this->assertTrue($zip->open($zipPath));
-        $this->assertSame(2, $zip->numFiles);
+        $this->assertSame(4, $zip->numFiles);
         $this->assertSame('01-'.self::NATIONAL_ID_DOCUMENT_NAME.'.pdf', $zip->getNameIndex(0));
         $this->assertSame('02-สลิปเดือนล่าสุด.jpg', $zip->getNameIndex(1));
         $zip->close();
@@ -201,7 +215,7 @@ class CustomerHistoryTest extends TestCase
 
         $filePath = DB::table('customer_attachments')->where('id', $attachmentId)->value('FilePath');
         $this->actingAs($owner)
-            ->withHeader('Accept', 'application/json')
+            ->withHeader('Accept', self::JSON_MIME_TYPE)
             ->post("/customer-history/{$customerNo}", array_merge($this->customerPayload(), [
                 '_method' => 'PUT',
                 'RemoveAttachmentIds' => [$attachmentId],
@@ -255,6 +269,33 @@ class CustomerHistoryTest extends TestCase
         $this->postJson(self::CUSTOMER_HISTORY_PATH, $payload)
             ->assertUnprocessable()
             ->assertJsonValidationErrors('IdentityCardAddressId');
+    }
+
+    public function test_customer_creation_enforces_document_requirements(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(self::CUSTOMER_HISTORY_PATH, $this->customerPayload(['NewAttachments' => []]), [
+                'Accept' => self::JSON_MIME_TYPE,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('NewAttachments');
+
+        $attachments = $this->requiredAttachments();
+        $attachments[] = [
+            'DocumentName' => 'ภ.งด. 90/91',
+            'DocumentTypeId' => DB::table('document_types')->where('DocumentCode', 'pnd_90_91')->value('id'),
+            'File' => UploadedFile::fake()->create('pnd-90-91.pdf', 100, self::PDF_MIME_TYPE),
+        ];
+
+        $this->post(self::CUSTOMER_HISTORY_PATH, $this->customerPayload([
+            'NewAttachments' => $attachments,
+        ]), [
+            'Accept' => self::JSON_MIME_TYPE,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('NewAttachments');
     }
 
     public function test_internal_user_can_search_filter_by_creator_and_paginate_customers(): void
@@ -587,7 +628,26 @@ class CustomerHistoryTest extends TestCase
             'Email' => 'customer@example.com',
             'MonthlyIncomeAmount' => '25,000',
             'MonthlyExpenseAmount' => '5,000',
+            'NewAttachments' => $this->requiredAttachments(),
         ], $overrides);
+    }
+
+    private function requiredAttachments(): array
+    {
+        $documents = [
+            'national_id' => ['สำเนาบัตรประชาชน', 'national-id.pdf'],
+            'house_registration' => ['สำเนาทะเบียนบ้าน', 'house-registration.pdf'],
+            'statement' => ['Statement', 'statement.pdf'],
+            'salary_slip' => ['สลิปเงินเดือน', 'salary-slip.pdf'],
+        ];
+
+        return collect($documents)->map(function (array $document, string $code): array {
+            return [
+                'DocumentName' => $document[0],
+                'DocumentTypeId' => DB::table('document_types')->where('DocumentCode', $code)->value('id'),
+                'File' => UploadedFile::fake()->create($document[1], 100, self::PDF_MIME_TYPE),
+            ];
+        })->values()->all();
     }
 
     private function insertCustomer(string $customerNo, string $firstName, User $creator, string $createdAt): void

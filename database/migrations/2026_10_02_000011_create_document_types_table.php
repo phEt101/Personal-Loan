@@ -10,8 +10,10 @@ return new class extends Migration
     {
         Schema::create('document_types', function (Blueprint $table) {
             $table->id();
+            $table->string('DocumentCode', 50)->unique();
             $table->string('DocumentTypeNameTh', 100);
             $table->string('DocumentTypeNameEn', 100);
+            $table->string('RequirementType', 30)->default('if_available');
             $table->unsignedInteger('SortOrder')->default(0);
             $table->boolean('Active')->default(true);
             $table->timestamps();

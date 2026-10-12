@@ -297,7 +297,7 @@ class CustomerHistoryController extends Controller
             ->where('Active', true)
             ->orderBy('SortOrder')
             ->orderBy('id')
-            ->get(['id', 'DocumentTypeNameTh', 'DocumentTypeNameEn']);
+            ->get(['id', 'DocumentCode', 'DocumentTypeNameTh', 'DocumentTypeNameEn', 'RequirementType']);
 
         return [
             'titles' => DB::table('titles')->where('Active', true)->whereNotNull('TitleDesc')
@@ -329,6 +329,7 @@ class CustomerHistoryController extends Controller
     private function customerFormConfig(Collection $documentTypes): array
     {
         return [
+            'localTimezone' => config('app.local_timezone'),
             'urls' => [
                 'districts' => route('customer-history.locations.districts'),
                 'subDistricts' => route('customer-history.locations.sub-districts'),
@@ -345,6 +346,12 @@ class CustomerHistoryController extends Controller
                 $documentType->id => app()->getLocale() === 'th'
                     ? $documentType->DocumentTypeNameTh
                     : $documentType->DocumentTypeNameEn,
+            ]),
+            'attachmentRequirements' => $documentTypes->mapWithKeys(fn ($documentType) => [
+                $documentType->id => [
+                    'code' => $documentType->DocumentCode,
+                    'type' => $documentType->RequirementType,
+                ],
             ]),
             'messages' => $this->customerFormMessages(),
         ];
@@ -384,6 +391,9 @@ class CustomerHistoryController extends Controller
             'attachedFiles' => __('customerhistory::messages.form.attachments.attached_files'),
             'attachmentSummary' => __('customerhistory::messages.form.attachments.summary'),
             'attachmentRequired' => __('customerhistory::messages.form.attachments.required'),
+            'requiredDocuments' => __('customerhistory::messages.form.attachments.required_documents'),
+            'incomeAttachmentRequired' => __('customerhistory::messages.form.attachments.income_required'),
+            'pndRequiresCertificate' => __('customerhistory::messages.form.attachments.pnd_requires_certificate'),
             'otherAttachmentNameRequired' => __('customerhistory::messages.form.attachments.other_name_required'),
             'invalidAttachment' => __('customerhistory::messages.form.attachments.invalid_file'),
             'editAttachment' => __('customerhistory::messages.common.edit'),

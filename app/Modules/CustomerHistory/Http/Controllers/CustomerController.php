@@ -33,6 +33,7 @@ class CustomerController extends Controller
 
         $this->prepareCustomerRequest($request);
         $validated = $request->validate($this->customerRules());
+        $this->validateAttachmentRequirements($request);
         $occupation = $this->validateCustomerData($validated);
         $systemUserId = $request->user()->getAuthIdentifier();
         $customerNo = DB::transaction(
@@ -66,6 +67,7 @@ class CustomerController extends Controller
 
         $this->prepareCustomerRequest($request);
         $validated = $request->validate($this->customerRules());
+        $this->validateAttachmentRequirements($request, $customerNo);
         $occupation = $this->validateCustomerData($validated, $customerNo);
         $systemUserId = $request->user()->getAuthIdentifier();
 
@@ -477,6 +479,57 @@ class CustomerController extends Controller
             'RemoveAttachmentIds' => ['nullable', 'array'],
             'RemoveAttachmentIds.*' => ['integer'],
         ];
+    }
+
+    private function validateAttachmentRequirements(Request $request, ?string $customerNo = null): void
+    {
+        $removedIds = collect($request->input('RemoveAttachmentIds', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter();
+        $typeIds = collect($request->input('NewAttachments', []))
+            ->pluck('DocumentTypeId')
+            ->map(fn ($id) => (int) $id);
+
+        if ($customerNo !== null) {
+            $typeIds = $typeIds->merge(
+                CustomerAttachment::query()
+                    ->where('CustomerNo', $customerNo)
+                    ->when($removedIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $removedIds))
+                    ->pluck('DocumentTypeId')
+            );
+        }
+
+        $documentTypes = DB::table('document_types')
+            ->where('Active', true)
+            ->get(['id', 'DocumentCode', 'DocumentTypeNameTh', 'DocumentTypeNameEn', 'RequirementType']);
+        $selectedCodes = $documentTypes
+            ->whereIn('id', $typeIds->unique())
+            ->pluck('DocumentCode');
+        $messages = [];
+
+        $missingRequired = $documentTypes
+            ->where('RequirementType', 'required')
+            ->reject(fn ($type) => $selectedCodes->contains($type->DocumentCode));
+        if ($missingRequired->isNotEmpty()) {
+            $names = $missingRequired
+                ->map(fn ($type) => app()->getLocale() === 'th' ? $type->DocumentTypeNameTh : $type->DocumentTypeNameEn)
+                ->join(', ');
+            $messages[] = __('customerhistory::messages.form.attachments.required_documents', ['documents' => $names]);
+        }
+
+        if (! $selectedCodes->intersect(['salary_slip', 'tax_50_bis', 'income_certificate'])->count()) {
+            $messages[] = __('customerhistory::messages.form.attachments.income_required');
+        }
+
+        if ($selectedCodes->contains('pnd_90_91') && ! $selectedCodes->contains('income_certificate')) {
+            $messages[] = __('customerhistory::messages.form.attachments.pnd_requires_certificate');
+        }
+
+        if ($messages !== []) {
+            throw ValidationException::withMessages([
+                'NewAttachments' => implode(' ', $messages),
+            ]);
+        }
     }
 
     private function storeAttachments(Request $request, string $customerNo, int|string|null $userId): void
