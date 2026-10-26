@@ -379,7 +379,7 @@
 }
 
 .customer-attachment-download-all[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .customer-attachment-download-all.is-disabled {
@@ -396,11 +396,11 @@
     display: none;
 }
 
-.customer-address-empty td,
-.customer-phone-empty td {
+.customer-address-list .customer-address-empty td,
+.customer-phone-list .customer-phone-empty td {
     padding: 0.75rem 0.9rem;
     color: #70818b;
-    text-align: center !important;
+    text-align: center;
 }
 
 .customer-form-step {
@@ -423,7 +423,7 @@
 .customer-hmeter-transfer-details[hidden],
 .customer-hmeter-transfer-purged[hidden],
 #customerConfirmHmeterTransfer[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .customer-hmeter-transfer.is-transferred {
@@ -609,7 +609,7 @@
 }
 
 .customer-address-editor[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .customer-address-editor-actions {
@@ -670,7 +670,7 @@
 }
 
 .customer-phone-editor[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .customer-input-unit {
@@ -705,7 +705,7 @@
 }
 
 .customer-form-grid .form-group[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .customer-form-grid .form-group.has-error input,
@@ -1508,7 +1508,7 @@ body .consent-table td {
 #customerHistoryFormModal.is-view-mode .customer-address-list td:last-child,
 #customerHistoryFormModal.is-view-mode .customer-phone-list th:last-child,
 #customerHistoryFormModal.is-view-mode .customer-phone-list td:last-child {
-    display: none !important;
+    display: none;
 }
 
 .customer-history-list-header {
@@ -1752,8 +1752,8 @@ body
 
     body .customer-history-list .consent-table .empty-cell {
         display: block;
-        padding: 1.5rem 0.5rem !important;
-        text-align: center !important;
+        padding: 1.5rem 0.5rem;
+        text-align: center;
     }
 
     body .customer-history-list .consent-table .empty-cell::before {
