@@ -347,8 +347,8 @@
 }
 .dashboard-empty {
     color: #8a99a3;
-    text-align: center !important;
-    padding: 1.5rem !important;
+    text-align: center;
+    padding: 1.5rem;
 }
 .dashboard-performance {
     display: grid;

@@ -184,9 +184,9 @@
 }
 
 .report-empty {
-    padding: 2.5rem !important;
-    color: #718096 !important;
-    text-align: center !important;
+    padding: 2.5rem;
+    color: #718096;
+    text-align: center;
 }
 
 .report-search-prompt {
